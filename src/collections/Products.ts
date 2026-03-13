@@ -1,0 +1,105 @@
+import { ALLOW_ALL, ONLY_ADMIN, ONLY_AUTHENTICATED, RESTRICTED_ALL } from '@/access';
+import { beforeChange } from '@/hooks/products/beforeChange';
+import { afterChange } from '@/hooks/products/afterChange';
+import { CollectionConfig } from 'payload';
+
+export const Products: CollectionConfig = {
+  slug: 'products',
+  admin: {
+    useAsTitle: 'name',
+  },
+  access: {
+    read: ALLOW_ALL,
+    create: ONLY_AUTHENTICATED,
+    update: ONLY_AUTHENTICATED,
+    delete: RESTRICTED_ALL,
+  },
+  hooks: {
+    beforeChange: [beforeChange],
+    afterChange: [afterChange],
+  },
+  fields: [
+    {
+      name: 'name',
+      type: 'text',
+      required: true,
+    },
+    {
+      name: 'description',
+      type: 'richText',
+    },
+    {
+      name: 'price',
+      type: 'number',
+      required: true,
+      min: 0,
+      max: 1000000,
+    },
+    {
+      name: 'inStock',
+      type: 'checkbox',
+    },
+    {
+      name: 'category',
+      type: 'relationship',
+      relationTo: 'categories',
+    },
+    {
+      name: 'status',
+      type: 'select',
+      options: [
+        { label: 'Draft', value: 'draft' },
+        { label: 'Published', value: 'published' },
+      ],
+      defaultValue: 'draft',
+    },
+    {
+      label: 'Характеристики',
+      type: 'collapsible',
+      fields: [
+        {
+          name: 'dimensions',
+          type: 'group',
+          fields: [
+            {
+              name: 'weight',
+              type: 'number',
+              admin: {
+                description: 'weight in gr',
+              },
+            },
+            {
+              name: 'width',
+              type: 'number',
+              admin: {
+                description: 'width in cm',
+              },
+            },
+            {
+              name: 'height',
+              type: 'number',
+              admin: {
+                description: 'Height in cm',
+              },
+            },
+          ],
+        },
+        {
+          name: 'images',
+          type: 'array',
+          fields: [
+            {
+              name: 'url',
+              type: 'text',
+              required: true,
+            },
+            {
+              name: 'alt',
+              type: 'text',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
