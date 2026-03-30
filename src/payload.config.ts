@@ -17,6 +17,7 @@ import { Products } from './collections/Products';
 import { Categories } from './collections/Categories';
 import { Customers } from './collections/Customers';
 import { Orders } from './collections/Orders';
+import { SiteSettings } from './globals/SiteSettings';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -29,6 +30,7 @@ export default buildConfig({
     },
   },
   collections: [Users, Media, Products, Categories, Customers, Orders],
+  globals: [SiteSettings],
   editor: lexicalEditor({
     features: [BoldFeature(), ItalicFeature(), UnorderedListFeature(), OrderedListFeature()],
   }),

@@ -6,13 +6,18 @@ import { useCart } from '@/contexts/CartContext';
 import { CartItem } from '@/types/cart';
 import { Trash2, ShoppingCart, Minus, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 export default function CartPage() {
   const { totalPrice, items, removeItem, clearCart, updateQuantity } = useCart();
 
   async function submitOrder(items: CartItem[]) {
     try {
-      const res = await fetch('/api/checkout', { method: 'POST', body: JSON.stringify({ items }) });
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items }),
+      });
       if (res.status === 401) {
         toast.error('Необходимо войти в аккаунт');
         return;
@@ -30,28 +35,31 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 flex flex-col items-center gap-4 text-center">
+      <div className="max-w-2xl mx-auto px-6 py-24 flex flex-col items-center gap-4 text-center">
         <ShoppingCart className="w-12 h-12 text-muted-foreground" />
-        <h1 className="text-2xl font-bold">Корзина пуста</h1>
-        <p className="text-muted-foreground">Добавьте товары на странице каталога</p>
+        <h1 className="text-2xl font-black tracking-tight">Корзина пуста</h1>
+        <p className="text-muted-foreground">Добавьте товары из каталога</p>
         <Button asChild variant="outline">
-          <a href="/products">Перейти в каталог</a>
+          <Link href="/products">Перейти в каталог</Link>
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Корзина</h1>
+    <div className="max-w-2xl mx-auto px-6 py-10">
+      <div className="flex items-end justify-between mb-8">
+        <div>
+          <p className="text-xs font-semibold tracking-widest uppercase text-orange-600 mb-1">
+            Покупки
+          </p>
+          <h1 className="text-3xl font-black tracking-tight">Корзина</h1>
+        </div>
         <Button
           variant="ghost"
           size="sm"
           className="text-muted-foreground hover:text-destructive"
-          onClick={() => {
-            clearCart();
-          }}
+          onClick={() => clearCart()}
         >
           Очистить
         </Button>
@@ -61,11 +69,10 @@ export default function CartPage() {
         {items.map((item) => (
           <div key={item.productId} className="flex items-center gap-4 p-4">
             <div className="flex-1 min-w-0">
-              <p className="font-medium truncate">{item.name}</p>
-              <p className="text-sm text-muted-foreground">
-                {Intl.NumberFormat('ru-RU').format(item.price)} ₽ ×
+              <p className="font-semibold truncate mb-1">{item.name}</p>
+              <p className="text-sm text-muted-foreground mb-2">
+                {Intl.NumberFormat('ru-RU').format(item.price)} ₽ × шт.
               </p>
-
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
@@ -75,7 +82,7 @@ export default function CartPage() {
                 >
                   <Minus className="w-3 h-3" />
                 </Button>
-                <span className="w-8 text-center font-semibold text-lg">{item.quantity}</span>
+                <span className="w-8 text-center font-black text-lg">{item.quantity}</span>
                 <Button
                   variant="outline"
                   size="icon"
@@ -86,16 +93,14 @@ export default function CartPage() {
                 </Button>
               </div>
             </div>
-            <p className="font-semibold shrink-0">
+            <p className="font-black shrink-0 text-lg">
               {Intl.NumberFormat('ru-RU').format(item.price * item.quantity)} ₽
             </p>
             <Button
               variant="ghost"
               size="icon"
               className="shrink-0 hover:text-destructive"
-              onClick={() => {
-                removeItem(item.productId);
-              }}
+              onClick={() => removeItem(item.productId)}
             >
               <Trash2 className="w-4 h-4" />
             </Button>
@@ -107,7 +112,9 @@ export default function CartPage() {
 
       <div className="flex items-center justify-between mb-6">
         <span className="text-lg font-semibold">Итого</span>
-        <span className="text-xl font-bold">{Intl.NumberFormat('ru-RU').format(totalPrice)} ₽</span>
+        <span className="text-2xl font-black tracking-tight">
+          {Intl.NumberFormat('ru-RU').format(totalPrice)} ₽
+        </span>
       </div>
 
       <Button className="w-full" size="lg" onClick={() => submitOrder(items)}>

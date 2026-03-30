@@ -4,7 +4,9 @@
       "Bash(npx shadcn@latest add card input label --overwrite)",
       "Bash(npx shadcn@latest add badge --overwrite)",
       "Bash(cmd /c \"rmdir /s /q D:\\\\projects\\\\payload-start\\\\src\\\\app\\\\products\")",
-      "Bash(netstat -ano)"
+      "Bash(netstat -ano)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_take_screenshot"
     ]
   }
 }

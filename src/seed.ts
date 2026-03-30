@@ -4,62 +4,79 @@ import config from '../src/payload.config';
 
 const products = [
   {
-    name: 'MacBook Pro 14"',
-    price: 199999,
-    category: 'electronics',
+    name: 'Specialized Tarmac SL8 SW Di2',
+    price: 599900,
+    category: 'road',
     status: 'published' as const,
     inStock: true,
     images: [
-      {
-        url: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600',
-        alt: 'MacBook Pro',
-      },
+      { url: '/bikes/specialized/tarmac-1.webp', alt: 'Specialized Tarmac SL8 — hero' },
+      { url: '/bikes/specialized/tarmac-2.webp', alt: 'Specialized Tarmac SL8 — side' },
+      { url: '/bikes/specialized/tarmac-3.webp', alt: 'Specialized Tarmac SL8 — detail' },
+      { url: '/bikes/specialized/tarmac-4.webp', alt: 'Specialized Tarmac SL8 — rear' },
     ],
   },
   {
-    name: 'iPhone 15 Pro',
-    price: 129999,
-    category: 'electronics',
+    name: 'Specialized Roubaix SW AXS',
+    price: 449900,
+    category: 'road',
     status: 'published' as const,
     inStock: true,
     images: [
-      { url: 'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=600', alt: 'iPhone' },
+      { url: '/bikes/specialized/roubaix-1.webp', alt: 'Specialized Roubaix — hero' },
+      { url: '/bikes/specialized/roubaix-2.webp', alt: 'Specialized Roubaix — side' },
+      { url: '/bikes/specialized/roubaix-3.webp', alt: 'Specialized Roubaix — detail' },
+      { url: '/bikes/specialized/roubaix-4.webp', alt: 'Specialized Roubaix — cockpit' },
     ],
   },
   {
-    name: 'Nike Air Max 90',
-    price: 12999,
-    category: 'clothing',
+    name: 'Pinarello Dogma F',
+    price: 899900,
+    category: 'road',
     status: 'published' as const,
     inStock: true,
     images: [
-      {
-        url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600',
-        alt: 'Nike Air Max',
-      },
+      { url: '/bikes/pinarello/dogma-1.png', alt: 'Pinarello Dogma F — side' },
+      { url: '/bikes/pinarello/dogma-2.png', alt: 'Pinarello Dogma F — detail' },
+      { url: '/bikes/pinarello/dogma-3.png', alt: 'Pinarello Dogma F — front' },
     ],
   },
   {
-    name: "Levi's 501 Jeans",
-    price: 8999,
-    category: 'clothing',
-    status: 'draft' as const,
+    name: 'Canyon Grail CF SLX 8 Di2',
+    price: 389900,
+    category: 'gravel',
+    status: 'published' as const,
+    inStock: true,
+    images: [
+      { url: '/bikes/canyon/grail-1.avif', alt: 'Canyon Grail — full view' },
+      { url: '/bikes/canyon/grail-2.avif', alt: 'Canyon Grail — alternate angle' },
+      { url: '/bikes/canyon/grail-3.avif', alt: 'Canyon Grail — cockpit detail' },
+      { url: '/bikes/canyon/grail-4.avif', alt: 'Canyon Grail — storage' },
+    ],
+  },
+  {
+    name: 'Canyon Grizl CF 6',
+    price: 249900,
+    category: 'touring',
+    status: 'published' as const,
+    inStock: true,
+    images: [
+      { url: '/bikes/canyon/grizl-1.avif', alt: 'Canyon Grizl — full view' },
+      { url: '/bikes/canyon/grizl-2.avif', alt: 'Canyon Grizl — alternate' },
+      { url: '/bikes/canyon/grizl-3.avif', alt: 'Canyon Grizl — rack detail' },
+    ],
+  },
+  {
+    name: 'Kona Sutra',
+    price: 149900,
+    category: 'touring',
+    status: 'published' as const,
     inStock: false,
     images: [
-      { url: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=600', alt: 'Jeans' },
-    ],
-  },
-  {
-    name: 'Organic Coffee Beans 1kg',
-    price: 1499,
-    category: 'food',
-    status: 'published' as const,
-    inStock: true,
-    images: [
-      {
-        url: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=600',
-        alt: 'Coffee beans',
-      },
+      { url: '/bikes/kona/sutra-1.webp', alt: 'Kona Sutra — hero' },
+      { url: '/bikes/kona/sutra-2.webp', alt: 'Kona Sutra — side' },
+      { url: '/bikes/kona/sutra-3.webp', alt: 'Kona Sutra — detail' },
+      { url: '/bikes/kona/sutra-4.webp', alt: 'Kona Sutra — front' },
     ],
   },
 ];
@@ -67,28 +84,28 @@ const products = [
 async function seed() {
   const payload = await getPayload({ config });
 
-  const electronics = await payload.create({
+  const road = await payload.create({
     collection: 'categories',
-    data: { name: 'Электроника', slug: 'electronics' },
+    data: { name: 'Шоссейные', slug: 'road' },
     overrideAccess: true,
   });
 
-  const clothing = await payload.create({
+  const gravel = await payload.create({
     collection: 'categories',
-    data: { name: 'Одежда', slug: 'clothing' },
+    data: { name: 'Гравел', slug: 'gravel' },
     overrideAccess: true,
   });
 
-  const food = await payload.create({
+  const touring = await payload.create({
     collection: 'categories',
-    data: { name: 'Еда', slug: 'food' },
+    data: { name: 'Туринг', slug: 'touring' },
     overrideAccess: true,
   });
 
   const categoryMap: Record<string, number> = {
-    electronics: electronics.id,
-    clothing: clothing.id,
-    food: food.id,
+    road: road.id,
+    gravel: gravel.id,
+    touring: touring.id,
   };
 
   for (const product of products) {

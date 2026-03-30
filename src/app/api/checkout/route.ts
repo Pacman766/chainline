@@ -15,23 +15,31 @@ export async function POST(req: Request) {
 
   const { items } = await req.json();
 
-  const order = await payload.create({
-    collection: 'orders',
-    data: {
-      items: items.map((item: CartItem) => ({
-        product: Number(item.productId),
-        quantity: item.quantity,
-        price: item.price,
-      })),
-      customer: user.id,
-      total: items.reduce(
-        (acc: number, item: { price: number; quantity: number }) =>
-          acc + item.price * item.quantity,
-        0,
-      ),
-      status: 'pending',
-    },
-  });
+  try {
+    const order = await payload.create({
+      collection: 'orders',
+      data: {
+        items: items.map((item: CartItem) => ({
+          product: Number(item.productId),
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        customer: user.id,
+        total: items.reduce(
+          (acc: number, item: { price: number; quantity: number }) =>
+            acc + item.price * item.quantity,
+          0,
+        ),
+        status: 'pending',
+      },
+    });
 
-  return NextResponse.json(order, { status: 201 });
+    return NextResponse.json(order, { status: 201 });
+  } catch (err) {
+    console.error('[checkout] Error creating order:', err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : 'Internal server error' },
+      { status: 500 },
+    );
+  }
 }
