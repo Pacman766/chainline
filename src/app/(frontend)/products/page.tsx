@@ -20,12 +20,6 @@ export default async function ProductPage() {
     ...(user ? {} : { limit: 2 }),
   });
 
-  const filterItems = (items) => {
-    if (items.length === 0) return;
-
-    
-  };
-
   return (
     <div className="max-w-6xl mx-auto px-6 py-10">
       <div className="flex items-end justify-between mb-8">
@@ -46,17 +40,21 @@ export default async function ProductPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredProducts.docs.map((product) => (
+        {filteredProducts.docs.map((product) => {
+          const firstImage = product.images?.[0]
+          const image = typeof firstImage === 'object' && firstImage !== null ? firstImage : null
+
+          return (
           <Link href={`/products/${product.id}`} key={product.id} className="group">
             <Card className="overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-md h-full flex flex-col">
-              <div className="aspect-[4/3] overflow-hidden bg-zinc-100">
-                {product.images && product.images.length > 0 ? (
+              <div className="aspect-[4/3] overflow-hidden bg-zinc-100 relative">
+                {image ? (
                   <Image
-                    src={product.images[0].url}
-                    alt={product.images[0].alt || product.name}
-                    width={400}
-                    height={300}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    src={image.sizes?.card?.url ?? image.url ?? ''}
+                    alt={image.alt ?? product.name}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
@@ -96,7 +94,8 @@ export default async function ProductPage() {
               </CardContent>
             </Card>
           </Link>
-        ))}
+          )
+        })}
       </div>
     </div>
   );

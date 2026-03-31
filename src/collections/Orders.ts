@@ -1,3 +1,4 @@
+import { afterChange } from '@/hooks/orders/afterChange';
 import { CollectionConfig } from 'payload';
 
 export const Orders: CollectionConfig = {
@@ -21,5 +22,8 @@ export const Orders: CollectionConfig = {
       if (req.user) return { customer: { equals: req.user.id } };
       return false;
     },
+  },
+  hooks: {
+    afterChange: [afterChange],
   },
 };

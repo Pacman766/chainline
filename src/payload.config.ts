@@ -18,11 +18,25 @@ import { Categories } from './collections/Categories';
 import { Customers } from './collections/Customers';
 import { Orders } from './collections/Orders';
 import { SiteSettings } from './globals/SiteSettings';
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer';
+import nodemailer from 'nodemailer';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
 export default buildConfig({
+  email: nodemailerAdapter({
+    defaultFromAddress: 'noreply@myshop.com',
+    defaultFromName: 'My Shop',
+    transport: nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      auth: {
+        user: process.env.ETHEREAL_USER,
+        pass: process.env.ETHEREAL_PASS,
+      },
+    }),
+  }),
   admin: {
     user: Users.slug,
     importMap: {

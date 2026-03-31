@@ -86,18 +86,9 @@ export const Products: CollectionConfig = {
         },
         {
           name: 'images',
-          type: 'array',
-          fields: [
-            {
-              name: 'url',
-              type: 'text',
-              required: true,
-            },
-            {
-              name: 'alt',
-              type: 'text',
-            },
-          ],
+          type: 'relationship',
+          relationTo: 'media',
+          hasMany: true,
         },
       ],
     },
