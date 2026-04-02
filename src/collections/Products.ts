@@ -2,6 +2,7 @@ import { ALLOW_ALL, ONLY_AUTHENTICATED, RESTRICTED_ALL } from '@/access';
 import { beforeChange } from '@/hooks/products/beforeChange';
 import { afterChange } from '@/hooks/products/afterChange';
 import { CollectionConfig } from 'payload';
+import { beforeDelete } from '@/hooks/products/beforeDelete';
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -17,6 +18,7 @@ export const Products: CollectionConfig = {
   hooks: {
     beforeChange: [beforeChange],
     afterChange: [afterChange],
+    beforeDelete: [beforeDelete],
   },
   fields: [
     {
@@ -34,6 +36,18 @@ export const Products: CollectionConfig = {
       required: true,
       min: 0,
       max: 1000000,
+      hooks: {
+        beforeChange: [
+          ({ value }) => {
+            if (value === null) return value;
+            // Округлить до 2 знаков
+            return Math.round(value * 100) / 100;
+          },
+        ],
+        afterRead: [
+          ({ value }) => value ?? 0, // null → 0
+        ],
+      },
     },
     {
       name: 'inStock',
