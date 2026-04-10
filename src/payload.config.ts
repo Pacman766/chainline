@@ -28,6 +28,7 @@ export default buildConfig({
   email: nodemailerAdapter({
     defaultFromAddress: 'noreply@myshop.com',
     defaultFromName: 'My Shop',
+    skipVerify: true,
     transport: nodemailer.createTransport({
       host: 'smtp.ethereal.email',
       port: 587,

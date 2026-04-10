@@ -1,20 +1,17 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
 
-export default function LogoutButton() {
+export default function LogoutButton({ collection }: { collection: string }) {
   const router = useRouter();
 
   const logout = async () => {
-    const res = await fetch('/api/customers/logout', { method: 'POST', credentials: 'include' });
-    if (res.ok) {
-      router.refresh();
-    }
+    const res = await fetch(`/api/${collection}/logout`, { method: 'POST', credentials: 'include' });
+    if (res.ok) router.refresh();
   };
 
   return (
-    <Button variant="outline" size="sm" onClick={logout}>
+    <button className="header-logout" onClick={logout}>
       Выйти
-    </Button>
+    </button>
   );
 }
