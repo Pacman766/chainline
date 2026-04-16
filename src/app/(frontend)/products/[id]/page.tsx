@@ -33,24 +33,27 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         <div>
           {product.images && product.images.length > 0 ? (
             <div className="grid grid-cols-2 gap-2 rounded-xl overflow-hidden">
-              {product.images.map((img, i) => (
-                <div
-                  key={i}
-                  className={`overflow-hidden bg-zinc-100 ${
-                    product.images!.length === 1 || (i === 0 && product.images!.length >= 3)
-                      ? 'col-span-2'
-                      : ''
-                  }`}
-                >
-                  <Image
-                    src={img.url}
-                    alt={img.alt || product.name}
-                    width={600}
-                    height={400}
-                    className="w-full object-cover aspect-[4/3]"
-                  />
-                </div>
-              ))}
+              {product.images.map((img, i) => {
+                if (typeof img !== 'object') return null;
+                return (
+                  <div
+                    key={i}
+                    className={`overflow-hidden bg-zinc-100 ${
+                      product.images!.length === 1 || (i === 0 && product.images!.length >= 3)
+                        ? 'col-span-2'
+                        : ''
+                    }`}
+                  >
+                    <Image
+                      src={img.url ?? ''}
+                      alt={img.alt || product.name}
+                      width={600}
+                      height={400}
+                      className="w-full object-cover aspect-[4/3]"
+                    />
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="aspect-square bg-zinc-100 rounded-xl flex items-center justify-center text-muted-foreground text-sm">

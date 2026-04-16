@@ -6,7 +6,9 @@
       "Bash(cmd /c \"rmdir /s /q D:\\\\projects\\\\payload-start\\\\src\\\\app\\\\products\")",
       "Bash(netstat -ano)",
       "mcp__playwright__browser_navigate",
-      "mcp__playwright__browser_take_screenshot"
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__codebase-memory-mcp__get_code_snippet",
+      "mcp__codebase-memory-mcp__search_graph"
     ]
   }
 }

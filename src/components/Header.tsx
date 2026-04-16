@@ -6,15 +6,6 @@ import LogoutButton from '@/components/LogoutButton';
 import { NavLinks } from '@/components/NavLinks';
 import { CartLink } from './CartLink';
 
-function getCollectionFromToken(token: string): string | null {
-  try {
-    const decoded = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
-    return decoded.collection ?? null;
-  } catch {
-    return null;
-  }
-}
-
 // SVG chainring — 9 зубцов, как у передней звёздочки велосипеда
 function ChainringLogo() {
   return (
@@ -48,11 +39,21 @@ function ChainringLogo() {
 export async function Header() {
   const payload = await getPayload({ config });
   const headers = await getHeaders();
-  const { user } = await payload.auth({ headers });
-
   const cookieStore = await cookies();
-  const token = cookieStore.get('payload-token')?.value;
-  const collection = token ? getCollectionFromToken(token) : null;
+
+  let user: Awaited<ReturnType<typeof payload.auth>>['user'] = null;
+  let logoutUrl: string;
+
+  const customerToken = cookieStore.get('customer-token')?.value;
+  if (customerToken) {
+    const authHeaders = new Headers(headers);
+    authHeaders.set('Authorization', `JWT ${customerToken}`);
+    ({ user } = await payload.auth({ headers: authHeaders }));
+    logoutUrl = '/api/auth/customer-logout';
+  } else {
+    ({ user } = await payload.auth({ headers }));
+    logoutUrl = '/api/users/logout';
+  }
 
   return (
     <header className="site-header">
@@ -72,7 +73,7 @@ export async function Header() {
           {user ? (
             <>
               <span className="header-email">{user.email}</span>
-              <LogoutButton collection={collection ?? 'users'} />
+              <LogoutButton logoutUrl={logoutUrl} />
             </>
           ) : (
             <Link href="/login" className="header-login">
