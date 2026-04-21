@@ -7,7 +7,14 @@ export function AddToCartButton({ product }: { product: CartItem }) {
   const { addItem } = useCart();
 
   return (
-    <Button size="sm" onClick={() => addItem(product)}>
+    <Button
+      size="sm"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        addItem(product);
+      }}
+    >
       В корзину
     </Button>
   );

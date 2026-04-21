@@ -1,0 +1,201 @@
+{
+  "main": {
+    "id": "cc041bfc01e67348",
+    "type": "split",
+    "children": [
+      {
+        "id": "899f0e3455768b30",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4e96cd137c4481ca",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Проект — Пробелы.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Проект — Пробелы"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "fac946141b115ab5",
+    "type": "split",
+    "children": [
+      {
+        "id": "b62c2275ee2f5b0f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "876ba9ebbd752cb2",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Файловый менеджер"
+            }
+          },
+          {
+            "id": "79f518cb4153edef",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Поиск"
+            }
+          },
+          {
+            "id": "515b4670285a1d85",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Закладки"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "4804f372a964eb2e",
+    "type": "split",
+    "children": [
+      {
+        "id": "e4cce82a14a05263",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9d37016a5b321cfe",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Проект — Пробелы.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Обратные ссылки для Проект — Пробелы"
+            }
+          },
+          {
+            "id": "6e45dcaa50230ec7",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Проект — Пробелы.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Исходящие ссылки из Проект — Пробелы"
+            }
+          },
+          {
+            "id": "c40148726ebe877b",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Теги"
+            }
+          },
+          {
+            "id": "43284bb1af26424e",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Все свойства"
+            }
+          },
+          {
+            "id": "b0cb1ed0e6fd1ef3",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Проект — Пробелы.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Структура Проект — Пробелы"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Меню быстрого перехода": false,
+      "graph:Граф": false,
+      "canvas:Создать новый холст": false,
+      "daily-notes:Сегодняшняя заметка": false,
+      "templates:Вставить шаблон": false,
+      "command-palette:Открыть палитру команд": false,
+      "bases:Создать новую базу": false
+    }
+  },
+  "active": "4e96cd137c4481ca",
+  "lastOpenFiles": [
+    "Проект — Структура.md",
+    "Проект — Пробелы.md",
+    "000 Index.md",
+    "01 Next.js — Основы.md",
+    "02 Рендеринг — SSR, SSG, ISR.md",
+    "04 Headless CMS — Концепция.md",
+    "08 Next.js + CMS — Интеграция.md",
+    "Проект — Что изучено.md",
+    "Проект — Пробелы.md.tmp.114848.1776489995574",
+    "2026-04-18.md",
+    "Без названия.base",
+    "Без названия.canvas"
+  ]
+}
