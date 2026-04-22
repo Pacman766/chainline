@@ -1,5 +1,7 @@
 import 'dotenv/config';
-import { getPayload } from 'payload';
+import fs from 'fs';
+import path from 'path';
+import { getPayload, Payload } from 'payload';
 import config from '../src/payload.config';
 
 const products = [
@@ -81,6 +83,29 @@ const products = [
   },
 ];
 
+const MIME: Record<string, string> = {
+  '.webp': 'image/webp',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.avif': 'image/avif',
+};
+
+async function createMedia(payload: Payload, publicPath: string, alt: string) {
+  const fullPath = path.join(process.cwd(), 'public', publicPath);
+  const filename = path.basename(fullPath);
+  const data = fs.readFileSync(fullPath);
+  const mimetype = MIME[path.extname(filename).toLowerCase()] ?? 'image/jpeg';
+
+  const media = await payload.create({
+    collection: 'media',
+    data: { alt },
+    file: { data, mimetype, name: filename, size: data.length },
+    overrideAccess: true,
+  });
+  return media.id;
+}
+
 async function seed() {
   const payload = await getPayload({ config });
 
@@ -109,11 +134,19 @@ async function seed() {
   };
 
   for (const product of products) {
+    const imageIds = await Promise.all(
+      product.images.map(({ url, alt }) => createMedia(payload, url, alt)),
+    );
+
     await payload.create({
       collection: 'products',
       data: {
-        ...product,
+        name: product.name,
+        price: product.price,
+        inStock: product.inStock,
+        status: product.status,
         category: categoryMap[product.category],
+        images: imageIds,
       },
       overrideAccess: true,
       context: { isSeeding: true },

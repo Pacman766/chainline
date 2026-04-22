@@ -50,5 +50,5 @@ node_modules/
 /playwright/.cache/
 
 # Local files
-database.db
+*.db
 *.stackdump
