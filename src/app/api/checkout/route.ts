@@ -1,13 +1,23 @@
 import { getPayload } from 'payload';
 import config from '@payload-config';
-import { headers as getHeaders } from 'next/headers';
+import { headers as getHeaders, cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { CartItem } from '@/types/cart';
 
 export async function POST(req: Request) {
   const payload = await getPayload({ config });
   const headers = await getHeaders();
-  const { user } = await payload.auth({ headers });
+  const cookieStore = await cookies();
+
+  const customerToken = cookieStore.get('customer-token')?.value;
+  let user: Awaited<ReturnType<typeof payload.auth>>['user'] = null;
+  if (customerToken) {
+    const authHeaders = new Headers(headers);
+    authHeaders.set('Authorization', `JWT ${customerToken}`);
+    ({ user } = await payload.auth({ headers: authHeaders }));
+  } else {
+    ({ user } = await payload.auth({ headers }));
+  }
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
