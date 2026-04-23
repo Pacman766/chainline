@@ -1,5 +1,5 @@
 import config from '@payload-config';
-import { headers as getHeaders } from 'next/headers';
+import { headers as getHeaders, cookies } from 'next/headers';
 import { getPayload } from 'payload';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -15,8 +15,18 @@ const statusConfig: Record<string, { label: string; cls: string }> = {
 
 export default async function OrdersPage() {
   const headers = await getHeaders();
+  const cookieStore = await cookies();
   const payload = await getPayload({ config });
-  const { user } = await payload.auth({ headers });
+
+  const customerToken = cookieStore.get('customer-token')?.value;
+  let user: Awaited<ReturnType<typeof payload.auth>>['user'] = null;
+  if (customerToken) {
+    const authHeaders = new Headers(headers);
+    authHeaders.set('Authorization', `JWT ${customerToken}`);
+    ({ user } = await payload.auth({ headers: authHeaders }));
+  } else {
+    ({ user } = await payload.auth({ headers }));
+  }
 
   if (!user) redirect('/login');
 
