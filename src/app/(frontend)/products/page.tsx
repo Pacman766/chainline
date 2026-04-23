@@ -1,6 +1,6 @@
 import config from '@payload-config';
 import { getPayload } from 'payload';
-import { headers as getHeaders } from 'next/headers';
+import { headers as getHeaders, cookies } from 'next/headers';
 import Link from 'next/link';
 import Image from 'next/image';
 import { AddToCartButton } from './AddToCartButton';
@@ -10,20 +10,38 @@ export const revalidate = 0;
 export default async function ProductPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>
+  searchParams: Promise<{ category?: string }>;
 }) {
   const { category: categorySlug } = await searchParams;
   const headers = await getHeaders();
+  const cookieStore = await cookies();
   const payload = await getPayload({ config });
-  const { user } = await payload.auth({ headers });
 
-  const { docs: products } = await payload.find({
+  const customerToken = cookieStore.get('customer-token')?.value;
+  let user: Awaited<ReturnType<typeof payload.auth>>['user'] = null;
+  if (customerToken) {
+    const authHeaders = new Headers(headers);
+    authHeaders.set('Authorization', `JWT ${customerToken}`);
+    ({ user } = await payload.auth({ headers: authHeaders }));
+  } else {
+    ({ user } = await payload.auth({ headers }));
+  }
+
+  let categoryId: number | string | undefined;
+  if (categorySlug) {
+    const { docs } = await payload.find({
+      collection: 'categories',
+      where: { slug: { equals: categorySlug } },
+      limit: 1,
+    });
+    categoryId = docs[0]?.id;
+  }
+
+  const filteredProducts = await payload.find({
     collection: 'products',
     where: {
-      and: [
-        { status: { equals: 'published' } },
-        ...(categorySlug ? [{ 'category.slug': { equals: categorySlug } }] : []),
-      ],
+      status: { equals: 'published' },
+      ...(categoryId ? { category: { equals: categoryId } } : {}),
     },
     sort: '-price',
     ...(user ? {} : { limit: 2 }),
@@ -44,12 +62,13 @@ export default async function ProductPage({
       </div>
 
       <div className="product-grid">
-        {products.map((product) => {
+        {filteredProducts.docs.map((product) => {
           const firstImage = product.images?.[0];
           const image = typeof firstImage === 'object' && firstImage !== null ? firstImage : null;
-          const category = typeof product.category === 'object' && product.category !== null
-            ? product.category
-            : null;
+          const category =
+            typeof product.category === 'object' && product.category !== null
+              ? product.category
+              : null;
 
           return (
             <Link href={`/products/${product.id}`} key={product.id} className="product-card">
@@ -65,7 +84,9 @@ export default async function ProductPage({
                 ) : (
                   <span className="product-card__no-img">Нет фото</span>
                 )}
-                <span className={`product-card__stock${product.inStock ? '' : ' product-card__stock--out'}`}>
+                <span
+                  className={`product-card__stock${product.inStock ? '' : ' product-card__stock--out'}`}
+                >
                   {product.inStock ? 'В наличии' : 'Нет'}
                 </span>
               </div>
