@@ -1,10 +1,8 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/contexts/CartContext';
 import { CartItem } from '@/types/cart';
-import { Trash2, ShoppingCart, Minus, Plus } from 'lucide-react';
+import { Trash2, ShoppingCart, Minus, Plus, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
@@ -35,91 +33,92 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto px-6 py-24 flex flex-col items-center gap-4 text-center">
-        <ShoppingCart className="w-12 h-12 text-muted-foreground" />
-        <h1 className="text-2xl font-black tracking-tight">Корзина пуста</h1>
-        <p className="text-muted-foreground">Добавьте товары из каталога</p>
-        <Button asChild variant="outline">
-          <Link href="/products">Перейти в каталог</Link>
-        </Button>
+      <div className="cart-empty">
+        <ShoppingCart className="cart-empty__icon" size={72} strokeWidth={1} />
+        <h1 className="cart-empty__title">Корзина пуста</h1>
+        <p className="cart-empty__sub">Добавьте товары из каталога</p>
+        <Link href="/products" className="cta-primary" style={{ marginTop: 8 }}>
+          В каталог <ArrowRight size={16} />
+        </Link>
       </div>
     );
   }
 
+  const itemCount = items.reduce((acc, i) => acc + i.quantity, 0);
+
   return (
-    <div className="max-w-2xl mx-auto px-6 py-10">
-      <div className="flex items-end justify-between mb-8">
-        <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-orange-600 mb-1">
-            Покупки
-          </p>
-          <h1 className="text-3xl font-black tracking-tight">Корзина</h1>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-muted-foreground hover:text-destructive"
-          onClick={() => clearCart()}
-        >
-          Очистить
-        </Button>
-      </div>
-
-      <div className="border rounded-lg divide-y">
-        {items.map((item) => (
-          <div key={item.productId} className="flex items-center gap-4 p-4">
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold truncate mb-1">{item.name}</p>
-              <p className="text-sm text-muted-foreground mb-2">
-                {Intl.NumberFormat('ru-RU').format(item.price)} ₽ × шт.
-              </p>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                >
-                  <Minus className="w-3 h-3" />
-                </Button>
-                <span className="w-8 text-center font-black text-lg">{item.quantity}</span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                >
-                  <Plus className="w-3 h-3" />
-                </Button>
-              </div>
-            </div>
-            <p className="font-black shrink-0 text-lg">
-              {Intl.NumberFormat('ru-RU').format(item.price * item.quantity)} ₽
-            </p>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="shrink-0 hover:text-destructive"
-              onClick={() => removeItem(item.productId)}
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
+    <div className="cart-shell">
+      <div className="cart-items-col">
+        <div className="cart-page-header">
+          <div>
+            <p className="catalog-eyebrow">Покупки</p>
+            <h1 className="catalog-title">Корзина</h1>
           </div>
-        ))}
+        </div>
+
+        <div className="cart-items-list">
+          {items.map((item) => (
+            <div key={item.productId} className="cart-item">
+              <div className="cart-item__info">
+                <p className="cart-item__name">{item.name}</p>
+                <p className="cart-item__unit-price">
+                  {Intl.NumberFormat('ru-RU').format(item.price)} ₽ / шт.
+                </p>
+                <div className="cart-item__qty">
+                  <button
+                    className="qty-btn"
+                    onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                    aria-label="Уменьшить количество"
+                  >
+                    <Minus size={12} />
+                  </button>
+                  <span className="qty-val">{item.quantity}</span>
+                  <button
+                    className="qty-btn"
+                    onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                    aria-label="Увеличить количество"
+                  >
+                    <Plus size={12} />
+                  </button>
+                </div>
+              </div>
+              <p className="cart-item__price">
+                {Intl.NumberFormat('ru-RU').format(item.price * item.quantity)} ₽
+              </p>
+              <button
+                className="cart-item__remove"
+                onClick={() => removeItem(item.productId)}
+                aria-label="Удалить товар"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <Separator className="my-6" />
-
-      <div className="flex items-center justify-between mb-6">
-        <span className="text-lg font-semibold">Итого</span>
-        <span className="text-2xl font-black tracking-tight">
-          {Intl.NumberFormat('ru-RU').format(totalPrice)} ₽
-        </span>
+      <div className="cart-summary-col">
+        <p className="summary-label">Итого</p>
+        <div className="summary-lines">
+          <div className="summary-line">
+            <span className="summary-line__label">Позиций</span>
+            <span className="summary-line__val">{items.length}</span>
+          </div>
+          <div className="summary-line">
+            <span className="summary-line__label">Товаров</span>
+            <span className="summary-line__val">{itemCount} шт.</span>
+          </div>
+        </div>
+        <div className="summary-divider" />
+        <p className="summary-total-label">Сумма заказа</p>
+        <p className="summary-total-val">{Intl.NumberFormat('ru-RU').format(totalPrice)} ₽</p>
+        <button className="summary-checkout" onClick={() => submitOrder(items)}>
+          Оформить заказ
+        </button>
+        <button className="summary-clear" onClick={() => clearCart()}>
+          Очистить корзину
+        </button>
       </div>
-
-      <Button className="w-full" size="lg" onClick={() => submitOrder(items)}>
-        Оформить заказ
-      </Button>
     </div>
   );
 }
