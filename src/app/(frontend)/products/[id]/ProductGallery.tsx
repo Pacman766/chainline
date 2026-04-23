@@ -1,0 +1,68 @@
+'use client';
+
+import { useState } from 'react';
+import Image from 'next/image';
+
+type GalleryImage = {
+  url: string;
+  thumbUrl: string;
+  alt: string;
+};
+
+export function ProductGallery({
+  images,
+  productName,
+}: {
+  images: GalleryImage[];
+  productName: string;
+}) {
+  const [active, setActive] = useState(0);
+
+  if (images.length === 0) {
+    return (
+      <div className="pdp-gallery">
+        <div className="pdp-gallery__main">
+          <span className="pdp-gallery__no-img">Нет фото</span>
+        </div>
+      </div>
+    );
+  }
+
+  const current = images[active];
+
+  return (
+    <div className="pdp-gallery">
+      <div className="pdp-gallery__main">
+        <Image
+          src={current.url}
+          alt={current.alt || productName}
+          fill
+          className="object-cover"
+          sizes="(max-width: 900px) 100vw, 48vw"
+          priority
+        />
+      </div>
+
+      {images.length > 1 && (
+        <div className="pdp-gallery__thumbs">
+          {images.map((img, i) => (
+            <button
+              key={i}
+              className={`pdp-thumb${i === active ? ' pdp-thumb--active' : ''}`}
+              onClick={() => setActive(i)}
+              aria-label={`Фото ${i + 1}`}
+            >
+              <Image
+                src={img.thumbUrl}
+                alt={img.alt || `Фото ${i + 1}`}
+                fill
+                className="object-cover"
+                sizes="68px"
+              />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

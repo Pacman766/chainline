@@ -2,12 +2,9 @@ import { getPayload } from 'payload';
 import config from '@payload-config';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Button } from '@/components/ui/button';
 import { ProductDescription } from '../ProductDescription';
-import { AddToCartButton } from '../AddToCartButton';
-import Image from 'next/image';
+import { ProductGallery } from './ProductGallery';
+import { PdpAddToCart } from './PdpAddToCart';
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -19,117 +16,94 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     depth: 1,
   });
 
+  const category = typeof product.category === 'object' && product.category !== null
+    ? product.category
+    : null;
+
+  const galleryImages = (product.images ?? [])
+    .filter((img): img is Exclude<typeof img, string | number> => typeof img === 'object' && img !== null)
+    .map((img) => {
+      const anyImg = img as Record<string, unknown> & { url?: string | null; alt?: string | null };
+      const sizes = anyImg.sizes as Record<string, { url?: string | null }> | undefined;
+      return {
+        url: sizes?.hero?.url ?? sizes?.card?.url ?? anyImg.url ?? '',
+        thumbUrl: sizes?.thumbnail?.url ?? anyImg.url ?? '',
+        alt: (anyImg.alt as string | undefined) ?? product.name,
+      };
+    })
+    .filter((img) => img.url) as { url: string; thumbUrl: string; alt: string }[];
+
+  const dims = product.dimensions;
+  const hasSpecs = dims && (dims.weight || dims.width || dims.height);
+
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8">
-      <Button asChild variant="ghost" size="sm" className="mb-8 gap-2 -ml-2">
-        <Link href="/products">
-          <ArrowLeft className="w-4 h-4" />
-          Назад к каталогу
+    <div className="pdp-shell">
+      <ProductGallery images={galleryImages} productName={product.name} />
+
+      <div className="pdp-info">
+        <Link href="/products" className="pdp-back">
+          <ArrowLeft size={14} />
+          Каталог
         </Link>
-      </Button>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        {/* Images */}
-        <div>
-          {product.images && product.images.length > 0 ? (
-            <div className="grid grid-cols-2 gap-2 rounded-xl overflow-hidden">
-              {product.images.map((img, i) => {
-                if (typeof img !== 'object') return null;
-                return (
-                  <div
-                    key={i}
-                    className={`overflow-hidden bg-zinc-100 ${
-                      product.images!.length === 1 || (i === 0 && product.images!.length >= 3)
-                        ? 'col-span-2'
-                        : ''
-                    }`}
-                  >
-                    <Image
-                      src={img.url ?? ''}
-                      alt={img.alt || product.name}
-                      width={600}
-                      height={400}
-                      className="w-full object-cover aspect-[4/3]"
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="aspect-square bg-zinc-100 rounded-xl flex items-center justify-center text-muted-foreground text-sm">
-              Нет фото
-            </div>
-          )}
+        {category && <p className="pdp-category">{category.name}</p>}
+        <h1 className="pdp-title">{product.name}</h1>
+
+        <span className={`pdp-stock ${product.inStock ? 'pdp-stock--in' : 'pdp-stock--out'}`}>
+          {product.inStock ? 'В наличии' : 'Нет в наличии'}
+        </span>
+
+        <div className="pdp-price-row">
+          <span className="pdp-price">{Intl.NumberFormat('ru-RU').format(product.price)} ₽</span>
+          <PdpAddToCart
+            product={{
+              productId: String(product.id),
+              name: product.name,
+              price: product.price,
+              quantity: 1,
+            }}
+          />
         </div>
 
-        {/* Info */}
-        <div className="flex flex-col">
-          {typeof product.category === 'object' && product.category && (
-            <p className="text-xs font-semibold tracking-widest uppercase text-orange-600 mb-3">
-              {product.category.name}
-            </p>
-          )}
-          <h1 className="text-4xl font-black tracking-tight leading-tight mb-4">{product.name}</h1>
-          <Badge variant={product.inStock ? 'default' : 'secondary'} className="w-fit mb-6">
-            {product.inStock ? 'В наличии' : 'Нет в наличии'}
-          </Badge>
+        {product.description && (
+          <>
+            <div className="pdp-divider" />
+            <p className="pdp-section-label">Описание</p>
+            <div className="pdp-description">
+              <ProductDescription data={product.description} />
+            </div>
+          </>
+        )}
 
-          <div className="flex items-center gap-4 mb-8">
-            <span className="text-3xl font-black tracking-tight">
-              {Intl.NumberFormat('ru-RU').format(product.price)} ₽
-            </span>
-            <AddToCartButton
-              product={{
-                productId: String(product.id),
-                name: product.name,
-                price: product.price,
-                quantity: 1,
-              }}
-            />
-          </div>
-
-          {product.description && (
-            <>
-              <Separator className="mb-6" />
-              <div className="prose prose-sm max-w-none">
-                <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground mb-3">
-                  Описание
-                </p>
-                <ProductDescription data={product.description} />
-              </div>
-            </>
-          )}
-
-          {product.dimensions &&
-            (product.dimensions.weight || product.dimensions.width || product.dimensions.height) && (
-              <>
-                <Separator className="my-6" />
-                <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground mb-4">
-                  Характеристики
-                </p>
-                <div className="grid grid-cols-3 gap-3">
-                  {product.dimensions.weight && (
-                    <div className="text-center p-4 bg-zinc-50 rounded-lg">
-                      <p className="text-xs text-muted-foreground mb-1">Вес</p>
-                      <p className="font-bold">{product.dimensions.weight} г</p>
-                    </div>
-                  )}
-                  {product.dimensions.width && (
-                    <div className="text-center p-4 bg-zinc-50 rounded-lg">
-                      <p className="text-xs text-muted-foreground mb-1">Ширина</p>
-                      <p className="font-bold">{product.dimensions.width} см</p>
-                    </div>
-                  )}
-                  {product.dimensions.height && (
-                    <div className="text-center p-4 bg-zinc-50 rounded-lg">
-                      <p className="text-xs text-muted-foreground mb-1">Высота</p>
-                      <p className="font-bold">{product.dimensions.height} см</p>
-                    </div>
-                  )}
+        {hasSpecs && (
+          <>
+            <div className="pdp-divider" />
+            <p className="pdp-section-label">Характеристики</p>
+            <div className="pdp-specs">
+              {dims.weight && (
+                <div className="pdp-spec-card">
+                  <span className="pdp-spec-card__label">Вес</span>
+                  <span className="pdp-spec-card__val">{dims.weight}</span>
+                  <span className="pdp-spec-card__unit">г</span>
                 </div>
-              </>
-            )}
-        </div>
+              )}
+              {dims.width && (
+                <div className="pdp-spec-card">
+                  <span className="pdp-spec-card__label">Ширина</span>
+                  <span className="pdp-spec-card__val">{dims.width}</span>
+                  <span className="pdp-spec-card__unit">см</span>
+                </div>
+              )}
+              {dims.height && (
+                <div className="pdp-spec-card">
+                  <span className="pdp-spec-card__label">Высота</span>
+                  <span className="pdp-spec-card__val">{dims.height}</span>
+                  <span className="pdp-spec-card__unit">см</span>
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
