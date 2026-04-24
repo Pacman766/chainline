@@ -1082,6 +1082,28 @@ body {
   .feat-card:last-child { border-bottom: none; }
 }
 
+/* ─── Preview Banner ─────────────────────────────────────── */
+.preview-banner {
+  background: #e85d04;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 44px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  width: 100%;
+}
+.preview-banner a {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: opacity 0.15s;
+}
+.preview-banner a:hover { opacity: 0.75; }
+
 /* ─── Cart Page ──────────────────────────────────────────── */
 .cart-shell {
   display: flex;

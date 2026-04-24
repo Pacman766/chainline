@@ -17,7 +17,7 @@ export default async function Sidebar() {
           </Link>
         </li>
         {categories.map((category: Category) => (
-          <li key={category.slug}>
+          <li key={category.id}>
             <Link href={`/products?category=${category.slug}`} className="sidebar-link">
               {category.name}
             </Link>

@@ -52,3 +52,5 @@ node_modules/
 # Local files
 database.db
 *.stackdump
+*.local.json
+/scripts

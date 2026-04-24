@@ -40,7 +40,7 @@ export default async function ProductPage({
   const filteredProducts = await payload.find({
     collection: 'products',
     where: {
-      status: { equals: 'published' },
+      _status: { equals: 'published' },
       ...(categoryId ? { category: { equals: categoryId } } : {}),
     },
     sort: '-price',

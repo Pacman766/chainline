@@ -2,18 +2,23 @@ import { getPayload } from 'payload';
 import config from '@payload-config';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { draftMode } from 'next/headers';
 import { ProductDescription } from '../ProductDescription';
 import { ProductGallery } from './ProductGallery';
 import { PdpAddToCart } from './PdpAddToCart';
+import { PreviewBanner } from '@/components/PreviewBanner';
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const { isEnabled: isPreview } = await draftMode();
 
   const payload = await getPayload({ config });
   const product = await payload.findByID({
     collection: 'products',
     id,
     depth: 1,
+    draft: isPreview,
+    overrideAccess: isPreview,
   });
 
   const category = typeof product.category === 'object' && product.category !== null
@@ -37,7 +42,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const hasSpecs = dims && (dims.weight || dims.width || dims.height);
 
   return (
-    <div className="pdp-shell">
+    <>
+      {isPreview && <PreviewBanner productId={id} />}
+      <div className="pdp-shell">
       <ProductGallery images={galleryImages} productName={product.name} />
 
       <div className="pdp-info">
@@ -106,5 +113,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         )}
       </div>
     </div>
+    </>
   );
 }

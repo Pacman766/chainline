@@ -243,7 +243,6 @@ export interface Product {
   price: number;
   inStock?: boolean | null;
   category?: (number | null) | Category;
-  status?: ('draft' | 'published') | null;
   dimensions?: {
     /**
      * weight in gr
@@ -261,6 +260,7 @@ export interface Product {
   images?: (number | Media)[] | null;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -504,7 +504,6 @@ export interface ProductsSelect<T extends boolean = true> {
   price?: T;
   inStock?: T;
   category?: T;
-  status?: T;
   dimensions?:
     | T
     | {
@@ -515,6 +514,7 @@ export interface ProductsSelect<T extends boolean = true> {
   images?: T;
   updatedAt?: T;
   createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

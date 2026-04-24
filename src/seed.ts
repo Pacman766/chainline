@@ -94,6 +94,15 @@ const MIME: Record<string, string> = {
 async function createMedia(payload: Payload, publicPath: string, alt: string) {
   const fullPath = path.join(process.cwd(), 'public', publicPath);
   const filename = path.basename(fullPath);
+
+  const { docs } = await payload.find({
+    collection: 'media',
+    where: { filename: { equals: filename } },
+    limit: 1,
+    overrideAccess: true,
+  });
+  if (docs[0]) return docs[0].id;
+
   const data = fs.readFileSync(fullPath);
   const mimetype = MIME[path.extname(filename).toLowerCase()] ?? 'image/jpeg';
 
@@ -109,23 +118,20 @@ async function createMedia(payload: Payload, publicPath: string, alt: string) {
 async function seed() {
   const payload = await getPayload({ config });
 
-  const road = await payload.create({
-    collection: 'categories',
-    data: { name: 'Шоссейные', slug: 'road' },
-    overrideAccess: true,
-  });
+  async function findOrCreateCategory(slug: string, name: string) {
+    const { docs } = await payload.find({
+      collection: 'categories',
+      where: { slug: { equals: slug } },
+      limit: 1,
+      overrideAccess: true,
+    });
+    if (docs[0]) return docs[0];
+    return payload.create({ collection: 'categories', data: { name, slug }, overrideAccess: true });
+  }
 
-  const gravel = await payload.create({
-    collection: 'categories',
-    data: { name: 'Гравел', slug: 'gravel' },
-    overrideAccess: true,
-  });
-
-  const touring = await payload.create({
-    collection: 'categories',
-    data: { name: 'Туринг', slug: 'touring' },
-    overrideAccess: true,
-  });
+  const road = await findOrCreateCategory('road', 'Шоссейные');
+  const gravel = await findOrCreateCategory('gravel', 'Гравел');
+  const touring = await findOrCreateCategory('touring', 'Туринг');
 
   const categoryMap: Record<string, number> = {
     road: road.id,
@@ -134,9 +140,10 @@ async function seed() {
   };
 
   for (const product of products) {
-    const imageIds = await Promise.all(
-      product.images.map(({ url, alt }) => createMedia(payload, url, alt)),
-    );
+    const imageIds: number[] = [];
+    for (const { url, alt } of product.images) {
+      imageIds.push(await createMedia(payload, url, alt));
+    }
 
     await payload.create({
       collection: 'products',
@@ -144,10 +151,10 @@ async function seed() {
         name: product.name,
         price: product.price,
         inStock: product.inStock,
-        status: product.status,
         category: categoryMap[product.category],
         images: imageIds,
       },
+      draft: false,
       overrideAccess: true,
       context: { isSeeding: true },
     });
