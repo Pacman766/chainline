@@ -5,6 +5,7 @@ import Link from 'next/link';
 import LogoutButton from '@/components/LogoutButton';
 import { NavLinks } from '@/components/NavLinks';
 import { CartLink } from './CartLink';
+import { ThemeToggle } from './ThemeToggle';
 
 // SVG chainring — 9 зубцов, как у передней звёздочки велосипеда
 // function ChainringLogo() {
@@ -89,6 +90,7 @@ export async function Header() {
         </nav>
 
         <div className="header-actions">
+          <ThemeToggle />
           <CartLink />
           {user ? (
             <>

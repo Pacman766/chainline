@@ -4,6 +4,7 @@ import { headers as getHeaders, cookies } from 'next/headers';
 import Link from 'next/link';
 import Image from 'next/image';
 import { AddToCartButton } from './AddToCartButton';
+import { shimmerDataURL } from '@/lib/shimmer';
 
 export const revalidate = 0;
 
@@ -79,7 +80,9 @@ export default async function ProductPage({
                     alt={image.alt ?? product.name}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                    className="object-cover"
+                    className="object-contain"
+                    placeholder="blur"
+                    blurDataURL={shimmerDataURL}
                   />
                 ) : (
                   <span className="product-card__no-img">Нет фото</span>

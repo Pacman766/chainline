@@ -1,4 +1,4 @@
-import { ALLOW_ALL, ONLY_ADMIN, ONLY_AUTHENTICATED, RESTRICTED_ALL } from '@/access';
+import { ALLOW_ALL, ONLY_ADMIN, ONLY_AUTHENTICATED } from '@/access';
 import { beforeChange } from '@/hooks/products/beforeChange';
 import { afterChange } from '@/hooks/products/afterChange';
 import { CollectionConfig } from 'payload';

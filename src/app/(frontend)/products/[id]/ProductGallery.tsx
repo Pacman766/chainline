@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { shimmerDataURL } from '@/lib/shimmer';
 
 type GalleryImage = {
   url: string;
@@ -37,8 +38,10 @@ export function ProductGallery({
           src={current.url}
           alt={current.alt || productName}
           fill
-          className="object-cover"
+          className="object-contain"
           sizes="(max-width: 900px) 100vw, 48vw"
+          placeholder="blur"
+          blurDataURL={shimmerDataURL}
           priority
         />
       </div>
@@ -56,8 +59,10 @@ export function ProductGallery({
                 src={img.thumbUrl}
                 alt={img.alt || `Фото ${i + 1}`}
                 fill
-                className="object-cover"
+                className="object-contain"
                 sizes="68px"
+                placeholder="blur"
+                blurDataURL={shimmerDataURL}
               />
             </button>
           ))}
