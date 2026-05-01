@@ -1,0 +1,260 @@
+{
+  "projectName": "Payload Start",
+  "lastUpdated": "2026-05-01",
+  "rules": {
+    "singleActiveFeature": "Only one feature can be 'in_progress' at a time",
+    "evidenceRequired": "Must have verification evidence before marking 'pass'",
+    "verificationMandatory": "All checklist items must run and pass before marking 'pass'"
+  },
+  "statusDefinitions": {
+    "not_started": "Not yet begun",
+    "in_progress": "Currently being worked on (only one allowed)",
+    "blocked": "Cannot proceed â€” reason documented in notes",
+    "pass": "Complete with evidence"
+  },
+  "features": [
+    {
+      "id": "1",
+      "priority": "critical",
+      "area": "foundation",
+      "title": "Project Scaffold + Collections",
+      "description": "Next.js 15 + Payload CMS 3 + SQLite setup. Collections: users, customers, products, categories, media, orders. Seed script.",
+      "status": "pass",
+      "verification": [
+        "npm run dev starts without errors",
+        "Payload admin panel accessible at /admin",
+        "npx tsx src/seed.ts creates products and categories"
+      ],
+      "evidence": [
+        "Dev server starts on port 3000",
+        "Admin panel accessible, collections visible",
+        "Seed creates 4 bike products with categories"
+      ],
+      "notes": null
+    },
+    {
+      "id": "2",
+      "priority": "critical",
+      "area": "foundation",
+      "title": "Access Control + Hooks",
+      "description": "Reusable access functions in src/access/index.ts. Product hooks: beforeChange forces draft status, afterChange logs, beforeDelete guards.",
+      "status": "pass",
+      "verification": [
+        "Creating product via admin sets status=draft automatically",
+        "npm run lint exits 0"
+      ],
+      "evidence": [
+        "beforeChange hook confirmed forcing draft on create",
+        "isSeeding context flag bypasses the hook correctly"
+      ],
+      "notes": null
+    },
+    {
+      "id": "3",
+      "priority": "high",
+      "area": "foundation",
+      "title": "REST & Local API",
+      "description": "Custom Route Handlers: /api/products-count. Local API usage via getPayload({ config }) in Server Components.",
+      "status": "pass",
+      "verification": [
+        "GET /api/products-count returns JSON with count",
+        "Products page loads via Local API"
+      ],
+      "evidence": [
+        "/api/products-count returns {count: N}",
+        "Products RSC fetches and renders product list"
+      ],
+      "notes": null
+    },
+    {
+      "id": "4",
+      "priority": "high",
+      "area": "content",
+      "title": "Rich Text (Lexical) + Relations",
+      "description": "Product description field uses Lexical editor. Products relate to categories (many-to-one). depth parameter controls populate.",
+      "status": "pass",
+      "verification": [
+        "Product description renders rich text in frontend",
+        "Category filter on products page works"
+      ],
+      "evidence": [
+        "Rich text renders paragraphs/headings from Lexical JSON",
+        "Category sidebar filters products correctly"
+      ],
+      "notes": null
+    },
+    {
+      "id": "5",
+      "priority": "critical",
+      "area": "auth",
+      "title": "Admin Auth (Users collection)",
+      "description": "Standard Payload JWT auth for admin panel users. Login/logout. Header shows email when logged in.",
+      "status": "pass",
+      "verification": [
+        "Admin login at /admin works",
+        "Header shows user email on frontend when logged in as admin"
+      ],
+      "evidence": [
+        "Admin login creates session, shows email in Header",
+        "Logout clears session"
+      ],
+      "notes": null
+    },
+    {
+      "id": "6",
+      "priority": "critical",
+      "area": "ecommerce",
+      "title": "Cart Context + CartReducer",
+      "description": "Client-side CartContext using useReducer + localStorage. Actions: ADD, REMOVE, CLEAR, INIT, UPDATE_QUANTITY. CartLink shows count in Header.",
+      "status": "pass",
+      "verification": [
+        "Add to cart button adds product to cart",
+        "Cart count updates in Header",
+        "Cart persists after page refresh (localStorage)",
+        "Quantity update works on cart page"
+      ],
+      "evidence": [
+        "CartLink counter increments on add",
+        "localStorage key contains cart items after refresh",
+        "+/- buttons update quantity and total"
+      ],
+      "notes": null
+    },
+    {
+      "id": "7",
+      "priority": "critical",
+      "area": "ecommerce",
+      "title": "Checkout + Orders",
+      "description": "POST /api/checkout creates Order in Payload. Requires authenticated customer. Customer collection with separate JWT (customer-token cookie).",
+      "status": "pass",
+      "verification": [
+        "Checkout requires authentication (401 without token)",
+        "Successful checkout creates order in DB",
+        "Orders page shows order history for current customer"
+      ],
+      "evidence": [
+        "POST /api/checkout returns 401 for unauthenticated requests",
+        "Order record created with correct items and total",
+        "Orders page renders order list"
+      ],
+      "notes": null
+    },
+    {
+      "id": "8",
+      "priority": "medium",
+      "area": "content",
+      "title": "Globals (SiteSettings)",
+      "description": "SiteSettings global: storeName, contactEmail, bannerText, showBanner. Accessible via payload.findGlobal().",
+      "status": "pass",
+      "verification": [
+        "SiteSettings editable in Payload admin",
+        "Global data accessible in Server Components"
+      ],
+      "evidence": [
+        "SiteSettings visible in admin panel",
+        "findGlobal('site-settings') returns correct data"
+      ],
+      "notes": null
+    },
+    {
+      "id": "9",
+      "priority": "medium",
+      "area": "media",
+      "title": "Media Uploads + Image Sizes",
+      "description": "Media collection with image resizing via sharp. Sizes: thumbnail (300x300), card (768px), hero (1920px). Product images use next/image with shimmer blur placeholder.",
+      "status": "pass",
+      "verification": [
+        "Image upload in admin creates 3 size variants",
+        "Product cards show images with shimmer loading effect"
+      ],
+      "evidence": [
+        "Uploaded image generates thumbnail/card/hero variants",
+        "Product list renders with blurDataURL shimmer"
+      ],
+      "notes": null
+    },
+    {
+      "id": "10",
+      "priority": "medium",
+      "area": "notifications",
+      "title": "Email / Nodemailer",
+      "description": "afterChange hook on Orders sends email notification via Nodemailer + Ethereal (test SMTP). ETHEREAL_USER/PASS env vars.",
+      "status": "pass",
+      "verification": [
+        "Order creation triggers email hook",
+        "Email visible in Ethereal inbox"
+      ],
+      "evidence": [
+        "afterChange hook fires on order save",
+        "Ethereal test email received after checkout"
+      ],
+      "notes": null
+    },
+    {
+      "id": "11",
+      "priority": "medium",
+      "area": "frontend",
+      "title": "Parallel Routes (@sidebar)",
+      "description": "Products layout uses Next.js Parallel Routes: @sidebar slot shows categories list. default.tsx prevents 404 on navigation.",
+      "status": "pass",
+      "verification": [
+        "Products page shows sidebar with category links",
+        "Category links filter products without full page reload",
+        "Sidebar shows on /products but not on nested routes"
+      ],
+      "evidence": [
+        "@sidebar slot renders independently",
+        "default.tsx returns null preventing 404",
+        "Category filter searchParam drives products query"
+      ],
+      "notes": null
+    },
+    {
+      "id": "12",
+      "priority": "low",
+      "area": "frontend",
+      "title": "Dark / Light Theme",
+      "description": "ThemeToggle component (Sun/Moon). CSS vars for theme colors. Anti-FOUC inline script in <head>. Header/sidebar always dark.",
+      "status": "pass",
+      "verification": [
+        "Toggle switches theme without flash",
+        "Theme persists after page refresh",
+        "Header remains dark regardless of theme"
+      ],
+      "evidence": [
+        "localStorage theme key persists across refresh",
+        "No FOUC observed on dark-mode page load",
+        "Header bg unchanged on toggle"
+      ],
+      "notes": null
+    },
+    {
+      "id": "13",
+      "priority": "high",
+      "area": "auth",
+      "title": "Auth utility refactoring (getAuthenticatedUser)",
+      "description": "Extract auth logic into src/lib/auth.ts: getAuthenticatedUser() checks customer-token cookie first, falls back to Payload admin auth. Used in orders page, products page, checkout route, Header.",
+      "status": "pass",
+      "verification": [
+        "npm run lint exits 0",
+        "npm run test:int exits 0",
+        "Orders page redirects unauthenticated users to /login",
+        "Products page shows auth-gated content correctly",
+        "Header shows correct user email for both customer and admin auth",
+        "POST /api/checkout returns 401 for unauthenticated, creates order for authenticated"
+      ],
+      "evidence": [
+        "npm run lint: PASS (1 non-blocking warning: unused req in afterChange.ts)",
+        "npm run test:int: PASS (1 test, 62s)",
+        "GET /orders without auth → redirect to /login (confirmed via window.location.href)",
+        "GET /products without auth → 2 products + 'Войдите' gate message",
+        "GET /products with auth (test@harness.dev) → 6 products, no gate",
+        "Header .header-email shows 'test@harness.dev' after customer login",
+        "POST /api/checkout without auth → { status: 401, error: 'Unauthorized' }",
+        "POST /api/checkout with auth → { status: 201, orderStatus: 'pending', total: 99900 }",
+        "GET /orders with auth → shows order list with correct total and status 'В обработке'"
+      ],
+      "notes": null
+    }
+  ]
+}

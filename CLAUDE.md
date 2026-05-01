@@ -94,3 +94,10 @@ Two separate auth systems run in parallel:
 - Integration tests use Vitest + jsdom and call Payload Local API directly (no mocking). Test files: `tests/int/**/*.int.spec.ts`.
 - E2E tests use Playwright (`tests/e2e/`). Helpers in `tests/helpers/` for seeding users and login.
 - Test environment config is in `test.env`.
+
+## Harness
+
+- Read `AGENTS.md` at the start of every session
+- Track features in `feature_list.json`
+- Log progress in `claude-progress.md`
+- Run `bash init.sh` to verify clean state
