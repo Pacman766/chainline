@@ -1,6 +1,5 @@
-import { getPayload } from 'payload';
-import config from '@payload-config';
-import { headers as getHeaders, cookies } from 'next/headers';
+import { cookies } from 'next/headers';
+import { getAuthenticatedUser } from '@/lib/auth';
 import Link from 'next/link';
 import LogoutButton from '@/components/LogoutButton';
 import { NavLinks } from '@/components/NavLinks';
@@ -58,23 +57,10 @@ function ChainlinkLogo() {
 }
 
 export async function Header() {
-  const payload = await getPayload({ config });
-  const headers = await getHeaders();
   const cookieStore = await cookies();
-
-  let user: Awaited<ReturnType<typeof payload.auth>>['user'] = null;
-  let logoutUrl: string;
-
   const customerToken = cookieStore.get('customer-token')?.value;
-  if (customerToken) {
-    const authHeaders = new Headers(headers);
-    authHeaders.set('Authorization', `JWT ${customerToken}`);
-    ({ user } = await payload.auth({ headers: authHeaders }));
-    logoutUrl = '/api/auth/customer-logout';
-  } else {
-    ({ user } = await payload.auth({ headers }));
-    logoutUrl = '/api/users/logout';
-  }
+  const logoutUrl = customerToken ? '/api/auth/customer-logout' : '/api/users/logout';
+  const user = await getAuthenticatedUser();
 
   return (
     <header className="site-header">

@@ -1,10 +1,10 @@
 import config from '@payload-config';
 import { getPayload } from 'payload';
-import { headers as getHeaders, cookies } from 'next/headers';
 import Link from 'next/link';
 import Image from 'next/image';
 import { AddToCartButton } from './AddToCartButton';
 import { shimmerDataURL } from '@/lib/shimmer';
+import { getAuthenticatedUser } from '@/lib/auth';
 
 export const revalidate = 0;
 
@@ -14,19 +14,8 @@ export default async function ProductPage({
   searchParams: Promise<{ category?: string }>;
 }) {
   const { category: categorySlug } = await searchParams;
-  const headers = await getHeaders();
-  const cookieStore = await cookies();
   const payload = await getPayload({ config });
-
-  const customerToken = cookieStore.get('customer-token')?.value;
-  let user: Awaited<ReturnType<typeof payload.auth>>['user'] = null;
-  if (customerToken) {
-    const authHeaders = new Headers(headers);
-    authHeaders.set('Authorization', `JWT ${customerToken}`);
-    ({ user } = await payload.auth({ headers: authHeaders }));
-  } else {
-    ({ user } = await payload.auth({ headers }));
-  }
+  const user = await getAuthenticatedUser();
 
   let categoryId: number | string | undefined;
   if (categorySlug) {
