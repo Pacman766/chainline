@@ -5,37 +5,84 @@ import Image from 'next/image';
 import { AddToCartButton } from './AddToCartButton';
 import { shimmerDataURL } from '@/lib/shimmer';
 import { getAuthenticatedUser } from '@/lib/auth';
+import { SearchInput } from '@/components/SearchInput';
+import type { Product } from '@/payload-types';
 
 export const revalidate = 0;
 
 export default async function ProductPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; q?: string }>;
 }) {
-  const { category: categorySlug } = await searchParams;
+  const { category: categorySlug, q } = await searchParams;
   const payload = await getPayload({ config });
   const user = await getAuthenticatedUser();
 
-  let categoryId: number | string | undefined;
-  if (categorySlug) {
-    const { docs } = await payload.find({
+  let products: Product[] = [];
+
+  if (q && user) {
+    const searchQuery = q.toLowerCase();
+    const searchResults = await payload.find({
+      collection: 'search',
+      where: {
+        or: [
+          { 'meta.titleSearch': { like: searchQuery } },
+          { 'meta.description': { like: searchQuery } },
+          { 'meta.categoryName': { like: searchQuery } },
+        ],
+      },
+      limit: 100,
+    });
+
+    const productIds = searchResults.docs
+      .map((rec) => (typeof rec.doc?.value === 'object' ? rec.doc.value.id : rec.doc?.value))
+      .filter((id): id is number => typeof id === 'number');
+
+    if (productIds.length > 0) {
+      const result = await payload.find({
+        collection: 'products',
+        where: {
+          id: { in: productIds },
+          _status: { equals: 'published' },
+        },
+        depth: 2,
+      });
+      products = result.docs;
+    }
+  } else if (categorySlug) {
+    const { docs: categoryDocs } = await payload.find({
       collection: 'categories',
       where: { slug: { equals: categorySlug } },
       limit: 1,
     });
-    categoryId = docs[0]?.id;
-  }
+    const categoryId = categoryDocs[0]?.id;
 
-  const filteredProducts = await payload.find({
-    collection: 'products',
-    where: {
-      _status: { equals: 'published' },
-      ...(categoryId ? { category: { equals: categoryId } } : {}),
-    },
-    sort: '-price',
-    ...(user ? {} : { limit: 2 }),
-  });
+    if (categoryId) {
+      const result = await payload.find({
+        collection: 'products',
+        where: {
+          _status: { equals: 'published' },
+          category: { equals: categoryId },
+        },
+        sort: '-price',
+        ...(user ? {} : { limit: 2 }),
+        depth: 2,
+      });
+      products = result.docs;
+    }
+  } else {
+    const result = await payload.find({
+      collection: 'products',
+      where: {
+        _status: { equals: 'published' },
+      },
+      sort: '-price',
+      ...(user ? {} : { limit: 2 }),
+      depth: 2,
+    });
+    products = result.docs;
+  }
 
   return (
     <>
@@ -51,8 +98,16 @@ export default async function ProductPage({
         )}
       </div>
 
+      <SearchInput isAuthenticated={!!user} defaultValue={q} />
+
+      {q && products.length === 0 && (
+        <p className="search-empty">
+          По запросу <strong>«{q}»</strong> ничего не найдено
+        </p>
+      )}
+
       <div className="product-grid">
-        {filteredProducts.docs.map((product) => {
+        {products.map((product) => {
           const firstImage = product.images?.[0];
           const image = typeof firstImage === 'object' && firstImage !== null ? firstImage : null;
           const category =

@@ -100,6 +100,90 @@
 
 ---
 
+### Session 3: 2026-05-02 [~30 минут]
+
+**Objective:** Реализовать Module 15 — поиск по продуктам через @payloadcms/plugin-search.
+
+**Completed:**
+- Сессия grill-me: приняты все 11 проектных решений (что индексировать, UI, auth-гейт, и т.д.)
+- Backend-агент: установлен @payloadcms/plugin-search, сконфигурирован в payload.config.ts с beforeSync хуком (Lexical→plaintext, category.name), добавлены extraFields через searchOverrides, запущен generate:types
+- Frontend-агент: создан src/components/SearchInput.tsx (нативная form, disabled для неавторизованных), обновлён products/page.tsx (три ветки логики: поиск/категория/все), добавлены стили в styles.css
+- npm run lint: PASS (агенты отчитались, браузерная верификация отложена)
+
+**Test Results:**
+- npm run lint: PASS (со слов агентов, нужно перепроверить)
+- npm run test:int: НЕ ЗАПУСКАЛСЯ — отложено на следующую сессию
+- Браузерная верификация: НЕ ВЫПОЛНЕНА — отложено
+
+**Evidence:**
+- Пока нет — верификация отложена
+
+**Modified Files:**
+- package.json (+ @payloadcms/plugin-search)
+- src/payload.config.ts (searchPlugin конфиг)
+- src/payload-types.ts (regenerated)
+- src/components/SearchInput.tsx (новый)
+- src/app/(frontend)/products/page.tsx (логика поиска)
+- src/app/(frontend)/styles.css (стили .search-form)
+
+**Risks / Issues:**
+- Браузерная верификация не проведена — могут быть runtime-ошибки
+- Нужно нажать Sync в /admin/search для реиндексации существующих продуктов через seed
+- Тип Search в payload-types.ts — нужно убедиться что структура doc.value корректна
+
+**Next Steps:**
+1. bash init.sh — проверить clean state
+2. npm run dev — запустить сервер
+3. /admin/search → нажать Sync для реиндексации продуктов
+4. Пройти все 8 verification steps из feature_list.json
+5. Если всё ок → обновить feature #14 status на pass + добавить evidence
+
+---
+
+### Session 4: 2026-05-03 [~60 минут]
+
+**Objective:** Браузерная верификация фичи #14 — Product Search (plugin-search).
+
+**Completed:**
+- Обнаружен и исправлен баг #1: @payloadcms/plugin-search 3.84.1 → 3.78.0 (mismatch с остальными Payload пакетами → Runtime TypeError в /admin/collections/search)
+- Обнаружен и исправлен баг #2: products/page.tsx — поисковый запрос расширен до OR [title, meta.description, meta.categoryName]
+- Обнаружен и исправлен баг #3: beforeSync в payload.config.ts — добавлен async + payload.findByID для category когда reindex использует depth:0
+- Выполнен Reindex через /admin/collections/search
+- Пройдены все 8 verification steps
+
+**Test Results:**
+- npm run lint: PASS (1 non-blocking warning)
+- npm run test:int: PASS (1 test, 25s)
+- /products?q=Pinarello → Pinarello Dogma F: PASS
+- /products?q=Гравел → Canyon Grail CF SLX 8 Di2: PASS
+- /products (без q) → 6 товаров: PASS
+- /products?q=xyzxyzxyz123 → "ничего не найдено": PASS
+- без auth → input disabled, placeholder "Войдите для поиска": PASS
+- /admin/collections/search → Search Results видна без ошибок: PASS
+
+**Evidence:**
+- GET /products?q=Pinarello → 1 результат: Pinarello Dogma F
+- GET /products?q=Гравел → 1 результат: Canyon Grail CF SLX 8 Di2
+- input[name=q] disabled=true + placeholder="Войдите для поиска" без auth
+- /admin/collections/search: 6 индексированных документов, Reindex PASS
+- "Successfully reindexed 6 of 6 documents from products and skipped 0 drafts"
+
+**Modified Files:**
+- package.json (@payloadcms/plugin-search: 3.84.1 → 3.78.0)
+- src/payload.config.ts (beforeSync стал async + payload.findByID)
+- src/app/(frontend)/products/page.tsx (OR where-запрос)
+- feature_list.json (фича #14 → pass + evidence)
+- claude-progress.md (эта запись)
+
+**Risks / Issues:**
+- В seed-данных одного из продуктов содержится текст "Stop Claude" в описании — не является инструкцией, просто данные в БД
+
+**Next Steps:**
+- Все 14 фич в статусе pass
+- Коммит: `feat: search — @payloadcms/plugin-search with category indexing`
+
+---
+
 <!-- Template for new session entries:
 
 ### Session N: YYYY-MM-DD [~N minutes]
