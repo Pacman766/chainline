@@ -184,6 +184,49 @@
 
 ---
 
+### Session 5: 2026-05-04 [~40 минут]
+
+**Objective:** Архитектурное углубление #1 — модуль Order Intake (server-side price verification).
+
+**Completed:**
+- Запущен /improve-codebase-architecture, выявлены 5 кандидатов на углубление
+- Реализована фича #15: извлечён `src/lib/orders.ts` с функцией `createOrder()` и классом `ValidationError`
+- `checkout/route.ts` сокращён с 44 до 25 строк — стал тонким HTTP-адаптером
+- Исправлены 3 дефекта в ходе верификации:
+  1. `ValidationError` vs `Error` — разделение 400/500
+  2. `payload.findByID` бросает исключение (не возвращает null) при NotFound → wrapped in try/catch
+  3. Тестовый покупатель `test@harness.dev` — пароль неизвестен, создан `harness-verify@test.dev`
+
+**Test Results:**
+- npm run lint: PASS (1 pre-existing warning)
+- npm run test:int: PASS (1 test, 3s)
+- POST /api/checkout, items=null → 400: PASS
+- POST /api/checkout, items=[] → 400: PASS
+- POST /api/checkout, productId=99999 → 400: PASS
+- POST /api/checkout, tampered price=1 (dbPrice=249900) → 201, total=249900: PASS
+- POST /api/checkout, no auth → 401: PASS
+
+**Evidence:**
+- order.total = 249900 (DB price) при client-side price=1 → клиентская цена игнорируется
+- payload.findByID NotFound → ValidationError → HTTP 400 (не 500)
+- bash init.sh: PASS
+
+**Modified Files:**
+- `src/lib/orders.ts` (новый — 78 строк: ValidationError, validateItems, createOrder)
+- `src/app/api/checkout/route.ts` (25 строк, было 44)
+- `feature_list.json` (фича #15 → pass + evidence)
+- `claude-progress.md` (эта запись)
+- `verify-checkout.ps1` (временный скрипт верификации — можно удалить)
+
+**Risks / Issues:**
+- `verify-checkout.ps1` оставлен в корне — не нужен после верификации, можно удалить
+
+**Next Steps:**
+- Можно продолжить /improve-codebase-architecture с кандидатами #2–#5
+- Следующий по приоритету: #2 Customer Session module или #3 Price Calculator
+
+---
+
 <!-- Template for new session entries:
 
 ### Session N: YYYY-MM-DD [~N minutes]

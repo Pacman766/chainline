@@ -284,6 +284,34 @@
         "/admin/collections/search открывается без ошибок, Search Results видна в nav"
       ],
       "notes": "Три бага исправлены в ходе верификации: (1) @payloadcms/plugin-search версия 3.84.1 → 3.78.0 (версионный mismatch); (2) products/page.tsx where-запрос расширен до OR [title, meta.description, meta.categoryName]; (3) beforeSync стал async + использует payload.findByID когда category — ID (depth:0 при reindex)."
+    },
+    {
+      "id": "15",
+      "priority": "high",
+      "area": "architecture",
+      "title": "Order Intake module — server-side price verification",
+      "description": "Extract order creation logic into src/lib/orders.ts. createOrder(items, customerId) fetches product prices from DB (ignores client-provided price), validates items array, calculates total server-side, creates Order via Payload Local API. checkout/route.ts becomes a thin HTTP adapter.",
+      "status": "pass",
+      "verification": [
+        "npm run lint exits 0",
+        "npm run test:int exits 0",
+        "POST /api/checkout with tampered price → order.total uses DB price, not client price",
+        "POST /api/checkout with non-existent productId → 400 error",
+        "POST /api/checkout with items=null or items not array → 400 error",
+        "POST /api/checkout with valid items → order created, total matches DB prices × quantities",
+        "src/lib/orders.ts exports createOrder() directly callable via Payload Local API"
+      ],
+      "evidence": [
+        "npm run lint: PASS (1 pre-existing warning: unused req in afterChange.ts)",
+        "npm run test:int: PASS (1 test, 3s)",
+        "POST /api/checkout with items=null → 400 {error: 'items must be a non-empty array'}",
+        "POST /api/checkout with items=[] → 400 {error: 'items must be a non-empty array'}",
+        "POST /api/checkout with productId=99999 → 400 {error: 'Product not found: 99999'}",
+        "POST /api/checkout with tampered price=1, productId=11 (dbPrice=249900) → 201, order.total=249900 (DB price used, client price ignored)",
+        "POST /api/checkout without auth → 401",
+        "src/lib/orders.ts exports createOrder() and ValidationError"
+      ],
+      "notes": "Deepening opportunity #1 from architecture review. Security fix: client-provided prices replaced with DB prices. Seam: createOrder() is the new interface for order creation business logic. Three-step fix: (1) extract createOrder() to src/lib/orders.ts; (2) add ValidationError class for 400 vs 500 distinction; (3) wrap payload.findByID in try/catch because Payload throws (not returns null) on NotFound."
     }
   ]
 }
