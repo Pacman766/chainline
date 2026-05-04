@@ -10,7 +10,7 @@ export class ValidationError extends Error {
 }
 
 interface OrderItem {
-  productId: number;
+  productId: number | string;
   quantity: number;
 }
 
@@ -23,7 +23,8 @@ function validateItems(items: unknown): asserts items is OrderItem[] {
       throw new ValidationError('Each item must be an object');
     }
     const { productId, quantity } = item as Record<string, unknown>;
-    if (typeof productId !== 'number' || !Number.isInteger(productId) || productId <= 0) {
+    const id = Number(productId);
+    if (!Number.isFinite(id) || !Number.isInteger(id) || id <= 0) {
       throw new ValidationError('Each item must have a valid productId (positive integer)');
     }
     if (typeof quantity !== 'number' || !Number.isInteger(quantity) || quantity <= 0) {
@@ -39,11 +40,12 @@ export async function createOrder(items: OrderItem[], customerId: number): Promi
 
   const resolvedItems = await Promise.all(
     items.map(async (item) => {
+      const numericId = Number(item.productId);
       let product;
       try {
         product = await payload.findByID({
           collection: 'products',
-          id: item.productId,
+          id: numericId,
         });
       } catch {
         throw new ValidationError(`Product not found: ${item.productId}`);
@@ -54,7 +56,7 @@ export async function createOrder(items: OrderItem[], customerId: number): Promi
       }
 
       return {
-        product: item.productId,
+        product: numericId,
         quantity: item.quantity,
         price: product.price,
       };
