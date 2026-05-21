@@ -1,4 +1,4 @@
-import { CollectionBeforeDeleteHook } from 'payload';
+import { APIError, CollectionBeforeDeleteHook } from 'payload';
 
 export const beforeDelete: CollectionBeforeDeleteHook = async ({ id, req: { payload } }) => {
   const orders = await payload.find({
@@ -6,6 +6,11 @@ export const beforeDelete: CollectionBeforeDeleteHook = async ({ id, req: { payl
     where: { 'items.product': { equals: id } },
   });
   if (orders.totalDocs > 0) {
-    throw new Error('Нельзя удалить товар с активными заказами');
+    throw new APIError(
+      'Нельзя удалить товар с активными заказами',
+      400,
+      undefined,
+      true /* isPublic */,
+    );
   }
 };
