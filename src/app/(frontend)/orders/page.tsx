@@ -7,9 +7,8 @@ import { getAuthenticatedUser } from '@/lib/auth';
 
 const statusConfig: Record<string, { label: string; cls: string }> = {
   pending:   { label: 'В обработке', cls: 'order-status--pending'   },
-  confirmed: { label: 'Подтверждён', cls: 'order-status--confirmed' },
+  paid:      { label: 'Оплачен',     cls: 'order-status--confirmed' },
   shipped:   { label: 'В пути',      cls: 'order-status--shipped'   },
-  delivered: { label: 'Доставлен',   cls: 'order-status--delivered' },
   cancelled: { label: 'Отменён',     cls: 'order-status--cancelled' },
 };
 

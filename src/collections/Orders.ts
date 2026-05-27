@@ -16,6 +16,13 @@ export const Orders: CollectionConfig = {
     },
     { name: 'total', type: 'number' },
     { name: 'status', type: 'select', options: ['pending', 'paid', 'shipped', 'cancelled'] },
+    {
+      name: 'stripeSessionId',
+      type: 'text',
+      required: false,
+      index: true,
+      admin: { readOnly: true },
+    },
   ],
   access: {
     read: ({ req }) => {

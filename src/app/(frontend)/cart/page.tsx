@@ -5,11 +5,14 @@ import { CartItem } from '@/types/cart';
 import { Trash2, ShoppingCart, Minus, Plus, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function CartPage() {
   const { totalPrice, items, removeItem, clearCart, updateQuantity } = useCart();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   async function submitOrder(items: CartItem[]) {
+    setIsCheckingOut(true);
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
@@ -18,16 +21,24 @@ export default function CartPage() {
       });
       if (res.status === 401) {
         toast.error('Необходимо войти в аккаунт');
+        setIsCheckingOut(false);
         return;
       }
       if (!res.ok) {
         toast.error('Ошибка при оформлении заказа.');
+        setIsCheckingOut(false);
         return;
       }
-      toast.success('Заказ оформлен!');
-      clearCart();
+      const data = (await res.json()) as { checkoutUrl?: string; orderId?: number };
+      if (!data.checkoutUrl) {
+        toast.error('Не удалось получить ссылку на оплату');
+        setIsCheckingOut(false);
+        return;
+      }
+      window.location.href = data.checkoutUrl;
     } catch {
       toast.error('Ошибка сети');
+      setIsCheckingOut(false);
     }
   }
 
@@ -112,10 +123,18 @@ export default function CartPage() {
         <div className="summary-divider" />
         <p className="summary-total-label">Сумма заказа</p>
         <p className="summary-total-val">{Intl.NumberFormat('ru-RU').format(totalPrice)} ₽</p>
-        <button className="summary-checkout" onClick={() => submitOrder(items)}>
-          Оформить заказ
+        <button
+          className="summary-checkout"
+          onClick={() => submitOrder(items)}
+          disabled={isCheckingOut}
+        >
+          {isCheckingOut ? 'Перенаправляем…' : 'Оформить заказ'}
         </button>
-        <button className="summary-clear" onClick={() => clearCart()}>
+        <button
+          className="summary-clear"
+          onClick={() => clearCart()}
+          disabled={isCheckingOut}
+        >
           Очистить корзину
         </button>
       </div>

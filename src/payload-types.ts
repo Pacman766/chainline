@@ -319,6 +319,7 @@ export interface Order {
     | null;
   total?: number | null;
   status?: ('pending' | 'paid' | 'shipped' | 'cancelled') | null;
+  stripeSessionId?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -594,6 +595,7 @@ export interface OrdersSelect<T extends boolean = true> {
       };
   total?: T;
   status?: T;
+  stripeSessionId?: T;
   updatedAt?: T;
   createdAt?: T;
 }
