@@ -1,6 +1,6 @@
 {
   "projectName": "Payload Start",
-  "lastUpdated": "2026-05-02",
+  "lastUpdated": "2026-05-27",
   "rules": {
     "singleActiveFeature": "Only one feature can be 'in_progress' at a time",
     "evidenceRequired": "Must have verification evidence before marking 'pass'",
@@ -312,6 +312,35 @@
         "src/lib/orders.ts exports createOrder() and ValidationError"
       ],
       "notes": "Deepening opportunity #1 from architecture review. Security fix: client-provided prices replaced with DB prices. Seam: createOrder() is the new interface for order creation business logic. Three-step fix: (1) extract createOrder() to src/lib/orders.ts; (2) add ValidationError class for 400 vs 500 distinction; (3) wrap payload.findByID in try/catch because Payload throws (not returns null) on NotFound."
+    },
+    {
+      "id": "16",
+      "priority": "high",
+      "area": "payments",
+      "title": "Stripe Checkout integration (hosted)",
+      "description": "Replace toast-based checkout with real Stripe Hosted Checkout. Order created BEFORE payment with status=pending, Stripe Session linked via stripeSessionId field, webhook flips status→paid on checkout.session.completed. Frontend cart redirects to session.url; /orders/[id] shows order state.",
+      "status": "pass",
+      "verification": [
+        "npm run lint exits 0",
+        "npm run test:int exits 0 (incl. stripe-checkout.int.spec.ts from Phase 6)",
+        "stripeSessionId field visible on Order docs in /admin and in payload-types.ts",
+        "POST /api/checkout returns { checkoutUrl, orderId } and persists session.id on the order",
+        "POST /api/webhooks/stripe with valid signature flips order pending → paid",
+        "POST /api/webhooks/stripe with invalid signature returns 400",
+        "Webhook is idempotent (replay does not double-process)",
+        "Cart 'Оформить заказ' redirects to Stripe-hosted page; cancel returns to /cart",
+        "/orders/[id] renders items/total/status (pending/paid) and gates unauthenticated access"
+      ],
+      "evidence": [
+        "Phase 1: stripeSessionId text+indexed+readOnly added to Orders collection; payload-types.ts regenerated with stripeSessionId?: string | null on Order interface",
+        "Phase 2: stripe@22.1.1 installed; src/lib/stripe.ts (singleton with STRIPE_SECRET_KEY guard); checkout/route.ts creates Order(pending) → Stripe Session → writes stripeSessionId → returns {checkoutUrl, orderId}; metadata.orderId attached as webhook fallback",
+        "Phase 3: src/app/api/webhooks/stripe/route.ts with runtime=nodejs, raw body via req.text(), constructEvent signature verify, primary lookup by stripeSessionId + fallback by metadata.orderId, idempotent (paid→200 short-circuit), 200 OK on unknown event types",
+        "Phase 4: cart/page.tsx redirects via window.location.href = checkoutUrl, disables both buttons during in-flight, does NOT clearCart on session create (cancel-to-/cart preserves items)",
+        "Phase 5: /orders/[id]/page.tsx — async RSC, params/searchParams as Promise (Next 15), auth-gated via getAuthenticatedUser, findByID with overrideAccess:false (foreign order → 404), green 'Оплата прошла успешно' banner on session_id + status=paid, neutral 'Платёж обрабатывается' banner on session_id + status=pending; ClearCartOnPaid client component mounted inside the paid banner clears cart exactly once",
+        "Phase 5 bonus: /orders list statusConfig synced with current schema (pending/paid/shipped/cancelled — removed stale confirmed/delivered)",
+        "Phase 6: tests/int/stripe-checkout.int.spec.ts — 15 tests across 3 describe blocks (createOrder 8, webhook 6, checkout auth-gate 1). Real Payload + DB, signed webhook requests via stripe.webhooks.generateTestHeaderString, Stripe SDK partially mocked (real webhooks + stubbed sessions.create). All 16 tests in suite pass (15 new + 1 baseline) in ~10s, bash init.sh PASS"
+      ],
+      "notes": "Branch: feat/stripe-checkout (off main). Env vars in .env: STRIPE_SECRET_KEY, NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOKS_SIGNING_SECRET. Local e2e: `stripe listen --forward-to localhost:3000/api/webhooks/stripe`, test card 4242 4242 4242 4242. Bug fixed mid-session: ClearCartOnPaid had [clearCart] in deps → infinite loop (clearCart recreated each CartProvider render); fixed to [] + eslint-disable. Open question: webhook handler swallows DB errors → 200 to avoid Stripe retries — acceptable for portfolio, may want to return 500 in prod for transient DB failures."
     }
   ]
 }

@@ -1666,6 +1666,22 @@ body {
   gap: 12px;
 }
 
+.order-paid-banner {
+  background: #d1fae5;
+  color: #065f46;
+  padding: 14px 20px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.order-pending-banner {
+  background: #fef3c7;
+  color: #78350f;
+  padding: 14px 20px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
 .order-card {
   background: var(--card-bg);
   border: 1px solid var(--border-subtle);
