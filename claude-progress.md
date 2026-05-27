@@ -325,6 +325,52 @@
 
 ---
 
+### Session 8: 2026-05-27 [~30 минут]
+
+**Objective:** Фича #17 — Production Deployment (Vercel + Neon + Vercel Blob + Resend).
+
+**Completed:**
+- bash init.sh: PASS (baseline чистый, 16/16 тестов)
+- Добавлена фича #17 в feature_list.json (status=in_progress)
+- Делегировано backend-агенту: замена адаптеров + конфигурация
+- Удалён @payloadcms/db-sqlite, @payloadcms/email-nodemailer, nodemailer
+- Установлен @payloadcms/db-postgres@3.78.0, @payloadcms/storage-vercel-blob@3.78.0, @payloadcms/email-resend@3.78.0
+- src/payload.config.ts: sqliteAdapter → postgresAdapter, nodemailerAdapter → resendAdapter, добавлен vercelBlobStorage plugin
+- .env.example: обновлён (DATABASE_URL=postgresql://, BLOB_READ_WRITE_TOKEN, RESEND_API_KEY)
+- npm run lint: PASS (1 pre-existing warning)
+
+**Test Results:**
+- npm run lint: PASS (1 pre-existing warning: unused req в afterChange.ts)
+- npm run test:int: НЕ ЗАПУСКАЛСЯ (тесты требуют реальную Neon БД — ожидаемо)
+- npm run build: НЕ ЗАПУСКАЛСЯ (нет Neon БД локально)
+
+**Evidence:**
+- src/payload.config.ts: импорты postgresAdapter, vercelBlobStorage, resendAdapter — все присутствуют
+- package.json: @payloadcms/db-sqlite отсутствует, @payloadcms/db-postgres@^3.78.0 присутствует
+- .env.example: DATABASE_URL с пометкой про pooled/pgbouncer connection string
+
+**Modified Files:**
+- src/payload.config.ts (adapter swap + plugins)
+- package.json / package-lock.json (deps)
+- .env.example (новые env vars, убраны ETHEREAL_*)
+- feature_list.json (фича #17 добавлена, in_progress)
+- claude-progress.md (эта запись)
+
+**Risks / Issues:**
+- npm run test:int сломан локально (SQLite тесты, нет Postgres) — нужно обновить тесты под Postgres или настроить локальный Postgres для CI
+- npm run build не верифицирован локально — верификация произойдёт при деплое на Vercel
+- Нужно настроить Vercel: подключить Neon БД, создать Blob store, получить Resend API key
+
+**Next Steps:**
+1. Создать проект на Neon (neon.tech) → скопировать pooled connection string
+2. Создать Vercel проект → Storage → Blob → получить BLOB_READ_WRITE_TOKEN
+3. Создать Resend аккаунт → получить RESEND_API_KEY
+4. Прописать все env vars в Vercel Dashboard
+5. Деплой → `npx tsx src/seed.ts` против Neon БД
+6. Пройти все 8 verification steps фичи #17
+
+---
+
 <!-- Template for new session entries:
 
 ### Session N: YYYY-MM-DD [~N minutes]

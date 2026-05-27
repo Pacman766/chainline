@@ -1,4 +1,4 @@
-import { sqliteAdapter } from '@payloadcms/db-sqlite';
+import { postgresAdapter } from '@payloadcms/db-postgres';
 import {
   BoldFeature,
   ItalicFeature,
@@ -11,6 +11,8 @@ import { buildConfig } from 'payload';
 import { fileURLToPath } from 'url';
 import sharp from 'sharp';
 import { searchPlugin } from '@payloadcms/plugin-search';
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob';
+import { resendAdapter } from '@payloadcms/email-resend';
 
 import { Users } from './collections/Users';
 import { Media } from './collections/Media';
@@ -19,25 +21,15 @@ import { Categories } from './collections/Categories';
 import { Customers } from './collections/Customers';
 import { Orders } from './collections/Orders';
 import { SiteSettings } from './globals/SiteSettings';
-import { nodemailerAdapter } from '@payloadcms/email-nodemailer';
-import nodemailer from 'nodemailer';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
 export default buildConfig({
-  email: nodemailerAdapter({
-    defaultFromAddress: 'noreply@myshop.com',
-    defaultFromName: 'My Shop',
-    skipVerify: true,
-    transport: nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      auth: {
-        user: process.env.ETHEREAL_USER,
-        pass: process.env.ETHEREAL_PASS,
-      },
-    }),
+  email: resendAdapter({
+    defaultFromAddress: 'onboarding@resend.dev',
+    defaultFromName: 'Payload Store',
+    apiKey: process.env.RESEND_API_KEY ?? '',
   }),
   admin: {
     user: Users.slug,
@@ -58,13 +50,20 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  db: sqliteAdapter({
-    client: {
-      url: process.env.DATABASE_URL || '',
+  db: postgresAdapter({
+    pool: {
+      connectionString: process.env.DATABASE_URL,
     },
   }),
   sharp,
   plugins: [
+    vercelBlobStorage({
+      enabled: true,
+      token: process.env.BLOB_READ_WRITE_TOKEN ?? '',
+      collections: {
+        media: true,
+      },
+    }),
     searchPlugin({
       collections: ['products'],
       defaultPriorities: {
