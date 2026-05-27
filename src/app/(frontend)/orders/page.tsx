@@ -95,7 +95,7 @@ export default async function OrdersPage() {
                 <div className="order-card__total-row">
                   <span className="order-card__total-label">Итого</span>
                   <span className="order-card__total-val">
-                    {Intl.NumberFormat('ru-RU').format(order.total)} ₽
+                    {Intl.NumberFormat('ru-RU').format(order.total ?? 0)} ₽
                   </span>
                 </div>
               </div>

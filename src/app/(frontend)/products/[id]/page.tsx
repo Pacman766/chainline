@@ -61,7 +61,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         </span>
 
         <div className="pdp-price-row">
-          <span className="pdp-price">{Intl.NumberFormat('ru-RU').format(product.price)} ₽</span>
+          <span className="pdp-price">{Intl.NumberFormat('ru-RU').format(product.price ?? 0)} ₽</span>
           <PdpAddToCart
             product={{
               productId: String(product.id),

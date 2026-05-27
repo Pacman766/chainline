@@ -143,7 +143,7 @@ export default async function ProductPage({
                 <p className="product-card__name">{product.name}</p>
                 <div className="product-card__footer">
                   <span className="product-card__price">
-                    {Intl.NumberFormat('ru-RU').format(product.price)} ₽
+                    {Intl.NumberFormat('ru-RU').format(product.price ?? 0)} ₽
                   </span>
                   <AddToCartButton
                     product={{
