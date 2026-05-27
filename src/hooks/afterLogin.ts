@@ -1,7 +1,6 @@
 import { CollectionAfterLoginHook } from 'payload';
 
-export const afterLogin: CollectionAfterLoginHook = async ({ doc, req: { payload } }) => {
-  // doc — это пользователь который залогинился
-  payload.logger.info(`Customer logged in: ${doc.email}`);
-  return doc;
+export const afterLogin: CollectionAfterLoginHook = async ({ user, req: { payload } }) => {
+  payload.logger.info(`Customer logged in: ${user.email}`);
+  return user;
 };
