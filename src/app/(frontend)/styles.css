@@ -850,6 +850,16 @@ body {
   background: oklch(0.12 0 0);
 }
 
+/* dark mode — primary is near-white, keep hover light so dark foreground text stays readable */
+.dark [data-slot="button"][data-variant="default"]:not(:disabled):hover {
+  background: oklch(0.85 0 0);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+.dark [data-slot="button"][data-variant="default"]:not(:disabled):active {
+  background: oklch(0.78 0 0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
 /* outline */
 [data-slot="button"][data-variant="outline"]:not(:disabled):hover {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
