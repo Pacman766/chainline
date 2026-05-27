@@ -5,20 +5,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-pnpm dev                    # Start dev server (http://localhost:3000)
-pnpm devsafe                # Clean .next cache and start dev server
-pnpm build                  # Production build
-pnpm lint                   # ESLint
+npm run dev                 # Start dev server (http://localhost:3000)
+npm run devsafe             # Clean .next cache and start dev server
+npm run build               # Production build
+npm run lint                # ESLint
 
-pnpm test:int               # Vitest integration tests (tests/int/**/*.int.spec.ts)
-pnpm test:e2e               # Playwright E2E tests (tests/e2e/)
-pnpm test                   # Both test suites
+npm run test:int            # Vitest integration tests (tests/int/**/*.int.spec.ts)
+npm run test:e2e            # Playwright E2E tests (tests/e2e/)
+npm test                    # Both test suites
 
 # Run a single vitest test file:
-pnpm vitest run --config ./vitest.config.mts tests/int/api.int.spec.ts
+npx vitest run --config ./vitest.config.mts tests/int/api.int.spec.ts
 
-pnpm payload generate:types # Regenerate payload-types.ts after schema changes
-pnpm payload generate:importmap
+npm run generate:types      # Regenerate payload-types.ts after schema changes
+npm run generate:importmap
 
 # Seed the database with sample bike products:
 npx tsx src/seed.ts
@@ -87,7 +87,7 @@ Two separate auth systems run in parallel:
 
 ## Type Generation
 
-`src/payload-types.ts` is auto-generated — never edit manually. Run `pnpm payload generate:types` after any schema change.
+`src/payload-types.ts` is auto-generated — never edit manually. Run `npm run generate:types` after any schema change.
 
 ## Testing
 
