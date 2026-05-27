@@ -28,7 +28,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const galleryImages = (product.images ?? [])
     .filter((img): img is Exclude<typeof img, string | number> => typeof img === 'object' && img !== null)
     .map((img) => {
-      const anyImg = img as Record<string, unknown> & { url?: string | null; alt?: string | null };
+      const anyImg = img as unknown as Record<string, unknown> & { url?: string | null; alt?: string | null };
       const sizes = anyImg.sizes as Record<string, { url?: string | null }> | undefined;
       return {
         url: sizes?.hero?.url ?? sizes?.card?.url ?? anyImg.url ?? '',
