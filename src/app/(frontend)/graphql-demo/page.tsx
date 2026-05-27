@@ -1,44 +1,36 @@
+import { getPayload } from 'payload';
+import config from '@payload-config';
+
 export default async function graphqlDemoPage() {
-  let data;
+  let products: { id: string | number; name: string; price: number; inStock: boolean; category?: { name?: string } | null }[] = [];
+  let totalDocs = 0;
+
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/graphql`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query: `query { Products(limit: 10) { docs { id name price inStock category {name} } totalDocs } }`,
-      }),
+    const payload = await getPayload({ config });
+    const result = await payload.find({
+      collection: 'products',
+      limit: 10,
+      depth: 1,
     });
-    if (res.ok) {
-      ({ data } = await res.json());
-    } else {
-      console.error(await res.text());
-    }
+    products = result.docs as typeof products;
+    totalDocs = result.totalDocs;
   } catch (error) {
     console.error(error);
   }
-  if (!data) return <div>Ошибка загрузки</div>;
+
+  if (!products.length) return <div>Ошибка загрузки</div>;
 
   return (
     <div>
       <h1>GraphQL Demo</h1>
       <ul>
-        {data.Products.docs.map(
-          (product: {
-            id: string;
-            name: string;
-            price: number;
-            inStock: boolean;
-            category: { name: string };
-          }) => (
-            <li key={product.id}>
-              {product.name} - ${product.price} - {product.inStock ? 'In Stock' : 'Out of Stock'} -{' '}
-              {product?.category?.name}
-            </li>
-          ),
-        )}
-        {'Всего документов:'} {data.Products.totalDocs}
+        {products.map((product) => (
+          <li key={product.id}>
+            {product.name} - ${product.price} - {product.inStock ? 'In Stock' : 'Out of Stock'} -{' '}
+            {product?.category?.name}
+          </li>
+        ))}
+        {'Всего документов:'} {totalDocs}
       </ul>
     </div>
   );
