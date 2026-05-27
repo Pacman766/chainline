@@ -325,6 +325,46 @@
 
 ---
 
+### Session 9: 2026-05-27 [продолжение — Vercel деплой]
+
+**Objective:** Устранить TS-ошибки билда и настроить env vars в Vercel.
+
+**Completed:**
+- Исправлены 4 pre-existing TS-ошибки (блокировали продакшн билд):
+  1. `orders/page.tsx:88` — `item.price ?? 0` (nullable NumberFormat)
+  2. `orders/page.tsx:98` — `order.total ?? 0`
+  3. `products/page.tsx:146` — `product.price ?? 0`
+  4. `products/[id]/page.tsx:64` — `product.price ?? 0`
+  5. `products/[id]/page.tsx:31` — `img as unknown as Record<...>` (type overlap)
+  6. `hooks/afterLogin.ts` — `doc` → `user` (CollectionAfterLoginHook API)
+- Все 6 фиксов запушены (коммиты: b540934, 05ab27f, 2592c56, e6bfc0f)
+- Env vars привязаны к Vercel проекту:
+  - Shared: DATABASE_URL, PAYLOAD_SECRET, NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOKS_SIGNING_SECRET, RESEND_API_KEY
+  - Project (auto): BLOB_READ_WRITE_TOKEN (через Vercel Blob Storage integration)
+- Redeploy запущен вручную пользователем
+
+**Test Results:**
+- npm run lint: PASS (pre-existing warning)
+- Vercel build: в процессе верификации
+
+**Modified Files:**
+- `src/app/(frontend)/orders/page.tsx`
+- `src/app/(frontend)/products/page.tsx`
+- `src/app/(frontend)/products/[id]/page.tsx`
+- `src/hooks/afterLogin.ts`
+
+**Risks / Issues:**
+- Билд ещё не прошёл финальную верификацию — ждём redeploy
+- После успешного билда нужно запустить seed на Neon БД
+
+**Next Steps:**
+1. Убедиться что билд прошёл
+2. Открыть `https://*.vercel.app/admin` — создать первого admin-пользователя
+3. `DATABASE_URL=<neon_pooled_url> npx tsx src/seed.ts` — засидировать товары
+4. Пройти все 8 verification steps фичи #17 → отметить `pass`
+
+---
+
 ### Session 8: 2026-05-27 [~30 минут]
 
 **Objective:** Фича #17 — Production Deployment (Vercel + Neon + Vercel Blob + Resend).
