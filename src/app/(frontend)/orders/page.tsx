@@ -85,7 +85,7 @@ export default async function OrdersPage() {
                         <div key={item.id} className="order-item-row">
                           <span className="order-item-row__name">{item.product?.name}</span>
                           <span className="order-item-row__qty-price">
-                            {item.quantity} × {Intl.NumberFormat('ru-RU').format(item.price)} ₽
+                            {item.quantity} × {Intl.NumberFormat('ru-RU').format(item.price ?? 0)} ₽
                           </span>
                         </div>
                       ),
