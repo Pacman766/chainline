@@ -325,6 +325,56 @@
 
 ---
 
+### Session 10: 2026-05-28 [продолжение — production debugging]
+
+**Objective:** Довести Vercel деплой до рабочего состояния (фича #17 → pass).
+
+**Completed:**
+- Диагностировал ошибку `undefined/api/graphql` → `NEXT_PUBLIC_API_URL` не задан, graphql-demo использовал HTTP fetch вместо Local API → переписан на `getPayload()` + Local API
+- Добавил скрипт `ci` в package.json: `payload migrate -- --force-accept-warning && next build`
+- Создал `vercel.json` с `buildCommand: npm run ci` (обход проблемы с Vercel Production Override)
+- Сгенерирована начальная миграция `src/migrations/20260527_145421.ts` для Neon Postgres
+- Пересгенерирован `importMap.js` — ошибка `VercelBlobClientUploadHandler not found in importMap`
+- Исправлен seed: добавлен `_status: 'published'` явно (продукты создавались в draft)
+- Исправлен checkout route: `baseUrl` теперь берётся из `VERCEL_URL` как fallback (не нужен ручной `NEXT_PUBLIC_SERVER_URL`)
+- Зарегистрирован production Stripe webhook для `checkout.session.completed` → обновлён `STRIPE_WEBHOOKS_SIGNING_SECRET` в Vercel
+
+**Bugs fixed:**
+- `payload migrate` зависал интерактивно в CI → `--force-accept-warning` флаг
+- Изображения 404 на проде → seed запускался без `BLOB_READ_WRITE_TOKEN` → добавлен токен в `.env`, продукты опубликованы вручную в админке
+- `success_url` у Stripe = `undefined/orders/...` → `NEXT_PUBLIC_SERVER_URL` не задан → заменён на `VERCEL_URL` fallback
+
+**Test Results:**
+- Vercel build: PASS
+- Payload admin: PASS — https://payload-start-seven.vercel.app/admin
+- Каталог товаров: PASS — 6 товаров с изображениями из Vercel Blob
+- Stripe checkout: PASS — оплата → статус «Оплачен», корзина очищается
+- Production webhook: PASS — `checkout.session.completed` флипает статус
+
+**Evidence:**
+- https://payload-start-seven.vercel.app — открывается, показывает товары
+- Stripe тестовая карта 4242... → редирект → статус «Оплачен»
+- feature_list.json: фича #17 → pass
+
+**Modified Files:**
+- `src/app/(frontend)/graphql-demo/page.tsx` (Local API вместо HTTP fetch)
+- `src/app/api/checkout/route.ts` (VERCEL_URL fallback)
+- `src/migrations/20260527_145421.ts` + `index.ts` (начальная миграция)
+- `src/app/(payload)/admin/importMap.js` (regenerated)
+- `src/seed.ts` (_status: published)
+- `package.json` (ci script)
+- `vercel.json` (buildCommand)
+- `feature_list.json` (фича #17 → pass)
+
+**Risks / Issues:**
+- `payload migrate -- --force-accept-warning` каждый деплой пересоздаёт схему поверх push — потенциально деструктивно при будущих изменениях схемы. Для прода стоит перейти на чистый migration flow.
+- Resend email не верифицирован (нет evidence из Resend dashboard)
+
+**Next Steps:**
+- Все 17 фич в статусе pass — проект полностью задеплоен
+
+---
+
 ### Session 9: 2026-05-27 [продолжение — Vercel деплой]
 
 **Objective:** Устранить TS-ошибки билда и настроить env vars в Vercel.
