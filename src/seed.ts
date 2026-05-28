@@ -153,6 +153,7 @@ async function seed() {
         inStock: product.inStock,
         category: categoryMap[product.category],
         images: imageIds,
+        _status: 'published',
       },
       draft: false,
       overrideAccess: true,
