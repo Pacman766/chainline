@@ -59,7 +59,9 @@ export async function POST(req: Request) {
       };
     });
 
-    const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+    const baseUrl =
+      process.env.NEXT_PUBLIC_SERVER_URL ??
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
