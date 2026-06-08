@@ -6,7 +6,7 @@ import { Toaster } from 'sonner';
 
 export const metadata = {
   description: 'Premium cycling components and bikes.',
-  title: 'Cadence — Bike Shop',
+  title: 'CHAINLINE — Bike Shop',
 };
 
 export default async function RootLayout(props: { children: React.ReactNode }) {

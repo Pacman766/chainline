@@ -49,7 +49,7 @@ export default async function HomePage() {
           </div>
 
           <div className="hero-deco" aria-hidden="true">
-            <span className="deco-word">CADENCE</span>
+            <span className="deco-word">CHAINLINE</span>
             <span className="deco-ring" />
           </div>
         </div>
