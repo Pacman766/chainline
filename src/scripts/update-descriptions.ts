@@ -33,6 +33,7 @@ async function run() {
       },
       draft: false,
       overrideAccess: true,
+      context: { isSeeding: true },
     });
     console.log(`Updated: ${product.name}`);
     updated++;
