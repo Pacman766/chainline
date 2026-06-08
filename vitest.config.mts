@@ -8,5 +8,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     include: ['tests/int/**/*.int.spec.ts'],
+    // Integration tests share one Postgres DB; running files in parallel races
+    // on schema push (CREATE TYPE/TABLE → duplicate pg_type). Run them serially.
+    fileParallelism: false,
   },
 })
