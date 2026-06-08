@@ -28,7 +28,7 @@ npx tsx src/seed.ts
 
 Required in `.env`:
 - `PAYLOAD_SECRET` — JWT secret for Payload CMS
-- `DATABASE_URL` — SQLite file path (e.g. `file:./payload.db`)
+- `DATABASE_URL` — PostgreSQL connection string (e.g. Neon pooled URL `postgresql://...`)
 - `ETHEREAL_USER` / `ETHEREAL_PASS` — Nodemailer test credentials (optional)
 
 ## Architecture
