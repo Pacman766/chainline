@@ -43,5 +43,5 @@ jobs:
       - run: npm ci
       - run: npm run test:int
         env:
-          DATABASE_URI: postgresql://postgres:postgres@localhost:5432/payload_test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/payload_test
           PAYLOAD_SECRET: ci-test-secret-minimum-32-chars-xx
