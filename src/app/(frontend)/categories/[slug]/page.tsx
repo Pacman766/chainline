@@ -1,9 +1,16 @@
 import config from '@payload-config';
+import Image from 'next/image';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { getPayload } from 'payload';
+import { AddToCartButton } from '../../products/AddToCartButton';
+import { shimmerDataURL } from '@/lib/shimmer';
 
-export default async function CategoryPage({ params }: { params: { slug: string } }) {
-  const payload = await getPayload({ config });
+export const revalidate = 0;
+
+export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const payload = await getPayload({ config });
 
   const { docs: categories } = await payload.find({
     collection: 'categories',
@@ -11,19 +18,79 @@ export default async function CategoryPage({ params }: { params: { slug: string 
     limit: 1,
   });
 
-  const withCounts = await Promise.all(
-    categories.map(async (cat) => {
-      const { totalDocs } = await payload.find({
-        collection: 'products',
-        where: {
-          category: { equals: cat.id },
-          _status: { equals: 'published' },
-        },
-        limit: 0,
-      });
-      return { ...cat, productCount: totalDocs };
-    }),
-  );
+  const category = categories[0];
+  if (!category) notFound();
 
-  return <div></div>;
+  const { docs: products } = await payload.find({
+    collection: 'products',
+    where: {
+      category: { equals: category.id },
+      _status: { equals: 'published' },
+    },
+    sort: '-price',
+    depth: 2,
+  });
+
+  return (
+    <>
+      <div className="catalog-header">
+        <div>
+          <p className="catalog-eyebrow">Категория</p>
+          <h1 className="catalog-title">{category.name}</h1>
+        </div>
+        <p className="catalog-gate">
+          {products.length} {products.length === 1 ? 'товар' : 'товаров'}
+        </p>
+      </div>
+
+      <div className="product-grid">
+        {products.map((product) => {
+          const firstImage = product.images?.[0];
+          const image = typeof firstImage === 'object' && firstImage !== null ? firstImage : null;
+
+          return (
+            <Link href={`/products/${product.id}`} key={product.id} className="product-card">
+              <div className="product-card__img-wrap">
+                {image ? (
+                  <Image
+                    src={image.sizes?.card?.url ?? image.url ?? ''}
+                    alt={image.alt ?? product.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                    className="object-contain"
+                    placeholder="blur"
+                    blurDataURL={shimmerDataURL}
+                  />
+                ) : (
+                  <span className="product-card__no-img">Нет фото</span>
+                )}
+                <span
+                  className={`product-card__stock${product.inStock ? '' : ' product-card__stock--out'}`}
+                >
+                  {product.inStock ? 'В наличии' : 'Нет'}
+                </span>
+              </div>
+
+              <div className="product-card__body">
+                <p className="product-card__name">{product.name}</p>
+                <div className="product-card__footer">
+                  <span className="product-card__price">
+                    {Intl.NumberFormat('ru-RU').format(product.price ?? 0)} ₽
+                  </span>
+                  <AddToCartButton
+                    product={{
+                      productId: String(product.id),
+                      name: product.name,
+                      price: product.price,
+                      quantity: 1,
+                    }}
+                  />
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </>
+  );
 }
