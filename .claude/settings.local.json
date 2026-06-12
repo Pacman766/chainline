@@ -9,7 +9,14 @@
       "mcp__playwright__browser_take_screenshot",
       "mcp__codebase-memory-mcp__get_code_snippet",
       "mcp__codebase-memory-mcp__search_graph",
-      "Bash(pnpm payload *)"
+      "Bash(pnpm payload *)",
+      "PowerShell(npx tsc --noEmit 2>&1 | Select-Object -Last 40)",
+      "PowerShell(npx tsc --noEmit 2>&1)",
+      "PowerShell(npm run *)",
+      "Bash(npx tsc *)",
+      "Bash(npx eslint *)",
+      "Bash(git add *)",
+      "mcp__context7__query-docs"
     ]
   }
 }
