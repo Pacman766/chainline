@@ -81,6 +81,27 @@ async function seed() {
     console.log(`Created: ${product.name}`);
   }
 
+  const current = await payload.findGlobal({ slug: 'site-settings', overrideAccess: true });
+  await payload.updateGlobal({
+    slug: 'site-settings',
+    data: {
+      storeName: current.storeName ?? 'CHAINLINE',
+      contact: {
+        email: 'hello@chainline.cc',
+        phone: '+375 29 123-45-67',
+        address: 'Минск, ул. Велосипедная, 7\nБЦ «Пелотон», 2 этаж',
+        workingHours: 'Пн–Пт: 10:00–20:00\nСб–Вс: 11:00–18:00',
+      },
+      socials: [
+        { platform: 'telegram', url: 'https://t.me/chainline' },
+        { platform: 'instagram', url: 'https://instagram.com/chainline' },
+        { platform: 'youtube', url: 'https://youtube.com/@chainline' },
+      ],
+    },
+    overrideAccess: true,
+  });
+  console.log('Seeded: site-settings contacts');
+
   console.log('Seed complete');
   process.exit(0);
 }

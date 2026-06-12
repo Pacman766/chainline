@@ -3,8 +3,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const links = [
+  { href: '/', label: 'Главная' },
   { href: '/products', label: 'Товары' },
+  { href: '/categories', label: 'Категории' },
   { href: '/orders', label: 'Мои заказы' },
+  { href: '/contacts', label: 'Контакты' },
 ];
 
 export function NavLinks() {

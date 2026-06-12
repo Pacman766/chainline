@@ -664,9 +664,21 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 export interface SiteSetting {
   id: number;
   storeName: string;
-  contactEmail?: string | null;
   bannerText?: string | null;
   showBanner?: boolean | null;
+  contact?: {
+    email?: string | null;
+    phone?: string | null;
+    address?: string | null;
+    workingHours?: string | null;
+  };
+  socials?:
+    | {
+        platform: 'telegram' | 'instagram' | 'youtube' | 'vk' | 'x' | 'facebook';
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -676,9 +688,23 @@ export interface SiteSetting {
  */
 export interface SiteSettingsSelect<T extends boolean = true> {
   storeName?: T;
-  contactEmail?: T;
   bannerText?: T;
   showBanner?: T;
+  contact?:
+    | T
+    | {
+        email?: T;
+        phone?: T;
+        address?: T;
+        workingHours?: T;
+      };
+  socials?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

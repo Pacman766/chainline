@@ -2014,6 +2014,151 @@ body {
   .sk-searchbar { padding: 16px 20px; }
 }
 
+/* ─── Contacts Page ──────────────────────────────────────── */
+.contacts-body {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 36px 44px 60px;
+}
+
+.contacts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--gap-color);
+  padding: 1px;
+}
+
+.contact-card {
+  position: relative;
+  background: var(--card-bg);
+  padding: 24px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+  transition: background 0.2s;
+}
+.contact-card:hover { background: var(--card-hover); }
+.contact-card::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2px;
+  height: 0;
+  background: #e85d04;
+  transition: height 0.35s ease;
+}
+.contact-card:hover::after { height: 100%; }
+
+.contact-card__label {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #e85d04;
+}
+
+.contact-card__value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--tx-primary);
+  line-height: 1.4;
+  white-space: pre-line;
+}
+.contact-card__value--mono {
+  font-family: ui-monospace, 'Roboto Mono', monospace;
+  letter-spacing: -0.02em;
+}
+.contact-card__value a {
+  color: var(--tx-primary);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(232, 93, 4, 0.35);
+  transition: border-color 0.18s;
+}
+.contact-card__value a:hover { border-color: #e85d04; }
+
+.contact-card__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tx-muted);
+  text-decoration: none;
+  transition: color 0.18s;
+  align-self: flex-start;
+}
+.contact-card__action:hover { color: #e85d04; }
+.contact-card__action svg { transition: transform 0.25s cubic-bezier(0.33,1,0.68,1); }
+.contact-card__action:hover svg { transform: translateX(3px); }
+
+.contacts-socials {
+  margin-top: 1px;
+  background: var(--card-bg);
+  padding: 26px;
+}
+
+.contacts-socials__label {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--tx-muted2);
+  margin-bottom: 16px;
+}
+
+.contacts-socials__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.social-pill {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tx-secondary);
+  text-decoration: none;
+  padding: 9px 16px;
+  border: 1px solid var(--border-subtle);
+  transition: color 0.18s, border-color 0.18s, transform 0.12s;
+}
+.social-pill:hover {
+  color: #e85d04;
+  border-color: #e85d04;
+  transform: translateY(-2px);
+}
+.social-pill:active {
+  transform: translateY(0);
+  transition-duration: 0.06s;
+}
+
+.contacts-empty {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 44px;
+  font-size: 0.9rem;
+  color: var(--tx-secondary);
+}
+.contacts-empty a {
+  color: #e85d04;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(232, 93, 4, 0.35);
+}
+.contacts-empty a:hover { border-color: #e85d04; }
+
+@media (max-width: 768px) {
+  .contacts-body { padding: 24px 16px 40px; }
+  .contacts-grid { grid-template-columns: 1fr; }
+}
+
 /* ─── Product Detail Page (PDP) ──────────────────────────── */
 .pdp-shell {
   display: flex;
