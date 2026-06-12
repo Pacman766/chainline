@@ -1838,6 +1838,182 @@ body {
   .order-card__body { padding: 16px 20px; }
 }
 
+/* ─── Categories Index Page ──────────────────────────────── */
+.cat-page {
+  min-height: calc(100vh - 60px);
+  background: var(--page-bg);
+}
+
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--gap-color);
+  padding: 1px;
+}
+@media (min-width: 1280px) {
+  .cat-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.cat-card {
+  position: relative;
+  background: var(--card-bg);
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+  padding: 26px 26px 22px;
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+  transition: background 0.2s;
+}
+.cat-card:hover { background: var(--card-hover); }
+
+/* left accent line grows on hover — same motif as product cards */
+.cat-card::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2px;
+  height: 0;
+  background: #e85d04;
+  transition: height 0.35s ease;
+}
+.cat-card:hover::after { height: 100%; }
+
+.cat-card__index {
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-family: ui-monospace, 'Roboto Mono', monospace;
+  letter-spacing: 0.12em;
+  color: #e85d04;
+  margin-bottom: 18px;
+}
+
+.cat-card__name {
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--tx-primary);
+}
+
+.cat-card__footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 20px;
+}
+
+.cat-card__count {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.cat-card__count-num {
+  font-size: 1.6rem;
+  font-weight: 900;
+  font-family: ui-monospace, 'Roboto Mono', monospace;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--tx-primary);
+}
+.cat-card__count-lbl {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tx-muted);
+}
+.cat-card__count--empty .cat-card__count-num { color: var(--tx-faintest); }
+
+.cat-card__arrow {
+  color: var(--tx-faintest);
+  flex-shrink: 0;
+  transition: color 0.2s, transform 0.25s cubic-bezier(0.33,1,0.68,1);
+}
+.cat-card:hover .cat-card__arrow {
+  color: #e85d04;
+  transform: translateX(4px);
+}
+
+@media (max-width: 768px) {
+  .cat-grid { grid-template-columns: 1fr; }
+  .cat-card { min-height: 160px; padding: 22px 20px 20px; }
+}
+
+/* ─── Loading Skeletons ──────────────────────────────────── */
+@keyframes skeleton-shimmer {
+  from { background-position: 100% 0; }
+  to   { background-position: -100% 0; }
+}
+.sk {
+  background: linear-gradient(
+    90deg,
+    var(--img-placeholder) 25%,
+    var(--card-hover) 37%,
+    var(--img-placeholder) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+  border-radius: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sk { animation: none; }
+}
+
+.sk-card {
+  background: var(--card-bg);
+  display: flex;
+  flex-direction: column;
+}
+.sk-card__img { aspect-ratio: 4/3; border-radius: 0; }
+.sk-card__body {
+  padding: 18px 22px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+.sk-line { height: 12px; }
+.sk-line--sm { height: 10px; width: 40%; }
+.sk-line--lg { height: 18px; width: 75%; }
+.sk-line--price { height: 24px; width: 35%; margin-top: 8px; }
+
+.sk-header {
+  padding: 44px 44px 28px;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.sk-header__eyebrow { height: 10px; width: 90px; margin-bottom: 12px; }
+.sk-header__title { height: 30px; width: 220px; }
+
+.sk-searchbar {
+  padding: 20px 44px;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.sk-searchbar__input { height: 40px; width: 100%; border-radius: 0; }
+
+.sk-cat-card {
+  background: var(--card-bg);
+  min-height: 200px;
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+}
+.sk-cat-card__index { height: 10px; width: 28px; margin-bottom: 18px; }
+.sk-cat-card__name { height: 26px; width: 70%; }
+.sk-cat-card__count { height: 22px; width: 45%; margin-top: auto; }
+
+@media (max-width: 768px) {
+  .sk-header { padding: 28px 20px 20px; }
+  .sk-searchbar { padding: 16px 20px; }
+}
+
 /* ─── Product Detail Page (PDP) ──────────────────────────── */
 .pdp-shell {
   display: flex;
