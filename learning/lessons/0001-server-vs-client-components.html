@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Урок 1 — Server vs Client Components</title>
+<style>
+  :root{--bg:#0f1115;--card:#171a21;--ink:#e7e9ee;--muted:#9aa3b2;--accent:#7aa2ff;--green:#6ee7a8;--red:#ff8b8b;--amber:#ffd27a;--line:#272c36;--code:#1d2230;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;padding:48px 20px}
+  .wrap{max-width:860px;margin:0 auto}
+  .eyebrow{color:var(--accent);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px;margin:0}
+  h1{font-size:32px;line-height:1.2;margin:6px 0 10px}
+  .lede{color:var(--muted);font-size:18px;margin:0 0 32px}
+  h2{font-size:22px;margin:38px 0 12px;padding-top:10px;border-top:1px solid var(--line)}
+  h3{font-size:17px;margin:24px 0 8px;color:var(--amber)}
+  p{margin:12px 0}
+  code{background:var(--code);padding:1px 6px;border-radius:5px;font:13.5px/1.5 ui-monospace,Menlo,Consolas,monospace;color:#cbd5ff}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;color:#d6deff}
+  pre .c{color:#6b7689}
+  pre .k{color:#ff9ecb}
+  pre .s{color:#a6e3a1}
+  pre .f{color:#9bd0ff}
+  .ext{background:#16221c;border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:12px 16px;margin:18px 0;color:#cfe9d8}
+  .ext b{color:var(--green)}
+  .warn{background:#241c16;border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:12px 16px;margin:18px 0;color:#efe0c4}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
+  .col{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+  .col h4{margin:0 0 8px;font-size:15px}
+  .col.s4{border-top:3px solid var(--accent)} .col.c4{border-top:3px solid var(--amber)}
+  ul{margin:8px 0;padding-left:20px} li{margin:5px 0}
+  .quiz{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:18px 0}
+  .quiz .q{font-weight:600;margin-bottom:12px}
+  .opt{display:block;width:100%;text-align:left;background:#11141b;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:11px 14px;margin:7px 0;cursor:pointer;font-size:15px;transition:.12s}
+  .opt:hover{border-color:var(--accent)}
+  .opt.correct{border-color:var(--green);background:#13241a}
+  .opt.wrong{border-color:var(--red);background:#241416}
+  .fb{margin-top:10px;font-size:14.5px;display:none;padding:10px 12px;border-radius:8px}
+  .fb.show{display:block}
+  .fb.ok{background:#13241a;color:var(--green)} .fb.no{background:#241416;color:var(--red)}
+  .nav{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);display:flex;gap:16px;flex-wrap:wrap;font-size:14px}
+  a{color:var(--accent)}
+  .ask{margin-top:30px;background:#161b29;border:1px dashed var(--accent);border-radius:10px;padding:14px 16px;color:#cdd6f5;font-size:14.5px}
+  .tag{display:inline-block;font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:20px;padding:2px 10px;margin-left:6px}
+  @media(max-width:680px){.cols{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Урок 1 · Фундамент Next App Router</p>
+  <h1>Server Components vs Client Components</h1>
+  <p class="lede">Главный ментальный сдвиг при переходе с ExtJS. Поймёшь его — и 80% этого проекта станут очевидными.</p>
+
+  <div class="ext">
+    <b>Мост от ExtJS.</b> В ExtJS <i>всё</i> живёт в браузере: ты создаёшь <code>Ext.create('Ext.grid.Panel', …)</code>,
+    стор тянет данные по AJAX, виджет рендерит DOM на клиенте. В Next App Router по умолчанию всё <b>наоборот</b>:
+    компонент выполняется <b>на сервере</b>, а в браузер уходит уже готовый HTML. Клиентский JS — это исключение,
+    которое ты включаешь осознанно. Перевернуть эту интуицию — и есть задача урока.
+  </div>
+
+  <h2>1. Две среды выполнения</h2>
+  <p>В App Router у компонента есть «гражданство» — где он выполняется:</p>
+  <div class="cols">
+    <div class="col s4">
+      <h4>🖥️ Server Component <span class="tag">по умолчанию</span></h4>
+      <ul>
+        <li>Выполняется на сервере, при запросе страницы</li>
+        <li>Может быть <code>async</code> и ждать данные</li>
+        <li>Прямой доступ к БД, файлам, секретам</li>
+        <li>Отправляет в браузер <b>HTML</b>, не свой JS</li>
+        <li>❌ Нет <code>useState</code>, <code>onClick</code>, <code>useEffect</code></li>
+      </ul>
+    </div>
+    <div class="col c4">
+      <h4>🌐 Client Component <span class="tag">'use client'</span></h4>
+      <ul>
+        <li>Выполняется в браузере (как привычный React)</li>
+        <li>Состояние, эффекты, обработчики событий</li>
+        <li>❌ Не <code>async</code>, нет прямого доступа к БД</li>
+        <li>Его код уходит в JS-бандл клиента</li>
+        <li>Включается директивой <code>'use client'</code> вверху файла</li>
+      </ul>
+    </div>
+  </div>
+  <p>Ключевое правило выбора: <b>нужна интерактивность или браузерный API → Client. Иначе → Server.</b>
+  Не «всё подряд client на всякий случай» — это раздувает бандл и убивает преимущество.</p>
+
+  <h2>2. Реальный Server Component из проекта</h2>
+  <p>Открой <code>src/app/(frontend)/products/page.tsx</code>. Вот его суть:</p>
+<pre><span class="c">// НЕТ 'use client' → это Server Component (по умолчанию)</span>
+<span class="k">import</span> config <span class="k">from</span> <span class="s">'@payload-config'</span>;
+<span class="k">import</span> { getPayload } <span class="k">from</span> <span class="s">'payload'</span>;
+
+<span class="k">export default async function</span> <span class="f">ProductPage</span>() {
+  <span class="c">// ⬇ прямой запрос к БД ПРЯМО в компоненте. На клиенте так нельзя.</span>
+  <span class="k">const</span> payload = <span class="k">await</span> <span class="f">getPayload</span>({ config });
+  <span class="k">const</span> result = <span class="k">await</span> payload.<span class="f">find</span>({ collection: <span class="s">'products'</span> });
+
+  <span class="k">return</span> (
+    &lt;div className=<span class="s">"product-grid"</span>&gt;
+      {result.docs.<span class="f">map</span>((p) =&gt; &lt;ProductCard product={p} /&gt;)}
+    &lt;/div&gt;
+  );
+}</pre>
+  <p>Три вещи, невозможные в ExtJS-виджете и в обычном React-компоненте, но нормальные здесь:</p>
+  <ul>
+    <li>Функция компонента — <code>async</code>.</li>
+    <li><code>await payload.find(...)</code> — поход в базу <b>внутри</b> компонента, без отдельного API-эндпоинта и без AJAX.</li>
+    <li>Секрет/конфиг (<code>config</code>) импортируется прямо сюда — он никогда не утечёт в браузер, потому что этот код туда и не попадёт.</li>
+  </ul>
+  <div class="warn">
+    <b>Почему это безопасно.</b> Код Server Component не отправляется клиенту — браузер получает только
+    отрендеренный HTML карточек. Поэтому <code>payload.find</code>, ключи и SQL остаются на сервере.
+    Это и есть причина, по которой RSC вообще придумали.
+  </div>
+
+  <h2>3. Где включается клиент</h2>
+  <p>Карточка товара — ссылка, её рисует сервер. Но кнопка «В корзину» должна реагировать на клик и менять
+  состояние корзины. Клик — это интерактивность → нужен Client Component. Смотри <code>AddToCartButton.tsx</code>
+  и <code>contexts/CartContext.tsx</code>:</p>
+<pre><span class="s">'use client'</span>;  <span class="c">// ⬅ граница: этот файл и его импорты — клиентские</span>
+
+<span class="k">import</span> { useReducer, useContext } <span class="k">from</span> <span class="s">'react'</span>;
+
+<span class="k">export function</span> <span class="f">CartProvider</span>({ children }) {
+  <span class="k">const</span> [items, dispatch] = <span class="f">useReducer</span>(cartReducer, []);
+  <span class="c">// useState/useReducer/onClick живут ТОЛЬКО в client-компонентах</span>
+  ...
+}</pre>
+  <p>Заметь паттерн композиции: <b>серверная</b> страница рендерит список и внутрь карточек вставляет
+  маленькую <b>клиентскую</b> кнопку. Сервер делает тяжёлую работу с данными, клиент — только точечную
+  интерактивность. Это и есть идиоматичный App Router.</p>
+
+  <div class="ext">
+    <b>ExtJS-аналогия для интуиции.</b> Представь, что разметку грида отрендерил сервер и прислал готовый HTML,
+    а ты «оживляешь» только отдельные кнопки маленькими клиентскими виджетами. В ExtJS так не делают (там всё клиент),
+    но именно эта гибридная модель — суть Next.
+  </div>
+
+  <h2>4. Как распознать тип за 2 секунды</h2>
+  <ul>
+    <li>Есть <code>'use client'</code> в первой строке файла? → <b>Client</b>.</li>
+    <li>Нет? Функция <code>async</code> и/или ходит в БД/await данных? → <b>Server</b>.</li>
+    <li>Есть <code>useState</code>/<code>onClick</code>/<code>useEffect</code>? → обязан быть <b>Client</b> (иначе ошибка сборки).</li>
+  </ul>
+
+  <h2>5. Проверь себя</h2>
+  <p>Мгновенная обратная связь — жми варианты.</p>
+
+  <div class="quiz" id="q1">
+    <div class="q">Q1. Файл начинается строкой <code>export const revalidate = 0</code>, функция объявлена как <code>async function</code> и внутри есть <code>await payload.find(...)</code>. <code>'use client'</code> нет. Что это?</div>
+    <button class="opt" data-ok="1">Server Component — выполняется на сервере, тянет данные напрямую из Payload</button>
+    <button class="opt" data-ok="0">Client Component — раз есть await, значит работает в браузере</button>
+    <button class="opt" data-ok="0">Обычная утилита, не компонент</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz" id="q2">
+    <div class="q">Q2. Тебе нужно сделать кнопку-счётчик, которая по клику увеличивает число на экране. Где её разместить?</div>
+    <button class="opt" data-ok="0">В Server Component — там тоже можно useState</button>
+    <button class="opt" data-ok="1">В Client Component с <code>'use client'</code> — нужны onClick и useState</button>
+    <button class="opt" data-ok="0">Без разницы, React сам решит</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz" id="q3">
+    <div class="q">Q3. Почему вызов <code>payload.find()</code> с доступом к секрету БД безопасен прямо внутри <code>products/page.tsx</code>?</div>
+    <button class="opt" data-ok="0">Потому что Next шифрует весь клиентский JS</button>
+    <button class="opt" data-ok="1">Потому что код Server Component не отправляется в браузер — туда уходит только готовый HTML</button>
+    <button class="opt" data-ok="0">Потому что Payload автоматически прячет SQL-запросы</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz" id="q4">
+    <div class="q">Q4. Что произойдёт, если добавить <code>useState</code> в компонент <b>без</b> <code>'use client'</code>?</div>
+    <button class="opt" data-ok="1">Ошибка сборки/рендера — хуки запрещены в Server Components</button>
+    <button class="opt" data-ok="0">Сработает, но медленно</button>
+    <button class="opt" data-ok="0">Next молча превратит его в Client Component</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="ask">
+    💬 <b>Я твой преподаватель.</b> Что-то осталось мутным — «зачем вообще RSC, если можно по-старому?»,
+    «а как данные с сервера попадают в клиентскую кнопку?», «что такое гидратация?» — спроси прямо в чате.
+    Когда пройдёшь квиз — напиши, и я дам <b>практическое задание</b>: добавить новую серверную страницу в проект.
+  </div>
+
+  <div class="nav">
+    <a href="../reference/glossary.html">📖 Глоссарий</a>
+    <a href="https://nextjs.org/docs/app/building-your-application/rendering/server-components" target="_blank">↗ Next: Server Components</a>
+    <a href="https://react.dev/reference/rsc/server-components" target="_blank">↗ React: RSC</a>
+    <span style="color:var(--muted)">Следующий урок: Routing в App Router (layouts, route groups, dynamic <code>[id]</code>)</span>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.quiz').forEach(q=>{
+  const fb=q.querySelector('.fb');
+  q.querySelectorAll('.opt').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      q.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+      const ok=btn.dataset.ok==='1';
+      btn.classList.add(ok?'correct':'wrong');
+      if(!ok){q.querySelector('.opt[data-ok="1"]').classList.add('correct');}
+      fb.classList.add('show',ok?'ok':'no');
+      fb.textContent=ok?'✓ Верно.':'✗ Не то. Зелёным подсвечен правильный ответ — перечитай раздел выше.';
+    });
+  });
+});
+</script>
+</body>
+</html>

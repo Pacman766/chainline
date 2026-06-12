@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Практика 2 — Динамический роут /categories/[slug]</title>
+<style>
+  :root{--bg:#0f1115;--card:#171a21;--ink:#e7e9ee;--muted:#9aa3b2;--accent:#7aa2ff;--green:#6ee7a8;--amber:#ffd27a;--red:#ff8b8b;--line:#272c36;--code:#1d2230;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;padding:48px 20px}
+  .wrap{max-width:860px;margin:0 auto}
+  .eyebrow{color:var(--green);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px;margin:0}
+  h1{font-size:30px;line-height:1.2;margin:6px 0 10px}
+  .lede{color:var(--muted);font-size:18px;margin:0 0 28px}
+  h2{font-size:21px;margin:34px 0 12px;padding-top:10px;border-top:1px solid var(--line)}
+  h3{font-size:16px;margin:20px 0 6px;color:var(--amber)}
+  p{margin:12px 0}
+  code{background:var(--code);padding:1px 6px;border-radius:5px;font:13.5px/1.5 ui-monospace,Menlo,Consolas,monospace;color:#cbd5ff}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;color:#d6deff}
+  .c{color:#6b7689}.k{color:#ff9ecb}.s{color:#a6e3a1}.f{color:#9bd0ff}
+  ul,ol{margin:8px 0;padding-left:22px} li{margin:6px 0}
+  .goal{background:#16221c;border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:14px 16px;margin:18px 0}
+  .goal b{color:var(--green)}
+  .warn{background:#241c16;border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:12px 16px;margin:18px 0;color:#efe0c4}
+  .bridge{background:#1a1622;border-left:3px solid #c08bff;border-radius:0 8px 8px 0;padding:12px 16px;margin:18px 0;color:#e3d5f5;font-size:14.5px}
+  .bridge b{color:#c8a6ff}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .ac{list-style:none;padding-left:0}
+  .ac li{padding-left:30px;position:relative;margin:9px 0}
+  .ac li:before{content:"☐";position:absolute;left:0;color:var(--accent);font-size:18px}
+  details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 16px;margin:12px 0}
+  summary{cursor:pointer;font-weight:600;padding:8px 0;color:var(--amber)}
+  .nav{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);display:flex;gap:16px;flex-wrap:wrap;font-size:14px}
+  a{color:var(--accent)}
+  .ask{margin-top:26px;background:#161b29;border:1px dashed var(--accent);border-radius:10px;padding:14px 16px;color:#cdd6f5;font-size:14.5px}
+  kbd{background:#222733;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Практика 2 · применяем Урок 3 (роутинг)</p>
+  <h1>Динамический роут <code>/categories/[slug]</code></h1>
+  <p class="lede">Превратишь карточку категории из ссылки-фильтра в полноценную страницу раздела. Сам создашь динамический сегмент <code>[slug]</code>, прочитаешь <code>params</code> и отдашь 404 на несуществующий slug.</p>
+
+  <div class="goal">
+    <b>Цель.</b> Страница <code>/categories/&lt;slug&gt;</code> (например <code>/categories/mountain</code>):
+    заголовок категории + сетка её <b>опубликованных</b> товаров. Несуществующий slug → честный 404.
+  </div>
+
+  <div class="bridge">
+    <b>Связь с прошлым.</b> Список ты уже сделал в Практике 1 (<code>/categories</code>).
+    Сейчас — «лист» этого дерева: страница одного раздела. Тот же двухуровневый паттерн
+    (найти категорию → найти её товары), но категория теперь приходит из URL, а не из цикла.
+  </div>
+
+  <h2>Что построить</h2>
+  <p>Файл <code>src/app/(frontend)/categories/[slug]/page.tsx</code>, который:</p>
+  <ol>
+    <li>Читает <code>slug</code> из <code>params</code> (помни: в Next 15 <code>params</code> — это <b>Promise</b>, его надо <code>await</code>).</li>
+    <li>Находит категорию по этому slug через Payload Local API.</li>
+    <li>Если категории нет — вызывает <code>notFound()</code> (отдаёт 404, а не падает с ошибкой).</li>
+    <li>Находит опубликованные товары этой категории (тот же <code>where</code>, что в Практике 1).</li>
+    <li>Рендерит заголовок категории + сетку товаров.</li>
+  </ol>
+
+  <h2>Шаги</h2>
+  <ol>
+    <li>Создай папку <code>categories/[slug]/</code> и в ней <code>page.tsx</code>.
+        Квадратные скобки = динамический сегмент (Урок 3, раздел 4).</li>
+    <li>Сигнатуру подсмотри в <code>products/[id]/page.tsx:11</code> — там ровно тот же приём
+        <code>{ params }: { params: Promise&lt;{ id: string }&gt; }</code>, только у тебя <code>slug</code>.</li>
+    <li>Категорию ищи через <code>payload.find({ collection: 'categories', where: { slug: { equals: slug } }, limit: 1 })</code>
+        — точь-в-точь как уже делают в <code>products/page.tsx:54</code>.</li>
+    <li>Товары — <code>where: { category: { equals: cat.id }, _status: { equals: 'published' } }</code> (твой код из Практики 1).</li>
+    <li>Для вёрстки можешь переиспользовать классы <code>catalog-header</code> и <code>product-grid</code>
+        / <code>product-card</code> — они уже в <code>styles.css</code>. Картинки не обязательны, начни с названия + цены.</li>
+    <li>В конце поменяй ссылку в карточках на <code>/categories</code>: пусть ведёт на
+        <code>/categories/${cat.slug}</code> вместо <code>/products?category=...</code>.</li>
+  </ol>
+
+  <div class="warn">
+    <b>Две типичные ловушки.</b>
+    (1) <code>notFound()</code> импортируется из <code>next/navigation</code> и его надо <b>вызвать</b>
+    (<code>notFound()</code>), а не вернуть. (2) <code>params</code> без <code>await</code> в Next 15 даст
+    объект-Promise, и <code>slug</code> будет <code>undefined</code> — запрос молча вернёт пусто.
+  </div>
+
+  <h2>Критерии приёмки</h2>
+  <p>Тайтовый feedback-loop — проверяешь сам в браузере:</p>
+  <ul class="ac">
+    <li><code>/categories/&lt;реальный-slug&gt;</code> показывает заголовок и товары этого раздела.</li>
+    <li>Товары совпадают с тем, что показывает <code>/products?category=&lt;тот-же-slug&gt;</code>.</li>
+    <li><code>/categories/qwerty-no-such</code> отдаёт страницу 404, а не белый экран с ошибкой.</li>
+    <li>Клик по карточке на <code>/categories</code> ведёт на новую страницу раздела.</li>
+    <li>Никакого <code>'use client'</code> — это чистый Server Component.</li>
+  </ul>
+
+  <details>
+    <summary>Подсказка 1 — где взять реальные slug'и для проверки</summary>
+    <p>Загляни в админку <code>/admin</code> → Categories, либо открой <code>/categories</code> и наведись
+    на карточку — slug виден в URL ссылки. В сид-данных это, например, <code>mountain</code>, <code>road</code> и т.д.
+    (смотри <code>src/seed-data</code>).</p>
+  </details>
+
+  <details>
+    <summary>Подсказка 2 — каркас (НЕ подглядывай раньше времени)</summary>
+<pre><span class="k">import</span> config <span class="k">from</span> <span class="s">'@payload-config'</span>;
+<span class="k">import</span> { getPayload } <span class="k">from</span> <span class="s">'payload'</span>;
+<span class="k">import</span> { notFound } <span class="k">from</span> <span class="s">'next/navigation'</span>;
+
+<span class="k">export default async function</span> <span class="f">CategoryPage</span>({
+  params,
+}: { params: <span class="f">Promise</span>&lt;{ slug: <span class="f">string</span> }&gt; }) {
+  <span class="k">const</span> { slug } = <span class="k">await</span> params;
+  <span class="k">const</span> payload = <span class="k">await</span> <span class="f">getPayload</span>({ config });
+
+  <span class="c">// 1. категория по slug → notFound() если нет</span>
+  <span class="c">// 2. товары категории (published)</span>
+  <span class="c">// 3. return ( header + product-grid )</span>
+}</pre>
+  </details>
+
+  <div class="ask">
+    💬 Готово — кидай <code>page.tsx</code> в чат, проверю по всем критериям. Застрял на
+    <code>notFound()</code>, типах <code>params</code> или where-запросе — спрашивай, это нормальная часть практики.
+  </div>
+
+  <div class="nav">
+    <a href="0003-app-router-routing.html">← Урок 3</a>
+    <a href="../reference/glossary.html">📖 Глоссарий</a>
+    <a href="https://nextjs.org/docs/app/api-reference/functions/not-found" target="_blank">↗ notFound()</a>
+    <a href="https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes" target="_blank">↗ Dynamic Routes</a>
+  </div>
+</div>
+</body>
+</html>

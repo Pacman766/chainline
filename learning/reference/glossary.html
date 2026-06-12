@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Глоссарий — React / Next / Payload</title>
+<style>
+  :root{--bg:#0f1115;--card:#171a21;--ink:#e7e9ee;--muted:#9aa3b2;--accent:#7aa2ff;--line:#272c36;--code:#1d2230;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 -apple-system,Segoe UI,Roboto,sans-serif;padding:40px 20px}
+  .wrap{max-width:820px;margin:0 auto}
+  h1{font-size:28px;margin:0 0 4px}
+  .sub{color:var(--muted);margin:0 0 28px}
+  dl{display:grid;gap:14px;margin:0}
+  .term{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  dt{font-weight:700;color:var(--accent);font-size:15px}
+  dd{margin:6px 0 0;color:var(--ink)}
+  code{background:var(--code);padding:1px 6px;border-radius:5px;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;color:#cbd5ff}
+  .ext{color:var(--muted);font-size:13px;display:block;margin-top:6px}
+  .ext b{color:#c9d3a0}
+  a{color:var(--accent)}
+  @media print{body{background:#fff;color:#000}.term{border-color:#ccc;background:#fafafa}dt{color:#1a3aa0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Глоссарий</h1>
+  <p class="sub">React 19 · Next 15 (App Router) · Payload 3.78 — термины проекта <code>payload-start</code>. Живой документ, пополняется.</p>
+  <dl>
+    <div class="term"><dt>Component (компонент)</dt><dd>Функция, возвращающая JSX (описание UI). В этом проекте все компоненты — функциональные.<span class="ext">ExtJS: аналог <b>Ext.define</b>/виджета, но это просто функция, без классов и <b>config</b>.</span></dd></div>
+
+    <div class="term"><dt>JSX</dt><dd>Синтаксис «HTML внутри JS». Компилируется в вызовы функций, создающие дерево элементов. Не строка и не DOM — описание того, что нужно отрисовать.</dd></div>
+
+    <div class="term"><dt>Server Component (RSC)</dt><dd>Компонент, который выполняется <b>только на сервере</b>. Может быть <code>async</code>, ходить в БД, читать файлы. В браузер уходит уже готовый результат — <b>0 KB JS</b> этого компонента. По умолчанию в App Router всё — Server Component.<span class="ext">Пример в проекте: <b>products/page.tsx</b>.</span></dd></div>
+
+    <div class="term"><dt>Client Component</dt><dd>Компонент с директивой <code>'use client'</code> вверху файла. Выполняется в браузере, может использовать состояние, эффекты, обработчики событий (<code>useState</code>, <code>onClick</code>).<span class="ext">Пример: <b>CartContext.tsx</b>, <b>AddToCartButton.tsx</b>.</span></dd></div>
+
+    <div class="term"><dt>'use client'</dt><dd>Директива-граница. Файл и всё, что он импортирует, становится клиентским бандлом. Ставится там, где нужна <b>интерактивность</b>, а не «на всякий случай».</dd></div>
+
+    <div class="term"><dt>App Router</dt><dd>Современная система маршрутизации Next.js, основанная на папках в <code>src/app/</code>. Файл <code>page.tsx</code> = маршрут, <code>layout.tsx</code> = обёртка.</dd></div>
+
+    <div class="term"><dt>Route Group <code>(name)</code></dt><dd>Папка в скобках, например <code>(frontend)</code>. Группирует маршруты и даёт общий layout, но <b>не попадает в URL</b>.</dd></div>
+
+    <div class="term"><dt>Hook (хук)</dt><dd>Функция вида <code>useXxx</code>, дающая компоненту память/побочные эффекты: <code>useState</code>, <code>useReducer</code>, <code>useEffect</code>, <code>useMemo</code>. Работает только в Client Components.</dd></div>
+
+    <div class="term"><dt>Payload Collection</dt><dd>Описание сущности данных (таблица + админка + API). Определяется в <code>src/collections/</code>.<span class="ext">ExtJS: аналог <b>Model</b> + <b>Store</b>, но генерирует ещё и REST/GraphQL и админ-панель.</span></dd></div>
+
+    <div class="term"><dt>Local API</dt><dd>Прямой вызов Payload из серверного кода без HTTP: <code>const payload = await getPayload({config}); await payload.find({collection:'products'})</code>. Используется внутри Server Components.</dd></div>
+
+    <div class="term"><dt>revalidate</dt><dd>Экспорт из страницы, управляющий кэшем. <code>export const revalidate = 0</code> = не кэшировать, рендерить заново на каждый запрос.</dd></div>
+  </dl>
+</div>
+</body>
+</html>

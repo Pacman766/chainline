@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Урок 3 — Роутинг в App Router: папки становятся URL</title>
+<style>
+  :root{--bg:#0f1115;--card:#171a21;--ink:#e7e9ee;--muted:#9aa3b2;--accent:#7aa2ff;--green:#6ee7a8;--amber:#ffd27a;--red:#ff8b8b;--line:#272c36;--code:#1d2230;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;padding:48px 20px}
+  .wrap{max-width:860px;margin:0 auto}
+  .eyebrow{color:var(--green);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px;margin:0}
+  h1{font-size:30px;line-height:1.2;margin:6px 0 10px}
+  .lede{color:var(--muted);font-size:18px;margin:0 0 28px}
+  h2{font-size:21px;margin:34px 0 12px;padding-top:10px;border-top:1px solid var(--line)}
+  h3{font-size:16px;margin:20px 0 6px;color:var(--amber)}
+  p{margin:12px 0}
+  code{background:var(--code);padding:1px 6px;border-radius:5px;font:13.5px/1.5 ui-monospace,Menlo,Consolas,monospace;color:#cbd5ff}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;color:#d6deff}
+  .c{color:#6b7689}.k{color:#ff9ecb}.s{color:#a6e3a1}.f{color:#9bd0ff}.u{color:#ffd27a}
+  ul,ol{margin:8px 0;padding-left:22px} li{margin:6px 0}
+  .goal{background:#16221c;border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:14px 16px;margin:18px 0}
+  .goal b{color:var(--green)}
+  .warn{background:#241c16;border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:12px 16px;margin:18px 0;color:#efe0c4}
+  .bridge{background:#1a1622;border-left:3px solid #c08bff;border-radius:0 8px 8px 0;padding:12px 16px;margin:18px 0;color:#e3d5f5;font-size:14.5px}
+  .bridge b{color:#c8a6ff}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+  th{background:#1b2030;color:var(--amber);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  td code{font-size:12.5px}
+  details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 16px;margin:12px 0}
+  summary{cursor:pointer;font-weight:600;padding:8px 0;color:var(--amber)}
+  .tree{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:16px 18px;font:12.5px/1.7 ui-monospace,Menlo,Consolas,monospace;color:#d6deff;overflow-x:auto}
+  .tree .u{color:#ffd27a}.tree .g{color:#6ee7a8}.tree .d{color:#9bd0ff}.tree .c{color:#6b7689}
+  .nav{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);display:flex;gap:16px;flex-wrap:wrap;font-size:14px}
+  a{color:var(--accent)}
+  .ask{margin-top:26px;background:#161b29;border:1px dashed var(--accent);border-radius:10px;padding:14px 16px;color:#cdd6f5;font-size:14.5px}
+  kbd{background:#222733;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px}
+  /* quiz */
+  .quiz{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:18px 0}
+  .quiz .q{font-weight:600;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;background:#1b2030;border:1px solid var(--line);color:var(--ink);padding:11px 14px;border-radius:8px;margin:8px 0;cursor:pointer;font:14px/1.4 inherit;transition:border-color .15s,background .15s}
+  .opt:hover:not(:disabled){border-color:var(--accent)}
+  .opt:disabled{cursor:default;opacity:.92}
+  .opt.correct{border-color:var(--green);background:#16291f}
+  .opt.wrong{border-color:var(--red);background:#2a1a1a}
+  .fb{display:none;margin-top:10px;font-size:14px;padding:10px 12px;border-radius:8px}
+  .fb.show{display:block}
+  .fb.ok{background:#16291f;color:var(--green)}
+  .fb.no{background:#2a1a1a;color:var(--red)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Урок 3 · Next.js App Router</p>
+  <h1>Папки становятся URL</h1>
+  <p class="lede">Ты только что создал <code>categories/page.tsx</code> — и страница появилась на <code>/categories</code>. Никакой регистрации маршрута. Разберём систему, которая это делает: <b>файловая структура — это и есть роутер</b>.</p>
+
+  <div class="goal">
+    <b>Что унесёшь.</b> Сможешь по любому файлу проекта сказать, на каком URL он живёт и что
+    именно рендерит — и наоборот, по URL найти нужный файл. Это база навигации по любому Next-проекту.
+  </div>
+
+  <div class="bridge">
+    <b>Мост от ExtJS.</b> В ExtJS маршруты ты регистрировал руками — hash-роуты, контроллеры,
+    <code>Ext.util.History</code>. В App Router маршрутов как сущности <i>нет</i>: есть дерево папок.
+    Создал папку с <code>page.tsx</code> — URL появился. Удалил — исчез. Роутер выводится из ФС.
+  </div>
+
+  <h2>1. Правило №1: папка = сегмент URL, <code>page.tsx</code> = страница</h2>
+  <p>Каждая папка внутри <code>src/app/</code> добавляет сегмент к адресу. URL рисует <b>только</b>
+  файл с зарезервированным именем <code>page.tsx</code> — просто папка без него маршрутом не становится.</p>
+
+  <table>
+    <tr><th>Файл в проекте</th><th>URL</th></tr>
+    <tr><td><code>(frontend)/page.tsx</code></td><td><code>/</code></td></tr>
+    <tr><td><code>(frontend)/categories/page.tsx</code></td><td><code>/categories</code> ← твой</td></tr>
+    <tr><td><code>(frontend)/cart/page.tsx</code></td><td><code>/cart</code></td></tr>
+    <tr><td><code>(frontend)/orders/page.tsx</code></td><td><code>/orders</code></td></tr>
+  </table>
+
+  <h2>2. Зарезервированные имена файлов</h2>
+  <p>App Router узнаёт лишь несколько имён. Всё остальное (<code>AddToCartButton.tsx</code>,
+  <code>SearchInput.tsx</code>) — обычные модули, на роутинг не влияют, лежат рядом спокойно.</p>
+
+  <table>
+    <tr><th>Файл</th><th>Роль</th><th>Пример в проекте</th></tr>
+    <tr><td><code>page.tsx</code></td><td>UI маршрута (то, что видно на этом URL)</td><td><code>products/page.tsx</code></td></tr>
+    <tr><td><code>layout.tsx</code></td><td>Обёртка вокруг страниц; <b>переживает навигацию</b>, не перемонтируется</td><td><code>(frontend)/layout.tsx</code></td></tr>
+    <tr><td><code>route.ts</code></td><td>HTTP-эндпоинт (GET/POST…), а не UI. Не сочетается с <code>page.tsx</code> в одной папке</td><td><code>api/checkout/route.ts</code></td></tr>
+    <tr><td><code>loading.tsx</code></td><td>Фолбэк, пока грузится page (через Suspense)</td><td><span style="color:var(--muted)">позже</span></td></tr>
+    <tr><td><code>error.tsx</code></td><td>UI при выброшенной ошибке в сегменте</td><td><span style="color:var(--muted)">позже</span></td></tr>
+  </table>
+
+  <div class="warn">
+    <b>Ключевое отличие <code>layout</code> от <code>page</code>:</b> при переходе с <code>/products</code>
+    на <code>/products/5</code> общий <code>layout.tsx</code> <i>не размонтируется</i> — его состояние,
+    скролл, открытые панели сохраняются. Меняется только вложенный <code>page</code>. Это и есть
+    причина, почему layout кладут отдельно, а не копируют шапку в каждую страницу.
+  </div>
+
+  <h2>3. Route groups: <code>(frontend)</code> и <code>(payload)</code></h2>
+  <p>Папка в круглых скобках — <b>организационная</b>. Она группирует маршруты и даёт им
+  <i>отдельный</i> <code>layout.tsx</code>, но <b>в URL не попадает</b>.</p>
+
+  <pre><span class="c">// (frontend)/categories/page.tsx</span>
+URL = /categories      <span class="c">← «(frontend)» вырезано</span>
+
+<span class="c">// (payload)/admin/[[...segments]]/page.tsx</span>
+URL = /admin/...       <span class="c">← «(payload)» вырезано</span></pre>
+
+  <p>Зачем так в этом проекте: витрина и админка — два разных мира с разными обёртками.
+  <code>(frontend)/layout.tsx</code> даёт шапку магазина, <code>CartProvider</code>, тему.
+  <code>(payload)/layout.tsx</code> — совсем другой каркас Payload-админки. Скобки позволяют
+  держать <b>два независимых корневых layout'а</b> бок о бок, не плодя сегмент в адресе.</p>
+
+  <h2>4. Динамические сегменты: <code>[id]</code></h2>
+  <p>Папка в квадратных скобках ловит любое значение и отдаёт его странице как параметр.</p>
+
+  <pre><span class="c">// (frontend)/products/[id]/page.tsx</span>
+/products/5    → params.id === <span class="s">"5"</span>
+/products/abc  → params.id === <span class="s">"abc"</span>
+
+<span class="k">export default async function</span> <span class="f">ProductDetail</span>({ params }) {
+  <span class="k">const</span> { id } = <span class="k">await</span> params;   <span class="c">// в Next 15 params — Promise</span>
+  <span class="c">// ...payload.findByID({ collection:'products', id })</span>
+}</pre>
+
+  <p>В проекте так устроены <code>products/[id]</code> и <code>orders/[id]</code> — одна папка-шаблон
+  обслуживает тысячи товаров/заказов.</p>
+
+  <details>
+    <summary>Соседи <code>[id]</code> — catch-all (для справки, не учим сейчас)</summary>
+    <table>
+      <tr><th>Синтаксис</th><th>Ловит</th><th>В проекте</th></tr>
+      <tr><td><code>[id]</code></td><td>ровно один сегмент</td><td><code>products/[id]</code></td></tr>
+      <tr><td><code>[...slug]</code></td><td>один и более сегментов</td><td><code>api/[...slug]/route.ts</code></td></tr>
+      <tr><td><code>[[...segments]]</code></td><td>ноль и более (опционально)</td><td><code>admin/[[...segments]]</code></td></tr>
+    </table>
+    <p style="font-size:13.5px;color:var(--muted)">Payload подключает всю свою админку и REST API
+    одной catch-all папкой — поэтому <code>/admin</code>, <code>/admin/collections/products</code> и т.д.
+    все ведут в один <code>page.tsx</code>.</p>
+  </details>
+
+  <h2>5. Вложенные layout'ы складываются</h2>
+  <p>Layout'ы по пути <b>оборачиваются друг в друга</b> сверху вниз. Для <code>/products/5</code>:</p>
+
+  <div class="tree">(frontend)/<span class="d">layout.tsx</span>      <span class="c">← шапка, CartProvider (вся витрина)</span>
+  └ products/<span class="d">layout.tsx</span>   <span class="c">← sidebar-каркас (только /products*)</span>
+      └ [id]/<span class="d">page.tsx</span>     <span class="c">← карточка товара</span></div>
+
+  <p>Итог рендера = <code>frontend layout</code> → внутри <code>products layout</code> → внутри
+  <code>page</code>. Поэтому твой <code>categories/page.tsx</code> получил шапку магазина даром:
+  он под <code>(frontend)/layout.tsx</code>. Но sidebar от <code>products/layout.tsx</code> он
+  <b>не</b> получил — тот живёт глубже, только для ветки <code>/products</code>.</p>
+
+  <div class="bridge">
+    <b>Заметил <code>products/@sidebar/</code>?</b> Папка с <code>@</code> — это <i>parallel route</i>
+    (именованный слот, рендерится одновременно с основным <code>page</code>). Продвинутая штука —
+    разберём отдельным уроком. Сейчас просто знай: <code>@</code> ≠ обычный сегмент, в URL он тоже не попадает.
+  </div>
+
+  <h2>Проверь себя</h2>
+
+  <div class="quiz">
+    <p class="q">1. Создаёшь файл <code>src/app/(frontend)/about/page.tsx</code>. На каком URL откроется страница?</p>
+    <button class="opt" data-ok="0">/frontend/about</button>
+    <button class="opt" data-ok="1">/about</button>
+    <button class="opt" data-ok="0">/(frontend)/about</button>
+    <button class="opt" data-ok="0">/about/page</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz">
+    <p class="q">2. Почему у проекта <b>два</b> файла <code>layout.tsx</code> верхнего уровня — в <code>(frontend)</code> и в <code>(payload)</code>?</p>
+    <button class="opt" data-ok="1">Витрина и админка — разные миры; route groups дают каждому свой независимый корневой layout, не добавляя сегмент в URL</button>
+    <button class="opt" data-ok="0">Это дубликат, один из них можно удалить</button>
+    <button class="opt" data-ok="0">Next требует ровно два layout'а в каждом проекте</button>
+    <button class="opt" data-ok="0">Второй layout нужен только для мобильной версии</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz">
+    <p class="q">3. Пользователь переходит с <code>/products</code> на <code>/products/7</code>. Что произойдёт с <code>products/layout.tsx</code> (sidebar-каркас)?</p>
+    <button class="opt" data-ok="0">Размонтируется и смонтируется заново — состояние сбросится</button>
+    <button class="opt" data-ok="1">Останется смонтированным; заменится только вложенный page — состояние layout'а сохранится</button>
+    <button class="opt" data-ok="0">Превратится в page товара</button>
+    <button class="opt" data-ok="0">Ничего не отрендерится, пока не перезагрузишь страницу</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz">
+    <p class="q">4. В папке <code>api/checkout/</code> лежит <code>route.ts</code>. Можно ли в ту же папку положить <code>page.tsx</code>?</p>
+    <button class="opt" data-ok="0">Да, они будут работать на одном URL вместе</button>
+    <button class="opt" data-ok="1">Нет — <code>route.ts</code> (HTTP-эндпоинт) и <code>page.tsx</code> (UI) конфликтуют в одном сегменте</button>
+    <button class="opt" data-ok="0">Да, но только если page серверный</button>
+    <button class="opt" data-ok="0">Можно, Next отрендерит page, а route проигнорирует</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="ask">
+    💬 Что-то из этого «магия, но непонятно почему»? Я твой преподаватель — спрашивай прямо в чате.
+    Например: «покажи, как <code>[id]</code> читает params в нашем <code>products/[id]/page.tsx</code>»
+    или «зачем нужен parallel route <code>@sidebar</code>».
+  </div>
+
+  <div class="nav">
+    <a href="0002-practice-categories-page.html">← Практика 1</a>
+    <a href="../reference/glossary.html">📖 Глоссарий</a>
+    <a href="https://nextjs.org/docs/app/building-your-application/routing" target="_blank">↗ Next.js — Routing</a>
+    <a href="https://nextjs.org/docs/app/api-reference/file-conventions" target="_blank">↗ File Conventions</a>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.quiz').forEach(q=>{
+  const fb=q.querySelector('.fb');
+  q.querySelectorAll('.opt').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      q.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+      const ok=btn.dataset.ok==='1';
+      btn.classList.add(ok?'correct':'wrong');
+      if(!ok){q.querySelector('.opt[data-ok="1"]').classList.add('correct');}
+      fb.classList.add('show',ok?'ok':'no');
+      fb.textContent=ok?'✓ Верно.':'✗ Не то. Зелёным подсвечен правильный ответ — перечитай раздел выше.';
+    });
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Практика 1 — Серверная страница «Категории»</title>
+<style>
+  :root{--bg:#0f1115;--card:#171a21;--ink:#e7e9ee;--muted:#9aa3b2;--accent:#7aa2ff;--green:#6ee7a8;--amber:#ffd27a;--red:#ff8b8b;--line:#272c36;--code:#1d2230;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;padding:48px 20px}
+  .wrap{max-width:860px;margin:0 auto}
+  .eyebrow{color:var(--green);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px;margin:0}
+  h1{font-size:30px;line-height:1.2;margin:6px 0 10px}
+  .lede{color:var(--muted);font-size:18px;margin:0 0 28px}
+  h2{font-size:21px;margin:34px 0 12px;padding-top:10px;border-top:1px solid var(--line)}
+  h3{font-size:16px;margin:20px 0 6px;color:var(--amber)}
+  p{margin:12px 0}
+  code{background:var(--code);padding:1px 6px;border-radius:5px;font:13.5px/1.5 ui-monospace,Menlo,Consolas,monospace;color:#cbd5ff}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;color:#d6deff}
+  pre .c{color:#6b7689}.k{color:#ff9ecb}.s{color:#a6e3a1}.f{color:#9bd0ff}
+  ul,ol{margin:8px 0;padding-left:22px} li{margin:6px 0}
+  .goal{background:#16221c;border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:14px 16px;margin:18px 0}
+  .goal b{color:var(--green)}
+  .warn{background:#241c16;border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:12px 16px;margin:18px 0;color:#efe0c4}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0}
+  .ac{list-style:none;padding-left:0}
+  .ac li{padding-left:30px;position:relative;margin:9px 0}
+  .ac li:before{content:"☐";position:absolute;left:0;color:var(--accent);font-size:18px}
+  details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 16px;margin:12px 0}
+  summary{cursor:pointer;font-weight:600;padding:8px 0;color:var(--amber)}
+  .nav{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);display:flex;gap:16px;flex-wrap:wrap;font-size:14px}
+  a{color:var(--accent)}
+  .ask{margin-top:26px;background:#161b29;border:1px dashed var(--accent);border-radius:10px;padding:14px 16px;color:#cdd6f5;font-size:14.5px}
+  kbd{background:#222733;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Практика 1 · применяем Урок 1</p>
+  <h1>Серверная страница «Категории»</h1>
+  <p class="lede">Своими руками создашь новый маршрут — чистый Server Component, который тянет данные из Payload и рендерит их. Никакого <code>'use client'</code>.</p>
+
+  <div class="goal">
+    <b>Цель.</b> Новая страница <code>/categories</code>: список всех категорий, у каждой — число
+    опубликованных товаров и ссылка на отфильтрованный каталог. Всё на сервере, ноль клиентского JS.
+  </div>
+
+  <h2>Что построить</h2>
+  <p>Страница по адресу <code>http://localhost:3000/categories</code>, которая:</p>
+  <ol>
+    <li>Достаёт все категории через Payload Local API.</li>
+    <li>Для каждой категории считает, сколько в ней <b>опубликованных</b> товаров.</li>
+    <li>Рендерит список: название категории, счётчик, и ссылку <code>/products?category=&lt;slug&gt;</code>
+        (этот фильтр уже работает в существующей <code>products/page.tsx</code>).</li>
+  </ol>
+
+  <h2>Шаги</h2>
+  <ol>
+    <li>Создай файл <code>src/app/(frontend)/categories/page.tsx</code>.
+        Папка = маршрут, <code>page.tsx</code> = сама страница (это App Router из глоссария).</li>
+    <li>Сделай <code>export default async function</code> — компонент должен быть <b>async</b>, потому что ждёт данные.</li>
+    <li>Получи payload: <code>const payload = await getPayload({ config })</code>.</li>
+    <li>Достань категории: <code>payload.find({ collection: 'categories', limit: 100 })</code>.</li>
+    <li>Для счётчика товаров используй <code>payload.count(...)</code> с фильтром <code>where</code> (см. подсказку).</li>
+    <li>Верни JSX со списком. Для ссылок — <code>import Link from 'next/link'</code>.</li>
+  </ol>
+
+  <div class="warn">
+    <b>Правило проверки.</b> Если в файле НЕТ <code>'use client'</code> и НЕТ <code>useState/onClick</code> —
+    ты всё сделал правильно как Server Component. Появилось желание добавить <code>'use client'</code>?
+    Остановись и спроси себя: где здесь интерактивность? (Её нет — значит не нужно.)
+  </div>
+
+  <h2>Критерии приёмки</h2>
+  <div class="card">
+    <ul class="ac">
+      <li><code>/categories</code> открывается без ошибок в браузере.</li>
+      <li>Видно все категории из БД, у каждой — корректное число опубликованных товаров.</li>
+      <li>Клик по категории ведёт на <code>/products?category=&lt;slug&gt;</code> и фильтрует каталог.</li>
+      <li>В файле нет <code>'use client'</code> и нет React-хуков.</li>
+      <li>Данные приходят из Payload (ты НЕ хардкодил категории в массив).</li>
+    </ul>
+  </div>
+
+  <h2>Подсказки (открывай только если застрял)</h2>
+
+  <details>
+    <summary>💡 Как посчитать товары в категории</summary>
+    <p>Payload Local API умеет считать без выгрузки документов:</p>
+<pre><span class="k">const</span> { totalDocs } = <span class="k">await</span> payload.<span class="f">count</span>({
+  collection: <span class="s">'products'</span>,
+  where: {
+    category: { equals: cat.id },
+    _status:  { equals: <span class="s">'published'</span> },
+  },
+});</pre>
+    <p>Категории нужно перебрать — а внутри <code>map</code> нельзя <code>await</code>. Поэтому собери промисы
+    и дождись их через <code>Promise.all</code> (см. следующую подсказку).</p>
+  </details>
+
+  <details>
+    <summary>💡 Перебор с await: Promise.all</summary>
+<pre><span class="k">const</span> categories = result.docs;
+<span class="k">const</span> withCounts = <span class="k">await</span> Promise.<span class="f">all</span>(
+  categories.<span class="f">map</span>(<span class="k">async</span> (cat) =&gt; {
+    <span class="k">const</span> { totalDocs } = <span class="k">await</span> payload.<span class="f">count</span>({
+      collection: <span class="s">'products'</span>,
+      where: { category: { equals: cat.id }, _status: { equals: <span class="s">'published'</span> } },
+    });
+    <span class="k">return</span> { ...cat, count: totalDocs };
+  })
+);</pre>
+  </details>
+
+  <details>
+    <summary>💡 Скелет JSX</summary>
+<pre>&lt;ul&gt;
+  {withCounts.<span class="f">map</span>((cat) =&gt; (
+    &lt;li key={cat.id}&gt;
+      &lt;Link href={<span class="s">`/products?category=${cat.slug}`</span>}&gt;
+        {cat.name} — {cat.count} товаров
+      &lt;/Link&gt;
+    &lt;/li&gt;
+  ))}
+&lt;/ul&gt;</pre>
+  </details>
+
+  <details>
+    <summary>🆘 Полное решение (загляни в последнюю очередь)</summary>
+<pre><span class="k">import</span> config <span class="k">from</span> <span class="s">'@payload-config'</span>;
+<span class="k">import</span> { getPayload } <span class="k">from</span> <span class="s">'payload'</span>;
+<span class="k">import</span> Link <span class="k">from</span> <span class="s">'next/link'</span>;
+
+<span class="k">export const</span> revalidate = 0;
+
+<span class="k">export default async function</span> <span class="f">CategoriesPage</span>() {
+  <span class="k">const</span> payload = <span class="k">await</span> <span class="f">getPayload</span>({ config });
+  <span class="k">const</span> { docs: categories } = <span class="k">await</span> payload.<span class="f">find</span>({
+    collection: <span class="s">'categories'</span>, limit: 100, sort: <span class="s">'name'</span>,
+  });
+
+  <span class="k">const</span> withCounts = <span class="k">await</span> Promise.<span class="f">all</span>(
+    categories.<span class="f">map</span>(<span class="k">async</span> (cat) =&gt; {
+      <span class="k">const</span> { totalDocs } = <span class="k">await</span> payload.<span class="f">count</span>({
+        collection: <span class="s">'products'</span>,
+        where: { category: { equals: cat.id }, _status: { equals: <span class="s">'published'</span> } },
+      });
+      <span class="k">return</span> { ...cat, count: totalDocs };
+    })
+  );
+
+  <span class="k">return</span> (
+    &lt;div&gt;
+      &lt;h1&gt;Категории&lt;/h1&gt;
+      &lt;ul&gt;
+        {withCounts.<span class="f">map</span>((cat) =&gt; (
+          &lt;li key={cat.id}&gt;
+            &lt;Link href={<span class="s">`/products?category=${cat.slug}`</span>}&gt;
+              {cat.name} — {cat.count} товаров
+            &lt;/Link&gt;
+          &lt;/li&gt;
+        ))}
+      &lt;/ul&gt;
+    &lt;/div&gt;
+  );
+}</pre>
+  </details>
+
+  <h2>Как проверить</h2>
+  <ol>
+    <li>Запусти дев-сервер: <code>npm run dev</code> (если порт 3000 занят — освободи, см. твои правила).</li>
+    <li>Открой <code>http://localhost:3000/categories</code>.</li>
+    <li>Если категорий/товаров в БД нет — сначала засей: <code>npx tsx src/seed.ts</code>.</li>
+    <li>Проверь счётчики и кликни по категории — должен открыться отфильтрованный каталог.</li>
+  </ol>
+
+  <h2>★ Бонус (по желанию)</h2>
+  <p>Добавь под списком клиентскую кнопку «Свернуть/Развернуть» с <code>useState</code> — и почувствуй границу
+  на практике: вынеси её в отдельный файл <code>CategoriesToggle.tsx</code> с <code>'use client'</code>,
+  а серверная страница пусть её просто импортирует и вставит. Это репетиция композиции server+client из Урока 1.</p>
+
+  <div class="ask">
+    💬 Застрял, поймал ошибку типов (<code>category</code> бывает объектом или числом!), или хочешь, чтобы я
+    проверил твой код — кидай его сюда. Когда заработает — напиши «готово», я приму работу и мы перейдём к
+    <b>теории роутинга App Router</b>.
+  </div>
+
+  <div class="nav">
+    <a href="0001-server-vs-client-components.html">← Урок 1</a>
+    <a href="../reference/glossary.html">📖 Глоссарий</a>
+    <a href="https://payloadcms.com/docs/local-api/overview" target="_blank">↗ Payload Local API</a>
+  </div>
+</div>
+</body>
+</html>
