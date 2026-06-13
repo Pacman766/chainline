@@ -1,0 +1,84 @@
+/* ─── Button Interactions ─────────────────────────────────── */
+[data-slot="button"] {
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.14s ease,
+    background 0.15s ease,
+    opacity 0.15s ease;
+}
+
+/* hover — lift */
+[data-slot="button"]:not(:disabled):hover {
+  transform: translateY(-2px);
+}
+
+/* active — press down */
+[data-slot="button"]:not(:disabled):active {
+  transform: translateY(1px);
+  transition-duration: 0.06s;
+}
+
+/* default (black) — тёмная тень при hover */
+[data-slot="button"][data-variant="default"]:not(:disabled):hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+  background: oklch(0.28 0 0);
+}
+[data-slot="button"][data-variant="default"]:not(:disabled):active {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  background: oklch(0.12 0 0);
+}
+
+/* dark mode — primary is near-white, keep hover light so dark foreground text stays readable */
+.dark [data-slot="button"][data-variant="default"]:not(:disabled):hover {
+  background: oklch(0.85 0 0);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+.dark [data-slot="button"][data-variant="default"]:not(:disabled):active {
+  background: oklch(0.78 0 0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* outline */
+[data-slot="button"][data-variant="outline"]:not(:disabled):hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+[data-slot="button"][data-variant="outline"]:not(:disabled):active {
+  box-shadow: none;
+}
+
+/* ghost */
+[data-slot="button"][data-variant="ghost"]:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+/* destructive */
+[data-slot="button"][data-variant="destructive"]:not(:disabled):hover {
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.3);
+}
+
+/* ─── Custom button active states ─────────────────────────── */
+.cta-primary:active {
+  transform: translateY(0) !important;
+  box-shadow: none !important;
+  background: #a84200 !important;
+  transition-duration: 0.06s !important;
+}
+
+.header-login:active {
+  background: #d8d8d8;
+  transform: translateY(1px);
+  transition-duration: 0.06s;
+}
+
+.header-logout:active {
+  color: rgba(255,255,255,0.9);
+  border-color: rgba(255,255,255,0.5);
+  transform: translateY(1px);
+  transition-duration: 0.06s;
+}
+
+.sidebar-toggle:active {
+  color: #cf5203;
+  transition-duration: 0.06s;
+}
+

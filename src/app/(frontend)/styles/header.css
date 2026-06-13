@@ -1,0 +1,213 @@
+/* ─── Header ─────────────────────────────────────────────── */
+.site-header {
+  background: #111;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(12px);
+  /* Оранжевый градиент-разделитель снизу */
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.06),
+    0 4px 24px rgba(0,0,0,0.5);
+}
+/* Светящаяся оранжевая линия под хедером */
+.site-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(232,93,4,0.6) 30%,
+    rgba(232,93,4,0.85) 50%,
+    rgba(232,93,4,0.6) 70%,
+    transparent 100%
+  );
+}
+
+.header-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 48px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+/* Logo */
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.logo-chainring {
+  flex-shrink: 0;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center;
+}
+.header-logo:hover .logo-chainring {
+  transform: rotate(40deg);
+}
+
+.logo-text {
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #f0f0f0;
+  line-height: 1;
+}
+
+/* Nav */
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.nav-link {
+  position: relative;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.38);
+  text-decoration: none;
+  padding-bottom: 2px;
+  transition: color 0.18s;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: #e85d04;
+  transition: width 0.2s ease;
+}
+.nav-link:hover {
+  color: rgba(255,255,255,0.8);
+}
+.nav-link:hover::after {
+  width: 100%;
+}
+.nav-link--active {
+  color: #fff;
+}
+.nav-link--active::after {
+  width: 100%;
+}
+
+/* Actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Cart */
+.cart-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  color: rgba(255,255,255,0.5);
+  text-decoration: none;
+  transition: color 0.18s;
+  padding: 6px;
+}
+.cart-link:hover {
+  color: #fff;
+}
+.cart-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 16px;
+  height: 16px;
+  background: #e85d04;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 800;
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  line-height: 1;
+}
+
+/* User email */
+.header-email {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 0.01em;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: rgba(255,255,255,0.07);
+  padding: 4px 10px;
+  border-radius: 2px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Login / Logout */
+.header-login {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #090909;
+  background: #f0f0f0;
+  text-decoration: none;
+  padding: 7px 16px;
+  border-radius: 2px;
+  transition: background 0.18s, color 0.18s;
+}
+.header-login:hover {
+  background: #fff;
+}
+
+.header-logout {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  background: none;
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 14px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: color 0.18s, border-color 0.18s;
+}
+.header-logout:hover {
+  color: rgba(255,255,255,0.75);
+  border-color: rgba(255,255,255,0.35);
+}
+
+/* Header responsive */
+@media (max-width: 640px) {
+  .header-inner {
+    padding: 0 20px;
+    gap: 16px;
+  }
+  .nav-links { gap: 16px; }
+  .header-email { display: none; }
+}
+

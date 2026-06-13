@@ -1,7 +1,7 @@
 import config from '@payload-config';
 import { getPayload } from 'payload';
 
-export default async function CategoryPage({ params }: { params: { slug: string } }) {
+export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const payload = await getPayload({ config });
   const { slug } = await params;
 
