@@ -1,4 +1,4 @@
-# payload-start
+# chainline
 
 Next.js 15 + Payload CMS v3 sandbox — built to explore headless CMS development with an AI-driven workflow.
 
