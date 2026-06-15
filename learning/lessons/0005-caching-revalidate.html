@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Урок 5 — Кеш и revalidate: когда страница свежая, а когда нет</title>
+<style>
+  :root{--bg:#0f1115;--card:#171a21;--ink:#e7e9ee;--muted:#9aa3b2;--accent:#7aa2ff;--green:#6ee7a8;--amber:#ffd27a;--red:#ff8b8b;--line:#272c36;--code:#1d2230;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;padding:48px 20px}
+  .wrap{max-width:860px;margin:0 auto}
+  .eyebrow{color:var(--green);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px;margin:0}
+  h1{font-size:30px;line-height:1.2;margin:6px 0 10px}
+  .lede{color:var(--muted);font-size:18px;margin:0 0 28px}
+  h2{font-size:21px;margin:34px 0 12px;padding-top:10px;border-top:1px solid var(--line)}
+  h3{font-size:16px;margin:20px 0 6px;color:var(--amber)}
+  p{margin:12px 0}
+  code{background:var(--code);padding:1px 6px;border-radius:5px;font:13.5px/1.5 ui-monospace,Menlo,Consolas,monospace;color:#cbd5ff}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;color:#d6deff}
+  .c{color:#6b7689}.k{color:#ff9ecb}.s{color:#a6e3a1}.f{color:#9bd0ff}.u{color:#ffd27a}
+  ul,ol{margin:8px 0;padding-left:22px} li{margin:6px 0}
+  .goal{background:#16221c;border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:14px 16px;margin:18px 0}
+  .goal b{color:var(--green)}
+  .warn{background:#241c16;border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:12px 16px;margin:18px 0;color:#efe0c4}
+  .bridge{background:#1a1622;border-left:3px solid #c08bff;border-radius:0 8px 8px 0;padding:12px 16px;margin:18px 0;color:#e3d5f5;font-size:14.5px}
+  .bridge b{color:#c8a6ff}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+  th{background:#1b2030;color:var(--amber);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  td code{font-size:12.5px}
+  details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 16px;margin:12px 0}
+  summary{cursor:pointer;font-weight:600;padding:8px 0;color:var(--amber)}
+  .flow{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:16px 18px;font:12.5px/1.7 ui-monospace,Menlo,Consolas,monospace;color:#d6deff;overflow-x:auto}
+  .flow .u{color:#ffd27a}.flow .g{color:#6ee7a8}.flow .d{color:#9bd0ff}.flow .c{color:#6b7689}
+  .nav{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);display:flex;gap:16px;flex-wrap:wrap;font-size:14px}
+  a{color:var(--accent)}
+  .ask{margin-top:26px;background:#161b29;border:1px dashed var(--accent);border-radius:10px;padding:14px 16px;color:#cdd6f5;font-size:14.5px}
+  kbd{background:#222733;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px}
+  .quiz{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:18px 0}
+  .quiz .q{font-weight:600;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;background:#1b2030;border:1px solid var(--line);color:var(--ink);padding:11px 14px;border-radius:8px;margin:8px 0;cursor:pointer;font:14px/1.4 inherit;transition:border-color .15s,background .15s}
+  .opt:hover:not(:disabled){border-color:var(--accent)}
+  .opt:disabled{cursor:default;opacity:.92}
+  .opt.correct{border-color:var(--green);background:#16291f}
+  .opt.wrong{border-color:var(--red);background:#2a1a1a}
+  .fb{display:none;margin-top:10px;font-size:14px;padding:10px 12px;border-radius:8px}
+  .fb.show{display:block}
+  .fb.ok{background:#16291f;color:var(--green)}
+  .fb.no{background:#2a1a1a;color:var(--red)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Урок 5 · Next.js — рендеринг и кеш</p>
+  <h1>Кеш и <code>revalidate</code>: когда страница свежая, а когда нет</h1>
+  <p class="lede">Ты только что в merge добавил <code>export const revalidate = 0;</code> в <code>categories/[slug]/page.tsx</code>. Эта строчка стоит на <b>каждой</b> витринной странице проекта. Разберём, что она реально делает — и почему без неё страница может «залипнуть» со старой ценой товара.</p>
+
+  <div class="goal">
+    <b>Цель урока.</b> Понять, что Next по умолчанию <b>кеширует</b> результат рендера страницы, и научиться управлять свежестью тремя ручками: <code>revalidate = 0</code> (всегда динамика), <code>revalidate = N</code> (раз в N секунд) и on-demand <code>revalidatePath()</code> (точечный сброс по событию). Всё на реальном коде <code>payload-start</code>.
+  </div>
+
+  <div class="bridge">
+    <b>Мост от ExtJS.</b> В ExtJS приложение живёт в браузере: открыл грид — он <code>store.load()</code>'нул свежие данные с сервера прямо сейчас. «Кеша рендера» там нет — каждый показ это живой запрос. Next переворачивает это: он старается отрендерить страницу <b>один раз</b> и потом раздавать готовый результат как статику. Быстро для пользователя — но именно поэтому появляется вопрос «а когда обновить?». <code>revalidate</code> — ответ на этот вопрос.
+  </div>
+
+  <h2>1. Главная идея: static by default</h2>
+  <p>Когда ты делаешь <code>npm run build</code>, Next смотрит на каждую страницу и пытается отрендерить её <b>заранее, на этапе сборки</b>, и сохранить результат (HTML + RSC-payload). Дальше пользователям отдаётся этот готовый снимок — без захода в БД на каждый запрос.</p>
+  <p>Это и есть два режима рендеринга:</p>
+  <table>
+    <tr><th>Режим</th><th>Когда рендерится</th><th>Данные</th><th>Скорость</th></tr>
+    <tr><td><b>Static</b> (по умолчанию)</td><td>Один раз — на билде (или при revalidate)</td><td>«Замороженные» на момент рендера</td><td>Очень быстро (отдаётся готовое)</td></tr>
+    <tr><td><b>Dynamic</b></td><td>На <b>каждый</b> запрос пользователя (SSR)</td><td>Всегда свежие из БД</td><td>Медленнее (рендер + запрос каждый раз)</td></tr>
+  </table>
+  <p>В билде, который мы только что прогнали, ты это видел в легенде:</p>
+  <pre><span class="c">○  (Static)   prerendered as static content</span>
+<span class="c">ƒ  (Dynamic)  server-rendered on demand</span></pre>
+  <p>Все наши <code>/products</code>, <code>/categories</code>, <code>/contacts</code> были помечены <code>ƒ</code> — динамические. Не случайно: мы их такими <b>сделали</b>. Разберём чем.</p>
+
+  <h2>2. Что переключает страницу в Dynamic</h2>
+  <p>Next сам решает режим. Страница становится динамической, если в ней есть хоть один «динамический» сигнал:</p>
+  <table>
+    <tr><th>Триггер</th><th>Почему</th></tr>
+    <tr><td><code>cookies()</code> / <code>headers()</code></td><td>Запросо-зависимы — на билде их нет</td></tr>
+    <tr><td><code>searchParams</code> в page</td><td>Зависят от конкретного URL запроса</td></tr>
+    <tr><td><code>export const dynamic = 'force-dynamic'</code></td><td>Явный приказ «всегда SSR»</td></tr>
+    <tr><td><code>export const revalidate = 0</code></td><td>«Кеш живёт 0 секунд» = по сути всегда заново</td></tr>
+    <tr><td>fetch с <code>{ cache: 'no-store' }</code></td><td>Запрос не кешируется → и страница тоже</td></tr>
+  </table>
+  <div class="warn">
+    <b>Тонкость про Payload Local API.</b> Мы данные тянем не через <code>fetch()</code>, а через <code>payload.find()</code> (прямой вызов в Server Component). Next <b>не умеет</b> автоматически отслеживать такой источник для кеша — он про него ничего не знает. Поэтому без явного <code>revalidate = 0</code> страница со списком товаров могла бы закешироваться на билде и показывать старый список, пока ты не передеплоишь. Вот зачем эта строчка стоит везде.
+  </div>
+
+  <h2>3. Ручка <code>export const revalidate</code></h2>
+  <p>Один экспорт на уровне модуля страницы/layout'а. Три осмысленных значения:</p>
+  <table>
+    <tr><th>Значение</th><th>Смысл</th><th>Когда брать</th></tr>
+    <tr><td><code>false</code> (дефолт)</td><td>Static «навсегда» — до следующего билда или on-demand сброса</td><td>Контент не меняется (лендинг, статья)</td></tr>
+    <tr><td><code>0</code></td><td>Всегда Dynamic — рендер на каждый запрос, всегда свежо</td><td>Данные часто меняются и важна свежесть «сейчас»</td></tr>
+    <tr><td><code>3600</code> (любое N)</td><td><b>ISR</b>: отдаём кеш, но не старше N секунд; устарел — Next тихо перерендерит в фоне</td><td>Можно потерпеть задержку в N сек ради скорости</td></tr>
+  </table>
+  <p>Наш выбор по проекту — <code>0</code> на всех витринных страницах:</p>
+  <pre><span class="c">// src/app/(frontend)/products/page.tsx, categories/page.tsx,</span>
+<span class="c">// categories/[slug]/page.tsx, contacts/page.tsx — везде одинаково:</span>
+<span class="k">export const</span> revalidate = <span class="u">0</span>;</pre>
+  <p>Перевод: «цена, наличие, баннер магазина могут поменяться в админке в любой момент — рендери на каждый заход, не показывай старьё». Платим скоростью, покупаем свежесть.</p>
+
+  <h2>4. On-demand revalidation: push вместо poll</h2>
+  <p><code>revalidate = N</code> — это <i>poll</i>: «проверяй устаревание по таймеру». Но есть и <i>push</i>: «данные изменились — сбрось кеш именно сейчас, точечно». Это <code>revalidatePath()</code> / <code>revalidateTag()</code> из <code>next/cache</code>.</p>
+  <p>В проекте уже собрана полная цепочка такого сброса. Триггер — сохранение товара в админке Payload:</p>
+  <pre><span class="c">// src/hooks/products/afterChange.ts — хук Payload после сохранения товара</span>
+<span class="k">export const</span> afterChange: CollectionAfterChangeHook = <span class="k">async</span> ({ doc, req, operation }) => {
+  <span class="k">if</span> (doc._status !== <span class="s">'published'</span>) <span class="k">return</span>;        <span class="c">// черновики не трогаем</span>
+  <span class="k">if</span> (req.context?.isSeeding) <span class="k">return</span>;            <span class="c">// при сидинге веб-сервера нет — пропускаем</span>
+
+  <span class="k">await</span> <span class="f">fetch</span>(<span class="s">`${process.env.NEXT_PUBLIC_API_URL}/api/revalidate`</span>, {
+    method: <span class="s">'POST'</span>,
+    headers: { <span class="s">'x-revalidate-secret'</span>: process.env.REVALIDATE_SECRET ?? <span class="s">''</span> },
+  });
+};</pre>
+  <p>Хук стучится на свой же API-роут. А роут — проверяет секрет и дёргает сброс:</p>
+  <pre><span class="c">// src/app/api/revalidate/route.ts</span>
+<span class="k">import</span> { revalidatePath } <span class="k">from</span> <span class="s">'next/cache'</span>;
+
+<span class="k">export async function</span> <span class="f">POST</span>() {
+  <span class="k">const</span> headers = <span class="k">await</span> <span class="f">getHeaders</span>();
+  <span class="k">if</span> (headers.<span class="f">get</span>(<span class="s">'x-revalidate-secret'</span>) !== process.env.REVALIDATE_SECRET) {
+    <span class="k">return</span> NextResponse.<span class="f">json</span>({ error: <span class="s">'Unauthorized'</span> }, { status: <span class="u">401</span> });
+  }
+  <span class="f">revalidatePath</span>(<span class="s">'/products'</span>);              <span class="c">// сбросить кеш страницы /products</span>
+  <span class="k">return</span> NextResponse.<span class="f">json</span>({ revalidated: <span class="k">true</span>, now: Date.<span class="f">now</span>() });
+}</pre>
+  <div class="flow">
+<span class="d">Сохранил товар в админке</span>
+   <span class="c">└─►</span> <span class="g">products/afterChange</span> (Payload hook)
+          <span class="c">└─►</span> POST <span class="u">/api/revalidate</span> + секрет в заголовке
+                 <span class="c">└─►</span> проверка секрета <span class="c">─►</span> <span class="g">revalidatePath('/products')</span>
+                        <span class="c">└─►</span> кеш страницы помечен устаревшим <span class="c">─►</span> след. заход = свежий рендер</pre>
+  </div>
+  <p>Зачем секрет? <code>/api/revalidate</code> — публичный URL. Без проверки любой смог бы спамить сбросом кеша (мелкий DoS). Секрет в заголовке = «свой/чужой».</p>
+
+  <div class="warn">
+    <b>Острый вопрос — подумай прежде чем читать спойлер.</b> Если все витринные страницы стоят на <code>revalidate = 0</code> (то есть и так рендерятся заново на каждый запрос, кеша нет)… то зачем тогда нужна вся эта on-demand цепочка с <code>revalidatePath('/products')</code>? Что она реально сбрасывает?
+  </div>
+  <details>
+    <summary>Спойлер: разбор несостыковки</summary>
+    <p>При <code>revalidate = 0</code> сбрасывать почти нечего — страница и так динамическая. То есть прямо сейчас эти два механизма <b>дублируют цель</b> (свежесть), и on-demand-хук в значительной мере холостой. Это нормальная находка для mid-level код-ревью. Возможные трактовки:</p>
+    <ul>
+      <li><b>Исторический слой:</b> хук revalidate писался раньше, когда страницы были static/ISR, а <code>revalidate = 0</code> добавили позже «чтобы наверняка» — и забыли убрать хук.</li>
+      <li><b>Задел на будущее:</b> если когда-нибудь увести <code>/products</code> в ISR (<code>revalidate = 3600</code>) ради скорости — on-demand сброс сразу станет нужен, чтобы новый товар появлялся мгновенно, не дожидаясь часа.</li>
+      <li><b>Правильный дизайн «как надо»:</b> страницы делают static/ISR (быстро), а свежесть обеспечивает on-demand сброс по событию из CMS. Это и есть рекомендуемый Next-паттерн для headless-CMS. Текущий проект до него «не дотянул» — выбрал грубое <code>revalidate = 0</code>.</li>
+    </ul>
+    <p>Вывод для собеседования: уметь сказать «<code>revalidate=0</code> просто и надёжно, но жертвует скоростью; зрелый вариант — ISR + on-demand revalidate из хука CMS».</p>
+  </details>
+
+  <h2>5. <code>revalidatePath</code> vs <code>revalidateTag</code></h2>
+  <table>
+    <tr><th>API</th><th>Сбрасывает</th><th>Когда</th></tr>
+    <tr><td><code>revalidatePath('/products')</code></td><td>Конкретный маршрут по URL</td><td>Знаешь, какая страница протухла</td></tr>
+    <tr><td><code>revalidateTag('products')</code></td><td>Все fetch'и, помеченные тегом <code>products</code>, где бы они ни были</td><td>Данные размазаны по многим страницам</td></tr>
+  </table>
+  <p>Теги вешаются на запрос: <code>fetch(url, { next: { tags: ['products'] } })</code>. В нашем проекте используется path-вариант — он проще и нам хватает (одна «горячая» страница списка). Tag-вариант пригодится, когда товар светится на десятке разных страниц.</p>
+
+  <h2>Проверь себя</h2>
+
+  <div class="quiz">
+    <p class="q">1. Страница <code>/products</code> без <code>export const revalidate</code> и без cookies/headers. Что с ней на проде?</p>
+    <button class="opt" data-ok="0">Рендерится из БД на каждый запрос — всегда свежая</button>
+    <button class="opt" data-ok="1">Закешируется static на билде; новый товар из админки не появится до передеплоя или on-demand сброса</button>
+    <button class="opt" data-ok="0">Next выдаст ошибку — revalidate обязателен</button>
+    <button class="opt" data-ok="0">Будет обновляться раз в 60 секунд по умолчанию</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz">
+    <p class="q">2. Что по сути означает <code>export const revalidate = 0;</code>?</p>
+    <button class="opt" data-ok="0">Отключить страницу</button>
+    <button class="opt" data-ok="1">Кеш живёт 0 секунд → страница рендерится заново на каждый запрос (Dynamic/SSR)</button>
+    <button class="opt" data-ok="0">Кешировать навсегда, никогда не обновлять</button>
+    <button class="opt" data-ok="0">Ревалидировать ровно при первом запросе, потом заморозить</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz">
+    <p class="q">3. Зачем в <code>products/afterChange.ts</code> стоит <code>if (req.context?.isSeeding) return;</code> перед вызовом <code>/api/revalidate</code>?</p>
+    <button class="opt" data-ok="1">При сидинге/bulk нет запущенного веб-сервера — fetch на /api/revalidate всё равно упадёт, и на каждый из сотен товаров это лишний шум/ошибки</button>
+    <button class="opt" data-ok="0">Сидинг создаёт только черновики, их нельзя ревалидировать</button>
+    <button class="opt" data-ok="0">isSeeding отключает кеш целиком</button>
+    <button class="opt" data-ok="0">Чтобы сид работал быстрее за счёт пропуска валидации полей</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz">
+    <p class="q">4. Хочешь: страница быстрая (static), но новый товар появляется на ней сразу после сохранения в админке. Какой подход?</p>
+    <button class="opt" data-ok="0"><code>revalidate = 0</code> на странице</button>
+    <button class="opt" data-ok="1"><code>revalidate = 3600</code> (ISR) + on-demand <code>revalidatePath('/products')</code> из хука afterChange</button>
+    <button class="opt" data-ok="0"><code>dynamic = 'force-dynamic'</code></button>
+    <button class="opt" data-ok="0">Никак — быстро и свежо одновременно невозможно</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="card">
+    <h3>Практика 3 (пишешь сам)</h3>
+    <p>Закрепляем на реальном коде проекта. Задание — небольшое, но «сквозное»:</p>
+    <ol>
+      <li>Выбери страницу детали товара <code>src/app/(frontend)/products/[id]/page.tsx</code>. Сейчас на ней нет <code>revalidate</code> — проверь это.</li>
+      <li>Переведи её на <b>ISR</b>: добавь <code>export const revalidate = 60;</code>. Запусти <code>npm run build</code> и найди страницу <code>/products/[id]</code> в выводе — как она помечена (<code>○</code>/<code>ƒ</code>/<code>●</code>)? Объясни словами, что изменилось.</li>
+      <li>Теперь дополни on-demand цепочку: в <code>api/revalidate/route.ts</code> рядом с <code>revalidatePath('/products')</code> подумай, как сбросить и конкретную карточку товара. Набросай (можно псевдокодом в комментарии), что бы ты передал, чтобы сбросить <code>/products/42</code>. Подсказка: <code>revalidatePath</code> принимает путь.</li>
+      <li>Откати <code>revalidate = 60</code> обратно если хочешь сохранить текущее поведение — главное, чтобы ты понял разницу на собственном билде.</li>
+    </ol>
+    <p>Не уверен в шаге — спроси в чате, разберём прежде чем писать. Жду твою реализацию, потом ревью.</p>
+  </div>
+
+  <div class="ask">
+    💬 Что-то «магия, но непонятно почему»? Спрашивай прямо в чате. Например: «покажи в нашем билде, какие страницы static, а какие dynamic и почему» или «чем <code>revalidateTag</code> лучше для нашего случая».
+  </div>
+
+  <div class="nav">
+    <a href="0004-practice-dynamic-category.html">← Практика 2</a>
+    <a href="../reference/glossary.html">📖 Глоссарий</a>
+    <a href="https://nextjs.org/docs/app/building-your-application/caching" target="_blank">↗ Next.js — Caching</a>
+    <a href="https://nextjs.org/docs/app/api-reference/functions/revalidatePath" target="_blank">↗ revalidatePath</a>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.quiz').forEach(q=>{
+  const fb=q.querySelector('.fb');
+  q.querySelectorAll('.opt').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      q.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+      const ok=btn.dataset.ok==='1';
+      btn.classList.add(ok?'correct':'wrong');
+      if(!ok){q.querySelector('.opt[data-ok="1"]').classList.add('correct');}
+      fb.classList.add('show',ok?'ok':'no');
+      fb.textContent=ok?'✓ Верно.':'✗ Не то. Зелёным подсвечен правильный ответ — перечитай раздел выше.';
+    });
+  });
+});
+</script>
+</body>
+</html>

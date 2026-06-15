@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Урок 6 — Модель данных Payload: коллекция как единый источник правды</title>
+<style>
+  :root{--bg:#0f1115;--card:#171a21;--ink:#e7e9ee;--muted:#9aa3b2;--accent:#7aa2ff;--green:#6ee7a8;--amber:#ffd27a;--red:#ff8b8b;--line:#272c36;--code:#1d2230;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;padding:48px 20px}
+  .wrap{max-width:860px;margin:0 auto}
+  .eyebrow{color:var(--green);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px;margin:0}
+  h1{font-size:30px;line-height:1.2;margin:6px 0 10px}
+  .lede{color:var(--muted);font-size:18px;margin:0 0 28px}
+  h2{font-size:21px;margin:34px 0 12px;padding-top:10px;border-top:1px solid var(--line)}
+  h3{font-size:16px;margin:20px 0 6px;color:var(--amber)}
+  p{margin:12px 0}
+  code{background:var(--code);padding:1px 6px;border-radius:5px;font:13.5px/1.5 ui-monospace,Menlo,Consolas,monospace;color:#cbd5ff}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;color:#d6deff}
+  .c{color:#6b7689}.k{color:#ff9ecb}.s{color:#a6e3a1}.f{color:#9bd0ff}.u{color:#ffd27a}
+  ul,ol{margin:8px 0;padding-left:22px} li{margin:6px 0}
+  .goal{background:#16221c;border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:14px 16px;margin:18px 0}
+  .goal b{color:var(--green)}
+  .warn{background:#241c16;border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:12px 16px;margin:18px 0;color:#efe0c4}
+  .bridge{background:#1a1622;border-left:3px solid #c08bff;border-radius:0 8px 8px 0;padding:12px 16px;margin:18px 0;color:#e3d5f5;font-size:14.5px}
+  .bridge b{color:#c8a6ff}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+  th{background:#1b2030;color:var(--amber);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  td code{font-size:12.5px}
+  details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 16px;margin:12px 0}
+  summary{cursor:pointer;font-weight:600;padding:8px 0;color:var(--amber)}
+  .flow{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:16px 18px;font:12.5px/1.7 ui-monospace,Menlo,Consolas,monospace;color:#d6deff;overflow-x:auto}
+  .flow .u{color:#ffd27a}.flow .g{color:#6ee7a8}.flow .d{color:#9bd0ff}.flow .c{color:#6b7689}
+  .nav{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);display:flex;gap:16px;flex-wrap:wrap;font-size:14px}
+  a{color:var(--accent)}
+  .ask{margin-top:26px;background:#161b29;border:1px dashed var(--accent);border-radius:10px;padding:14px 16px;color:#cdd6f5;font-size:14.5px}
+  kbd{background:#222733;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px}
+  .quiz{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:18px 0}
+  .quiz .q{font-weight:600;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;background:#1b2030;border:1px solid var(--line);color:var(--ink);padding:11px 14px;border-radius:8px;margin:8px 0;cursor:pointer;font:14px/1.4 inherit;transition:border-color .15s,background .15s}
+  .opt:hover:not(:disabled){border-color:var(--accent)}
+  .opt:disabled{cursor:default;opacity:.92}
+  .opt.correct{border-color:var(--green);background:#16291f}
+  .opt.wrong{border-color:var(--red);background:#2a1a1a}
+  .fb{display:none;margin-top:10px;font-size:14px;padding:10px 12px;border-radius:8px}
+  .fb.show{display:block}
+  .fb.ok{background:#16291f;color:var(--green)}
+  .fb.no{background:#2a1a1a;color:var(--red)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Урок 6 · Payload — модель данных</p>
+  <h1>Коллекция как единый источник правды</h1>
+  <p class="lede">Ты уже читал данные из коллекций (<code>payload.find</code>, <code>findByID</code>) и даже руками собрал глобал <code>SiteSettings</code> с <code>group</code>/<code>array</code>. Теперь зайдём с другой стороны: что такое сам <b>config коллекции</b> и почему один объект на ~30 строк порождает таблицу в БД, экран в админке, REST+GraphQL API и TypeScript-типы — одновременно.</p>
+
+  <div class="goal">
+    <b>Цель урока.</b> Научиться читать и писать <code>CollectionConfig</code>: <code>slug</code> → <code>fields</code> → <code>access</code> → <code>hooks</code> → <code>admin</code>. Понять типы полей на реальном коде <code>Products.ts</code>/<code>Orders.ts</code>, и главное — увидеть, что <b>access в Payload может вернуть не только <code>true/false</code>, но и фильтр-запрос</b> (построчная безопасность из коробки).
+  </div>
+
+  <div class="bridge">
+    <b>Мост от ExtJS.</b> В ExtJS у тебя <code>Ext.define('App.model.Product', {fields:[...]})</code> — модель описывает <b>только форму данных на клиенте</b>. Сервер, таблицу в БД, валидацию и права ты пишешь отдельно, руками, на другом стеке. Payload-коллекция — это та же «модель», но она <b>сама себе бэкенд</b>: из одного описания полей Payload поднимает миграцию схемы, CRUD-эндпоинты, проверки доступа и форму редактирования. Один файл вместо четырёх слоёв.
+  </div>
+
+  <h2>1. Из одного config — четыре артефакта</h2>
+  <p>Возьми <code>Categories.ts</code> — самую маленькую коллекцию проекта, всего два поля:</p>
+<pre><span class="k">export const</span> Categories: CollectionConfig = {
+  slug: <span class="s">'categories'</span>,
+  fields: [
+    { name: <span class="s">'name'</span>, type: <span class="s">'text'</span>, required: <span class="k">true</span> },
+    { name: <span class="s">'slug'</span>, type: <span class="s">'text'</span>, required: <span class="k">true</span>, unique: <span class="k">true</span> },
+  ],
+};</pre>
+  <p>Этот объект Payload разворачивает сразу в <b>четыре</b> вещи:</p>
+  <table>
+    <tr><th>Артефакт</th><th>Что появляется</th></tr>
+    <tr><td>Схема БД</td><td>таблица <code>categories</code> с колонками <code>name</code>, <code>slug</code> (+ <code>id</code>, <code>createdAt</code>, <code>updatedAt</code> автоматом). <code>unique</code> → UNIQUE-индекс.</td></tr>
+    <tr><td>Admin UI</td><td>раздел «Categories» с формой из двух текстовых инпутов и валидацией «обязательно».</td></tr>
+    <tr><td>API</td><td>REST (<code>/api/categories</code>) + GraphQL + Local API (<code>payload.find({collection:'categories'})</code>, которым ты уже пользовался).</td></tr>
+    <tr><td>Типы</td><td>интерфейс <code>Category</code> в <code>src/payload-types.ts</code> после <code>npm run generate:types</code>.</td></tr>
+  </table>
+  <p>Поменял поле в config → поменялись все четыре. Это и есть «единый источник правды»: нет рассинхрона между БД, формой и типами, потому что они <b>выводятся</b> из одного места.</p>
+
+  <h2>2. Анатомия коллекции</h2>
+  <p>Полный набор верхнеуровневых ключей <code>CollectionConfig</code> (все, кроме <code>slug</code>/<code>fields</code>, опциональны). Где что в проекте:</p>
+  <table>
+    <tr><th>Ключ</th><th>Зачем</th><th>Пример в коде</th></tr>
+    <tr><td><code>slug</code></td><td>идентификатор: имя таблицы + путь API</td><td>все коллекции</td></tr>
+    <tr><td><code>fields</code></td><td>поля = колонки + инпуты</td><td>все</td></tr>
+    <tr><td><code>access</code></td><td>права на read/create/update/delete</td><td><code>Products.ts:23</code></td></tr>
+    <tr><td><code>hooks</code></td><td>код на события жизненного цикла</td><td><code>Products.ts:29</code> (beforeChange/afterChange/beforeDelete)</td></tr>
+    <tr><td><code>admin</code></td><td>как коллекция выглядит/ведёт себя в админке</td><td><code>Products.ts:15</code> (<code>useAsTitle</code>, <code>preview</code>)</td></tr>
+    <tr><td><code>auth</code></td><td>включает логин/JWT/пароль для этой коллекции</td><td><code>Customers.ts:4</code> (<code>auth: true</code>)</td></tr>
+    <tr><td><code>versions</code></td><td>черновики и история версий</td><td><code>Products.ts:9</code> (drafts, maxPerDoc)</td></tr>
+  </table>
+  <div class="bridge"><b>Деталь про <code>auth: true</code>.</b> Одна строка в <code>Customers.ts</code> превращает обычную коллекцию в <b>сущность с аутентификацией</b>: Payload добавляет поля <code>email</code>/<code>password</code> (хеш), эндпоинты login/logout/refresh и механику JWT. Поэтому у тебя в проекте <b>две</b> auth-коллекции (<code>users</code> для админки и <code>customers</code> для магазина) — каждая со своим логином, как описано в CLAUDE.md.</div>
+
+  <h2>3. Типы полей — экскурсия по <code>Products.ts</code></h2>
+  <p>Карточка товара использует почти весь словарь field types. Главное, что нужно усвоить: <b>тип поля — это не только UI-виджет</b>, это ещё и тип колонки в БД, и форма в TS-типе, и набор доступных валидаторов.</p>
+  <table>
+    <tr><th>type</th><th>Что это</th><th>В <code>Products.ts</code></th></tr>
+    <tr><td><code>text</code></td><td>строка</td><td><code>name</code> (required)</td></tr>
+    <tr><td><code>number</code></td><td>число + <code>min</code>/<code>max</code></td><td><code>price</code> (min:0, max:1e6)</td></tr>
+    <tr><td><code>checkbox</code></td><td>boolean</td><td><code>inStock</code></td></tr>
+    <tr><td><code>richText</code></td><td>структурный документ (не строка!) — рендерится конвертером</td><td><code>description</code></td></tr>
+    <tr><td><code>relationship</code></td><td>ссылка на другую коллекцию (внешний ключ)</td><td><code>category</code> → categories</td></tr>
+    <tr><td><code>relationship</code> + <code>hasMany</code></td><td>массив ссылок (many-to-many)</td><td><code>images</code> → media, hasMany</td></tr>
+    <tr><td><code>group</code></td><td>вложенный объект (логическая группировка полей)</td><td><code>dimensions</code> {weight,width,height}</td></tr>
+    <tr><td><code>array</code></td><td>повторяемый список под-объектов</td><td>в <code>Orders.ts</code>: <code>items[]</code></td></tr>
+    <tr><td><code>select</code></td><td>enum из фикс. значений</td><td>в <code>Orders.ts</code>: <code>status</code></td></tr>
+    <tr><td><code>collapsible</code></td><td>чисто визуальная обёртка (НЕ создаёт уровень в данных)</td><td>«Характеристики» оборачивает dimensions+images</td></tr>
+  </table>
+  <div class="warn"><b>Тонкость <code>group</code> vs <code>collapsible</code>.</b> Оба «складывают» поля, но по-разному. <code>group</code> с <code>name:'dimensions'</code> создаёт <b>вложенность в данных</b> → в API ты читаешь <code>product.dimensions.weight</code> (ты это и делаешь на PDP). <code>collapsible</code> — только UI-гармошка в админке, в данных <b>плоско</b>: <code>dimensions</code> и <code>images</code> лежат на верхнем уровне товара, хотя в форме спрятаны под одну шапку. Структура данных определяется <code>group</code>/<code>array</code>, а не визуальными обёртками.</div>
+
+  <h2>4. Поля тоже программируемые: field-level hooks</h2>
+  <p>Хук можно повесить не только на коллекцию, но и на <b>отдельное поле</b>. Смотри <code>price</code> (<code>Products.ts:50</code>):</p>
+<pre>{
+  name: <span class="s">'price'</span>, type: <span class="s">'number'</span>, required: <span class="k">true</span>, min: <span class="u">0</span>, max: <span class="u">1000000</span>,
+  hooks: {
+    beforeChange: [({ value }) =&gt; value === <span class="k">null</span> ? value : Math.round(value * <span class="u">100</span>) / <span class="u">100</span>],
+    afterRead:    [({ value }) =&gt; value ?? <span class="u">0</span>],
+  },
+}</pre>
+  <ul>
+    <li><b><code>beforeChange</code></b> на поле — нормализует <b>перед записью</b>: округляет цену до 2 знаков. Кто бы ни писал (админка, seed, API) — в БД ляжет округлённое.</li>
+    <li><b><code>afterRead</code></b> — чинит данные <b>на выходе</b>: <code>null → 0</code>. Поэтому в коде PDP ты можешь не бояться <code>null</code> в цене.</li>
+  </ul>
+  <p>Это мощный приём: инвариант («цена всегда ≥0, 2 знака, не null») живёт <b>в одном месте — в схеме поля</b>, а не размазан по всем местам, где цену пишут или читают.</p>
+
+  <h2>5. Access control — главная мысль урока</h2>
+  <p>Все access-функции проекта собраны в <code>src/access/index.ts</code> — четыре однострочника:</p>
+<pre><span class="k">export const</span> ONLY_AUTHENTICATED = ({ req }) =&gt; !!req.user;
+<span class="k">export const</span> ONLY_ADMIN = ({ req }) =&gt; req.user?.collection === <span class="s">'users'</span>;
+<span class="k">export const</span> ALLOW_ALL = () =&gt; <span class="k">true</span>;
+<span class="k">export const</span> RESTRICTED_ALL = () =&gt; <span class="k">false</span>;</pre>
+  <p>В <code>Products.ts:23</code> они расставлены по операциям: <code>read: ALLOW_ALL</code> (товары видят все), <code>create/update: ONLY_AUTHENTICATED</code>, <code>delete: ONLY_ADMIN</code> (удалять — только админ из коллекции <code>users</code>, не покупатель).</p>
+
+  <h3>Но access умеет больше, чем true/false</h3>
+  <p>Вот ключевой трюк Payload. Посмотри <code>Orders.ts:27</code>:</p>
+<pre>access: {
+  read: ({ req }) =&gt; {
+    <span class="k">if</span> (req.user) <span class="k">return</span> { customer: { equals: req.user.id } };  <span class="c">// ← не boolean, а ФИЛЬТР</span>
+    <span class="k">return</span> <span class="k">false</span>;
+  },
+},</pre>
+  <p>Функция вернула не <code>true</code>, а объект-<b>условие запроса</b>. Payload понимает это так: «доступ есть, но <b>только к строкам, где <code>customer == текущий юзер</code></b>». Этот фильтр он <b>подмешивает в каждый запрос</b> — и в Local API, и в REST, и в админке. Покупатель физически не может прочитать чужой заказ: не потому что мы добавили <code>if</code> в каждый эндпоинт, а потому что движок дописывает <code>WHERE customer = ?</code> на уровне доступа.</p>
+  <div class="bridge"><b>Почему это дорогого стоит.</b> В классическом стеке (та же Java) «пользователь видит только свои заказы» — это ручной фильтр в сервисе, который легко забыть в новом эндпоинте → утечка данных. В Payload правило живёт в <b>одной</b> точке (access коллекции) и применяется ко всем путям доступа автоматически. Это row-level security декларативно.</div>
+  <p>Три формы возврата access-функции, которые надо знать:</p>
+  <table>
+    <tr><th>Вернула</th><th>Значит</th></tr>
+    <tr><td><code>true</code></td><td>полный доступ ко всем документам</td></tr>
+    <tr><td><code>false</code></td><td>доступа нет вообще</td></tr>
+    <tr><td><code>{ ...where }</code></td><td>доступ только к документам, подходящим под фильтр</td></tr>
+  </table>
+
+  <h2>6. Поменял схему — что делать дальше</h2>
+  <p>Любая правка <code>fields</code> затрагивает БД и типы. Рабочий цикл в этом проекте:</p>
+  <div class="flow"><span class="c"># 1. правишь fields в коллекции</span>
+<span class="c"># 2. dev-сервер на SQLite сам пушит изменение схемы (push)</span>
+npm run dev
+<span class="c"># 3. перегенерировать TS-типы под новую форму данных</span>
+npm run generate:types   <span class="c"># обновит src/payload-types.ts</span>
+<span class="c"># 4. (если правил admin-компоненты/блоки) — importmap</span>
+npm run generate:importmap</div>
+  <div class="warn"><b>Не забудь <code>generate:types</code>.</b> Если добавил поле, но не перегенерировал типы — TS не будет знать о новом свойстве, и в коде PDP/карточки ты получишь ошибку «Property does not exist on type Product». <code>src/payload-types.ts</code> — автоген, руками не трогать (см. CLAUDE.md).</div>
+
+  <div class="quiz">
+    <p class="q">Вопрос 1. Чем <code>group</code> отличается от <code>collapsible</code> в данных?</p>
+    <button class="opt" data-ok="0">Ничем — оба просто складывают поля в гармошку</button>
+    <button class="opt" data-ok="1"><code>group</code> создаёт вложенность в данных (<code>product.dimensions.weight</code>), <code>collapsible</code> — только UI, данные плоские</button>
+    <button class="opt" data-ok="0"><code>collapsible</code> создаёт вложенность, <code>group</code> — нет</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz">
+    <p class="q">Вопрос 2. Access-функция <code>read</code> в <code>Orders</code> вернула <code>{ customer: { equals: req.user.id } }</code>. Что произойдёт?</p>
+    <button class="opt" data-ok="0">Ошибка — access обязан вернуть boolean</button>
+    <button class="opt" data-ok="0">Доступ будет ко всем заказам, объект игнорируется</button>
+    <button class="opt" data-ok="1">Доступ только к заказам, где <code>customer</code> = текущий юзер; фильтр подмешается во все запросы</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="quiz">
+    <p class="q">Вопрос 3. Ты добавил в <code>Products</code> поле <code>sku</code>. В коде PDP пишешь <code>product.sku</code> — TS ругается «Property 'sku' does not exist». Почему?</p>
+    <button class="opt" data-ok="0">Поле нужно сначала заполнить в админке</button>
+    <button class="opt" data-ok="1">Не перегенерировал типы — <code>npm run generate:types</code> обновит <code>payload-types.ts</code></button>
+    <button class="opt" data-ok="0">У <code>relationship</code>-полей нет типов</button>
+    <div class="fb"></div>
+  </div>
+
+  <div class="card">
+    <h3>Практика 4 (пишешь сам)</h3>
+    <p>Маленькая сквозная задача — добавить поле и провести его через всю цепочку «config → БД → типы → витрина».</p>
+    <ol>
+      <li>В <code>src/collections/Products.ts</code> добавь поле <code>sku</code>: <code>type:'text'</code>, <code>unique:true</code>, и через <code>admin:{ position:'sidebar' }</code> покажи его в боковой панели формы (загляни в доку, как это работает).</li>
+      <li>Запусти <code>npm run dev</code> — dev-сервер запушит схему. Открой админку, убедись, что поле появилось сбоку. Попробуй сохранить двум товарам одинаковый <code>sku</code> — поймай ошибку уникальности.</li>
+      <li>Прогони <code>npm run generate:types</code>. Найди в <code>src/payload-types.ts</code> интерфейс <code>Product</code> — там должно появиться <code>sku?: string | null</code>. Объясни словами, почему <code>?</code> и <code>| null</code> (поле не <code>required</code>).</li>
+      <li>Выведи <code>sku</code> на странице карточки <code>products/[id]/page.tsx</code> маленькой строкой под названием (например <code>Артикул: {product.sku}</code>). Убедись, что TS больше не ругается.</li>
+      <li><b>На подумать (без кода):</b> если бы <code>sku</code> нужно было прятать от неавторизованных (видят только залогиненные) — на каком уровне это решается, коллекции или поля? Какую из функций <code>access/index.ts</code> переиспользовал бы?</li>
+    </ol>
+    <p>Не уверен в шаге — спроси прежде чем писать. Жду реализацию, потом ревью.</p>
+  </div>
+
+  <div class="ask">
+    💬 Затык? Спрашивай в чате. Например: «покажи, во что превратился <code>Product</code> в payload-types после моего поля» или «разбери, чем field-level access отличается от collection access на нашем коде».
+  </div>
+
+  <div class="nav">
+    <a href="0005-caching-revalidate.html">← Урок 5 (кеш/revalidate)</a>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.quiz').forEach((quiz) => {
+    const opts = quiz.querySelectorAll('.opt');
+    const fb = quiz.querySelector('.fb');
+    opts.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const ok = btn.dataset.ok === '1';
+        opts.forEach((b) => {
+          b.disabled = true;
+          if (b.dataset.ok === '1') b.classList.add('correct');
+        });
+        if (!ok) btn.classList.add('wrong');
+        fb.classList.add('show', ok ? 'ok' : 'no');
+        fb.textContent = ok ? 'Верно.' : 'Не то — правильный вариант подсвечен зелёным.';
+      });
+    });
+  });
+</script>
+</body>
+</html>

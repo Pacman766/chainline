@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Урок 7 — Payload Hooks: код на события жизненного цикла</title>
+<style>
+  :root{--bg:#0f1115;--card:#171a21;--ink:#e7e9ee;--muted:#9aa3b2;--accent:#7aa2ff;--green:#6ee7a8;--amber:#ffd27a;--red:#ff8b8b;--line:#272c36;--code:#1d2230;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;padding:48px 20px}
+  .wrap{max-width:860px;margin:0 auto}
+  .eyebrow{color:var(--green);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px;margin:0}
+  h1{font-size:30px;line-height:1.2;margin:6px 0 10px}
+  .lede{color:var(--muted);font-size:18px;margin:0 0 28px}
+  h2{font-size:21px;margin:34px 0 12px;padding-top:10px;border-top:1px solid var(--line)}
+  h3{font-size:16px;margin:20px 0 6px;color:var(--amber)}
+  p{margin:12px 0}
+  code{background:var(--code);padding:1px 6px;border-radius:5px;font:13.5px/1.5 ui-monospace,Menlo,Consolas,monospace;color:#cbd5ff}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;color:#d6deff}
+  .c{color:#6b7689}.k{color:#ff9ecb}.s{color:#a6e3a1}.f{color:#9bd0ff}.u{color:#ffd27a}
+  .n{color:#ff8b8b;font-weight:700}
+  ul,ol{margin:8px 0;padding-left:22px} li{margin:6px 0}
+  .goal{background:#16221c;border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:14px 16px;margin:18px 0}
+  .goal b{color:var(--green)}
+  .warn{background:#241c16;border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:12px 16px;margin:18px 0;color:#efe0c4}
+  .bridge{background:#1a1622;border-left:3px solid #c08bff;border-radius:0 8px 8px 0;padding:12px 16px;margin:18px 0;color:#e3d5f5;font-size:14.5px}
+  .bridge b{color:#c8a6ff}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+  th{background:#1b2030;color:var(--amber);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  td code{font-size:12.5px}
+  .notes{counter-reset:fn;list-style:none;padding-left:0}
+  .notes li{position:relative;padding:8px 0 8px 38px;border-bottom:1px solid var(--line)}
+  .notes li::before{content:"["counter(fn)"]";counter-increment:fn;position:absolute;left:0;top:8px;color:var(--green);font:700 13px ui-monospace,monospace}
+  details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 16px;margin:12px 0}
+  summary{cursor:pointer;font-weight:600;padding:8px 0;color:var(--amber)}
+  .nav{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);display:flex;gap:16px;flex-wrap:wrap;font-size:14px}
+  a{color:var(--accent)}
+  .ask{margin-top:26px;background:#161b29;border:1px dashed var(--accent);border-radius:10px;padding:14px 16px;color:#cdd6f5;font-size:14.5px}
+  .quiz{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:18px 0}
+  .quiz .q{font-weight:600;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;background:#1b2030;border:1px solid var(--line);color:var(--ink);padding:11px 14px;border-radius:8px;margin:8px 0;cursor:pointer;font:14px/1.4 inherit;transition:border-color .15s,background .15s}
+  .opt:hover:not(:disabled){border-color:var(--accent)}
+  .opt:disabled{cursor:default;opacity:.92}
+  .opt.correct{border-color:var(--green);background:#16291f}
+  .opt.wrong{border-color:var(--red);background:#2a1a1a}
+  .fb{display:none;margin-top:10px;font-size:14px;padding:10px 12px;border-radius:8px}
+  .fb.show{display:block}
+  .fb.ok{background:#16291f;color:var(--green)}
+  .fb.no{background:#2a1a1a;color:var(--red)}
+  .fnref{color:var(--green);font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Урок 7 · Payload — hooks · формат: обзор → разбор → практика</p>
+  <h1>Payload Hooks: код на события жизненного цикла</h1>
+  <p class="lede">Ты уже трогал хуки мимоходом: <code>products/afterChange</code> бил по <code>/api/revalidate</code>, поле <code>price</code> округлялось в field-hook. Теперь — системно. Хук = твой код, который Payload вызывает в определённый момент работы с документом: до записи, после записи, перед удалением, после логина.</p>
+
+  <div class="goal">
+    <b>Цель.</b> Понять карту хуков и три вещи, которые отличают «работает» от «стреляет себе в ногу»: (1) <b>что приходит в аргументах</b> и чем отличаются типы хуков, (2) <b>что нужно вернуть</b> (и почему <code>before*</code> может мутировать данные, а <code>after*</code> — нет), (3) как <b>не словить бесконечный цикл и не уронить операцию</b> побочкой.
+  </div>
+
+  <h2>1. Обзор: где на таймлайне живут хуки</h2>
+  <div class="bridge"><b>Мост от ExtJS.</b> В ExtJS у store/model есть события: <code>beforewrite</code>, <code>write</code>, <code>beforesync</code>, и ты вешаешь на них листенеры. Payload hooks — то же самое, но <b>на сервере</b> и встроены в CRUD движка. Разница принципиальная: ExtJS-листенер на клиенте можно обойти (полез в API напрямую) — серверный хук Payload отработает <b>при любом</b> пути записи: админка, REST, GraphQL, Local API, seed. Это место для инвариантов, которые нельзя обойти.</p></div>
+
+  <p>Коллекционные хуки в порядке срабатывания на запись/чтение/удаление:</p>
+  <table>
+    <tr><th>Хук</th><th>Когда</th><th>Может мутировать?</th><th>В твоём проекте</th></tr>
+    <tr><td><code>beforeValidate</code></td><td>до валидации входных данных</td><td>да (<code>data</code>)</td><td>—</td></tr>
+    <tr><td><code>beforeChange</code></td><td>после валидации, до записи в БД</td><td><b>да</b> (<code>data</code>)</td><td>products (лог), field-hook на <code>price</code></td></tr>
+    <tr><td><code>afterChange</code></td><td>после записи в БД</td><td>нет (поезд ушёл)</td><td>products (revalidate), orders (email)</td></tr>
+    <tr><td><code>beforeRead</code> / <code>afterRead</code></td><td>вокруг чтения документа</td><td><code>afterRead</code> — да (отдаваемое значение)</td><td>field-hook <code>price</code> (<code>null→0</code>)</td></tr>
+    <tr><td><code>beforeDelete</code></td><td>перед удалением</td><td>нет — но может <b>бросить</b> и отменить</td><td>products (запрет удаления с заказами)</td></tr>
+    <tr><td><code>afterDelete</code></td><td>после удаления</td><td>нет</td><td>—</td></tr>
+    <tr><td><code>afterLogin</code></td><td>после успешного логина (auth-коллекции)</td><td>—</td><td>customers (лог)</td></tr>
+  </table>
+  <p>Вешаются двумя способами: <b>на коллекцию</b> (видит весь документ — <code>Products.ts:29</code>) или <b>на поле</b> (видит только своё значение — field-hook на <code>price</code>, Урок 6). Правило выбора: инвариант про один атрибут → field-hook; логика про документ целиком или побочка (email, revalidate) → collection-hook.</p>
+
+  <h2>2. Разбор примера со сносками — <code>orders/afterChange.ts</code></h2>
+  <p>Лучший пример в проекте: при создании заказа отправить покупателю письмо. Каждая строка тут — отдельный урок. Цифры <span class="fnref">[n]</span> — сноски под кодом.</p>
+<pre><span class="k">import</span> { CollectionAfterChangeHook } <span class="k">from</span> <span class="s">'payload'</span>;                <span class="c">// [1]</span>
+
+<span class="k">export const</span> afterChange: CollectionAfterChangeHook = <span class="k">async</span> ({
+  doc,                                                          <span class="c">// [2]</span>
+  req: { payload },                                             <span class="c">// [3]</span>
+  operation,                                                    <span class="c">// [4]</span>
+}) =&gt; {
+  <span class="k">if</span> (operation !== <span class="s">'create'</span>) <span class="k">return</span> doc;                       <span class="c">// [5]</span>
+  <span class="k">const</span> customerId = <span class="k">typeof</span> doc.customer === <span class="s">'object'</span>            <span class="c">// [6]</span>
+    ? doc.customer.id : doc.customer;
+  <span class="k">if</span> (!customerId) <span class="k">return</span> doc;                                  <span class="c">// [7]</span>
+
+  <span class="k">const</span> customer = <span class="k">await</span> payload.findByID({                       <span class="c">// [8]</span>
+    collection: <span class="s">'customers'</span>, id: customerId,
+  });
+  <span class="k">try</span> {                                                          <span class="c">// [9]</span>
+    <span class="k">await</span> payload.sendEmail({
+      to: customer.email,
+      subject: <span class="s">`Заказ #${doc.id} принят`</span>,
+      html: <span class="s">`&lt;p&gt;Спасибо! Заказ на ${doc.total} ₽ принят.&lt;/p&gt;`</span>,
+    });
+  } <span class="k">catch</span> (err) {
+    payload.logger.error({ err }, <span class="s">'Failed to send email'</span>);     <span class="c">// [10]</span>
+  }
+  <span class="k">return</span> doc;                                                   <span class="c">// [11]</span>
+};</pre>
+
+  <ol class="notes">
+    <li><b>Типизированная сигнатура.</b> <code>CollectionAfterChangeHook</code> — готовый тип из payload, он диктует, какие поля есть в аргументе. У каждого вида хука свой тип (<code>CollectionBeforeChangeHook</code>, <code>CollectionBeforeDeleteHook</code>…) с <b>разным</b> набором аргументов. Импортируешь нужный — и TS подсказывает, что доступно.</li>
+    <li><b><code>doc</code> — итоговый документ</b> уже после записи в БД (с присвоенным <code>id</code>, с дефолтами). В <code>before*</code>-хуках вместо него работают с <code>data</code> (черновик до записи) — это разные вещи.</li>
+    <li><b><code>req: { payload }</code></b> — деструктурируешь из <code>req</code> экземпляр Payload, чтобы делать запросы (<code>findByID</code>, <code>sendEmail</code>, <code>logger</code>). В <code>req</code> также лежат <code>req.user</code> (кто инициировал) и <code>req.context</code> (см. сноску про seed ниже).</li>
+    <li><b><code>operation</code></b> — <code>'create'</code> или <code>'update'</code>. Один <code>afterChange</code> вызывается на обе операции, поэтому почти всегда первым делом разветвляешь по нему.</li>
+    <li><b>Guard-выход.</b> Письмо нужно только на создание заказа, не на каждое его редактирование. <code>if (operation !== 'create') return doc</code> — ранний выход. Заметь: возвращаем <code>doc</code>, а не <code>undefined</code> (сноска [11]).</li>
+    <li><b>relationship приходит как id ИЛИ объект.</b> <code>doc.customer</code> — это <code>number</code> (если <code>depth:0</code>) или populated <code>{id, email,...}</code> (если <code>depth≥1</code>). Тернарник нормализует к чистому id. Это та же дилемма «id vs объект», что ты уже разруливал на PDP с <code>category</code>.</li>
+    <li><b>Defensive guard.</b> Заказ без покупателя слать некому — выходим. Хук обязан переживать «грязные» данные.</li>
+    <li><b>Догружаем связь.</b> В <code>doc</code> может не быть email покупателя (если depth был 0 — там только id). Поэтому отдельный <code>findByID</code> за <code>customers</code>, чтобы достать <code>customer.email</code>.</li>
+    <li><b>try/catch вокруг побочки — критично.</b> Заказ уже сохранён (мы в <code>afterChange</code>). Если упадёт отправка почты, нельзя дать ошибке вырваться наружу — иначе клиент получит 500 на УЖЕ созданный заказ. Письмо — некритичная побочка, её провал не должен валить операцию.</li>
+    <li><b>Логируем, а не глотаем.</b> <code>payload.logger.error</code> — ошибка зафиксирована (можно потом разослать вручную), но операция продолжается. «Не глотать исключения» ≠ «дать им всё уронить».</li>
+    <li><b>Возврат <code>doc</code>.</b> Соглашение Payload: <code>afterChange</code> возвращает документ (тут без изменений). В <code>before*</code>-хуках возврат важнее — там возвращённый <code>data</code> и есть то, что запишется (см. практику).</li>
+  </ol>
+
+  <h3>Второй пример покороче — <code>beforeDelete.ts</code> (хук, который ОТМЕНЯЕТ операцию)</h3>
+<pre><span class="k">export const</span> beforeDelete: CollectionBeforeDeleteHook = <span class="k">async</span> ({ id, req: { payload } }) =&gt; {
+  <span class="k">const</span> orders = <span class="k">await</span> payload.find({
+    collection: <span class="s">'orders'</span>,
+    where: { <span class="s">'items.product'</span>: { equals: id } },          <span class="c">// заказы, где есть этот товар</span>
+  });
+  <span class="k">if</span> (orders.totalDocs &gt; <span class="u">0</span>)
+    <span class="k">throw new</span> <span class="n">Error</span>(<span class="s">'Нельзя удалить товар с активными заказами'</span>);  <span class="c">// ← отмена</span>
+};</pre>
+  <p>Здесь главная идея <code>before*</code>-хуков-стражей: <b>бросишь исключение — Payload отменит всю операцию</b> и вернёт ошибку вызывающему (в админке всплывёт тостом). Это декларативная защита целостности данных: товар, на который ссылаются заказы, физически не дашь удалить — ни из админки, ни через API. Никакого «ON DELETE RESTRICT» в SQL руками — логика живёт в хуке.</p>
+
+  <div class="warn"><b>Две ловушки, которые надо знать заранее:</b><br>
+  • <b>Бесконечный цикл.</b> Если в <code>afterChange</code> сделать <code>payload.update()</code> того же документа — снова сработает <code>afterChange</code> → снова update → ∞. Лечится флагом в <code>req.context</code>: <code>if (req.context.skip) return; … payload.update({..., context:{ skip:true }})</code>. Ты уже видел этот приём как <code>context.isSeeding</code> — им seed глушит хук revalidate, чтобы массовая заливка не дёргала ревалидацию на каждый товар.<br>
+  • <b>Хук — это латентность операции.</b> Всё, что ты <code>await</code>'ишь в <code>before/afterChange</code>, удлиняет ответ на запись. Тяжёлое (письма, внешние API) в идеале — в очередь/фон, а не блокирующим <code>await</code>. В учебном проекте ок, в проде — помни.</div>
+
+  <h2>3. Квиз</h2>
+  <div class="quiz">
+    <p class="q">1. В каком хуке имеет смысл МУТИРОВАТЬ данные перед записью (например, проставить поле)?</p>
+    <button class="opt" data-ok="1"><code>beforeChange</code> — возвращаешь изменённый <code>data</code>, он и запишется</button>
+    <button class="opt" data-ok="0"><code>afterChange</code> — документ уже в БД, поезд ушёл</button>
+    <button class="opt" data-ok="0">Любой — без разницы</button>
+    <div class="fb"></div>
+  </div>
+  <div class="quiz">
+    <p class="q">2. Зачем <code>try/catch</code> вокруг <code>sendEmail</code> в <code>orders/afterChange</code>?</p>
+    <button class="opt" data-ok="0">Чтобы письмо точно отправилось</button>
+    <button class="opt" data-ok="1">Заказ уже сохранён; падение почты не должно вернуть клиенту 500 на успешно созданный заказ</button>
+    <button class="opt" data-ok="0">Payload требует try/catch во всех хуках</button>
+    <div class="fb"></div>
+  </div>
+  <div class="quiz">
+    <p class="q">3. В <code>afterChange</code> ты вызвал <code>payload.update()</code> того же документа без флага в <code>context</code>. Что будет?</p>
+    <button class="opt" data-ok="0">Ничего, обновится один раз</button>
+    <button class="opt" data-ok="1">Бесконечный цикл: update → afterChange → update → …</button>
+    <button class="opt" data-ok="0">Ошибка компиляции</button>
+    <div class="fb"></div>
+  </div>
+  <div class="quiz">
+    <p class="q">4. <code>doc.customer</code> в хуке оказался числом, а не объектом с <code>email</code>. Почему?</p>
+    <button class="opt" data-ok="0">Баг Payload</button>
+    <button class="opt" data-ok="1">relationship не был populated (<code>depth:0</code>) — пришёл только id, нужен <code>findByID</code></button>
+    <button class="opt" data-ok="0">Покупатель удалён</button>
+    <div class="fb"></div>
+  </div>
+
+  <h2>4. Практика 5 (пишешь сам)</h2>
+  <div class="card">
+    <p><b>Задача с реальным смыслом для магазина:</b> сейчас <code>total</code> заказа приходит <b>с клиента</b> (см. <code>api/checkout</code>) — это дыра: клиент может подделать сумму. Закроем её серверным хуком, который пересчитывает <code>total</code> из <code>items</code> и не доверяет присланному значению.</p>
+    <ol>
+      <li>Создай <code>src/hooks/orders/beforeChange.ts</code>. Тип — <code>CollectionBeforeChangeHook</code>. В аргументах тебе нужен <code>data</code> (а НЕ <code>doc</code> — почему? объясни словами).</li>
+      <li>Внутри посчитай сумму по <code>data.items</code>: <code>Σ (item.price × item.quantity)</code>. Перезапиши <code>data.total = </code> посчитанным значением и <b>верни <code>data</code></b>.</li>
+      <li>Подключи хук в <code>Orders.ts</code> → <code>hooks: { beforeChange: [beforeChange], afterChange: [...] }</code> (afterChange не трогай).</li>
+      <li>Проверь: оформи заказ через витрину/checkout, передай заведомо неверный total (можно временно захардкодить в запросе) — в БД и в письме должна оказаться <b>пересчитанная серверная</b> сумма, а не присланная.</li>
+      <li><b>На подумать (без кода):</b> почему этот хук правильнее как <code>beforeChange</code> на коллекции, а не как field-hook на поле <code>total</code>? Подсказка: откуда field-hook на <code>total</code> взял бы <code>items</code>?</li>
+    </ol>
+    <p>Не уверен в шаге — спроси до того, как писать. Жду реализацию → ревью.</p>
+  </div>
+
+  <div class="ask">
+    💬 Затык? Пиши в чате: «покажи, какие аргументы у <code>beforeChange</code> vs <code>afterChange</code> на нашем коде» или «разбери, как <code>req.context</code> прокидывается из <code>payload.create</code> в хук».
+  </div>
+
+  <div class="nav">
+    <a href="0006-payload-data-model.html">← Урок 6 (модель данных)</a>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.quiz').forEach((quiz) => {
+    const opts = quiz.querySelectorAll('.opt');
+    const fb = quiz.querySelector('.fb');
+    opts.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const ok = btn.dataset.ok === '1';
+        opts.forEach((b) => { b.disabled = true; if (b.dataset.ok === '1') b.classList.add('correct'); });
+        if (!ok) btn.classList.add('wrong');
+        fb.classList.add('show', ok ? 'ok' : 'no');
+        fb.textContent = ok ? 'Верно.' : 'Не то — правильный вариант подсвечен зелёным.';
+      });
+    });
+  });
+</script>
+</body>
+</html>
