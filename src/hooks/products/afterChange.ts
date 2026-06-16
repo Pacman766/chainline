@@ -10,7 +10,9 @@ export const afterChange: CollectionAfterChangeHook = async ({ doc, req, operati
     method: 'POST',
     headers: {
       'x-revalidate-secret': process.env.REVALIDATE_SECRET ?? '',
+      'content-type': 'application/json',
     },
+    body: JSON.stringify({ id: doc.id }),
   });
 
   if (!res.ok) {

@@ -3,23 +3,54 @@ import config from '@payload-config';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { draftMode } from 'next/headers';
+import { unstable_cache } from 'next/cache';
 import { ProductDescription } from '../ProductDescription';
 import { ProductGallery } from './ProductGallery';
 import { PdpAddToCart } from './PdpAddToCart';
 import { PreviewBanner } from '@/components/PreviewBanner';
 
+// Cached fetch of the PUBLISHED product. Keyed by id and tagged so that
+// `revalidateTag('product-<id>')` / `revalidateTag('products')` (fired from the
+// Payload afterChange/delete hooks via /api/revalidate) purge it on edit.
+const getPublishedProduct = (id: string) =>
+  unstable_cache(
+    async () => {
+      const payload = await getPayload({ config });
+      return payload.findByID({
+        collection: 'products',
+        id,
+        depth: 1,
+        draft: false,
+        overrideAccess: false,
+      });
+    },
+    ['product', id],
+    { tags: [`product-${id}`, 'products'] },
+  )();
+
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+
+  // Tradeoff note: calling draftMode() opts the route into dynamic rendering.
+  // We only read it for the preview branch; non-preview visitors still benefit
+  // because the DB call goes through unstable_cache — repeat visits skip the
+  // Payload init + Neon round-trip entirely (the dominant cost), even though the
+  // route itself is dynamic due to draftMode().
   const { isEnabled: isPreview } = await draftMode();
 
-  const payload = await getPayload({ config });
-  const product = await payload.findByID({
-    collection: 'products',
-    id,
-    depth: 1,
-    draft: isPreview,
-    overrideAccess: isPreview,
-  });
+  let product;
+  if (isPreview) {
+    const payload = await getPayload({ config });
+    product = await payload.findByID({
+      collection: 'products',
+      id,
+      depth: 1,
+      draft: true,
+      overrideAccess: true,
+    });
+  } else {
+    product = await getPublishedProduct(id);
+  }
 
   const category = typeof product.category === 'object' && product.category !== null
     ? product.category
