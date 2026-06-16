@@ -1,4 +1,5 @@
 import { afterChange } from '@/hooks/orders/afterChange';
+import { beforeChange } from '@/hooks/orders/beforeChange';
 import { CollectionConfig } from 'payload';
 
 export const Orders: CollectionConfig = {
@@ -32,5 +33,6 @@ export const Orders: CollectionConfig = {
   },
   hooks: {
     afterChange: [afterChange],
+    beforeChange: [beforeChange],
   },
 };
