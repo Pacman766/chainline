@@ -13,6 +13,8 @@ type CartContextType = {
   removeItem: (productId: string) => void;
   clearCart: () => void;
   updateQuantity: (productId: string, quantity: number) => void;
+  increment: (productId: string) => void;
+  decrement: (productId: string) => void;
 };
 
 const CartContext = createContext<CartContextType | null>(null);
@@ -61,9 +63,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'UPDATE_QUANTITY', productId, quantity });
   };
 
+  const increment = (productId: string) => {
+    dispatch({ type: 'INCREMENT', productId });
+  };
+
+  const decrement = (productId: string) => {
+    dispatch({ type: 'DECREMENT', productId });
+  };
+
   return (
     <CartContext.Provider
-      value={{ items, totalItems, totalPrice, initialized, addItem, removeItem, clearCart, updateQuantity }}
+      value={{
+        items,
+        totalItems,
+        totalPrice,
+        initialized,
+        addItem,
+        removeItem,
+        clearCart,
+        updateQuantity,
+        increment,
+        decrement,
+      }}
     >
       {children}
     </CartContext.Provider>

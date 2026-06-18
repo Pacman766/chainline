@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 export default function CartPage() {
-  const { totalPrice, items, removeItem, clearCart, updateQuantity } = useCart();
+  const { totalPrice, items, removeItem, clearCart, increment, decrement } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   async function submitOrder(items: CartItem[]) {
@@ -78,7 +78,7 @@ export default function CartPage() {
                 <div className="cart-item__qty">
                   <button
                     className="qty-btn"
-                    onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                    onClick={() => decrement(item.productId)}
                     aria-label="Уменьшить количество"
                   >
                     <Minus size={12} />
@@ -86,7 +86,7 @@ export default function CartPage() {
                   <span className="qty-val">{item.quantity}</span>
                   <button
                     className="qty-btn"
-                    onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                    onClick={() => increment(item.productId)}
                     aria-label="Увеличить количество"
                   >
                     <Plus size={12} />
@@ -130,11 +130,7 @@ export default function CartPage() {
         >
           {isCheckingOut ? 'Перенаправляем…' : 'Оформить заказ'}
         </button>
-        <button
-          className="summary-clear"
-          onClick={() => clearCart()}
-          disabled={isCheckingOut}
-        >
+        <button className="summary-clear" onClick={() => clearCart()} disabled={isCheckingOut}>
           Очистить корзину
         </button>
       </div>
