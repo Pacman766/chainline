@@ -1,6 +1,6 @@
 {
   "projectName": "Payload Start",
-  "lastUpdated": "2026-05-27",
+  "lastUpdated": "2026-06-18",
   "rules": {
     "singleActiveFeature": "Only one feature can be 'in_progress' at a time",
     "evidenceRequired": "Must have verification evidence before marking 'pass'",
@@ -369,6 +369,63 @@
         "Phase 6: tests/int/stripe-checkout.int.spec.ts — 15 tests across 3 describe blocks (createOrder 8, webhook 6, checkout auth-gate 1). Real Payload + DB, signed webhook requests via stripe.webhooks.generateTestHeaderString, Stripe SDK partially mocked (real webhooks + stubbed sessions.create). All 16 tests in suite pass (15 new + 1 baseline) in ~10s, bash init.sh PASS"
       ],
       "notes": "Branch: feat/stripe-checkout (off main). Env vars in .env: STRIPE_SECRET_KEY, NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOKS_SIGNING_SECRET. Local e2e: `stripe listen --forward-to localhost:3000/api/webhooks/stripe`, test card 4242 4242 4242 4242. Bug fixed mid-session: ClearCartOnPaid had [clearCart] in deps → infinite loop (clearCart recreated each CartProvider render); fixed to [] + eslint-disable. Open question: webhook handler swallows DB errors → 200 to avoid Stripe retries — acceptable for portfolio, may want to return 500 in prod for transient DB failures."
+    },
+    {
+      "id": "18",
+      "priority": "high",
+      "area": "i18n",
+      "title": "Internationalization — next-intl + Payload localization (RU/EN)",
+      "description": "Multilingual storefront across UI chrome (next-intl message catalogs) and content (Payload localization on Products.name/description, Categories.name, SiteSettings). Locale-prefixed routing /ru /en — app/(frontend) moves under app/[locale]/, middleware added, products/@sidebar parallel route carried along. RU is the default locale; EN is a translation; missing content falls back to RU (fallback: true). URL locale is the single source of truth and drives the locale param passed to Payload Local API queries. See docs/adr/0002.",
+      "status": "in_progress",
+      "verification": [
+        "npm run lint exits 0",
+        "npm run build exits 0",
+        "Locale switcher toggles /ru <-> /en, preserving the current path",
+        "UI strings change language via next-intl catalogs",
+        "Product/category/banner content shows EN when present, falls back to RU when EN missing",
+        "Payload admin shows per-locale field tabs for localized fields",
+        "products/@sidebar still renders under the [locale] segment"
+      ],
+      "evidence": [],
+      "notes": "First feature in the grilled batch; foundation for #19 and #20. Default locale RU. CONTEXT.md term: base locale RU, EN translation."
+    },
+    {
+      "id": "19",
+      "priority": "high",
+      "area": "auth",
+      "title": "Customer social + magic-link auth (Payload-native)",
+      "description": "Add sign-in methods for Customer: magic link (email), Google OAuth, Yandex ID OAuth. Payload-native: customers collection stays the single source of truth; OAuth/magic-link flows find-or-create a customer by verified email and issue the existing customer-token JWT. Email/password stays enabled (additive). getAuthenticatedUser and order access scoping unchanged. See docs/adr/0001.",
+      "status": "not_started",
+      "verification": [
+        "npm run lint exits 0",
+        "npm run test:int exits 0",
+        "Magic-link email sends; clicking link signs in and sets customer-token",
+        "Google sign-in find-or-creates a customer by verified email and sets customer-token",
+        "Yandex sign-in find-or-creates a customer by verified email (login:email scope) and sets customer-token",
+        "Same verified email via different methods resolves to the SAME customer (no duplicates)",
+        "Linking only occurs when provider asserts email_verified",
+        "Existing email/password login still works"
+      ],
+      "evidence": [],
+      "notes": "Depends on #18 (login pages live under [locale]). Identity = verified email. Open: magic-link token TTL + one-time use; provider button UI."
+    },
+    {
+      "id": "20",
+      "priority": "medium",
+      "area": "frontend",
+      "title": "Homepage — Payload Blocks + animated hero (motion)",
+      "description": "Expand homepage. Hero stays a bespoke client-component island with interactive animation via `motion` (formerly framer-motion); page.tsx remains a server component (RSC fetches blocks/settings). New sections below become a small Payload Blocks builder (2-3 block types, e.g. feature-grid / CTA / featured-products) on a Homepage global, localized via #18. CONTEXT.md: Hero is NOT a Content block.",
+      "status": "not_started",
+      "verification": [
+        "npm run lint exits 0",
+        "npm run build exits 0",
+        "Hero animation runs client-side; page.tsx stays an RSC (no 'use client' at page level)",
+        "Admin can add/reorder Content blocks on the Homepage global",
+        "Block content renders localized per current locale with RU fallback",
+        "Hero respects prefers-reduced-motion"
+      ],
+      "evidence": [],
+      "notes": "Last in the batch; depends on #18 (block localization) and benefits from final [locale] structure. Reference: focusreactive.com. Library is `motion`, not deprecated `framer-motion`."
     }
   ]
 }

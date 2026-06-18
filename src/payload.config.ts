@@ -71,32 +71,32 @@ export default buildConfig({
       },
       beforeSync: async ({ originalDoc, payload, searchDoc }) => {
         // Сериализовать Lexical rich text description → plain text
-        let descriptionText = ''
+        let descriptionText = '';
         try {
-          const root = originalDoc?.description?.root
+          const root = originalDoc?.description?.root;
           if (root?.children) {
             descriptionText = (root.children as { children?: { type: string; text?: string }[] }[])
               .flatMap((node) => node.children ?? [])
               .filter((node) => node.type === 'text')
               .map((node) => node.text ?? '')
-              .join(' ')
+              .join(' ');
           }
         } catch {
-          descriptionText = ''
+          descriptionText = '';
         }
 
         // Вытащить category.name — при reindex depth:0, поэтому category может быть просто ID.
         // Используем payload.findByID чтобы получить имя в обоих случаях.
-        let categoryName = ''
-        const rawCategory = originalDoc?.category
+        let categoryName = '';
+        const rawCategory = originalDoc?.category;
         if (typeof rawCategory === 'object' && rawCategory !== null) {
-          categoryName = rawCategory.name ?? ''
+          categoryName = rawCategory.name ?? '';
         } else if (rawCategory != null) {
           try {
-            const cat = await payload.findByID({ collection: 'categories', id: rawCategory })
-            categoryName = cat?.name ?? ''
+            const cat = await payload.findByID({ collection: 'categories', id: rawCategory });
+            categoryName = cat?.name ?? '';
           } catch {
-            categoryName = ''
+            categoryName = '';
           }
         }
 
@@ -108,7 +108,7 @@ export default buildConfig({
             categoryName: categoryName.toLowerCase(),
             titleSearch: (originalDoc?.name ?? '').toLowerCase(),
           },
-        }
+        };
       },
       searchOverrides: {
         fields: ({ defaultFields }) => [
@@ -117,10 +117,8 @@ export default buildConfig({
             name: 'meta',
             type: 'group',
             fields: [
-              {
-                name: 'description',
-                type: 'text',
-              },
+              { name: 'name', type: 'text', localized: true },
+              { name: 'description', type: 'richText', localized: true },
               {
                 name: 'categoryName',
                 type: 'text',
@@ -135,4 +133,9 @@ export default buildConfig({
       },
     }),
   ],
+  localization: {
+    locales: ['ru', 'en'],
+    defaultLocale: 'ru',
+    fallback: true,
+  },
 });

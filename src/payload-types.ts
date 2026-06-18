@@ -97,14 +97,14 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
-  fallbackLocale: null;
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('ru' | 'en') | ('ru' | 'en')[];
   globals: {
     'site-settings': SiteSetting;
   };
   globalsSelect: {
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
   };
-  locale: null;
+  locale: 'ru' | 'en';
   widgets: {
     collections: CollectionsWidget;
   };
@@ -338,7 +338,22 @@ export interface Search {
     value: number | Product;
   };
   meta?: {
-    description?: string | null;
+    name?: string | null;
+    description?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
     categoryName?: string | null;
     titleSearch?: string | null;
   };
@@ -610,6 +625,7 @@ export interface SearchSelect<T extends boolean = true> {
   meta?:
     | T
     | {
+        name?: T;
         description?: T;
         categoryName?: T;
         titleSearch?: T;

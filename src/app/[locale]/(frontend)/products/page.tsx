@@ -11,13 +11,15 @@ import type { Product } from '@/payload-types';
 export const revalidate = 0;
 
 export default async function ProductPage({
-  searchParams,
+  searchParams, params
 }: {
-  searchParams: Promise<{ category?: string; q?: string }>;
+    searchParams: Promise<{ category?: string; q?: string }>;
+    params: Promise<{ locale: 'ru' | 'en' }>
 }) {
   const { category: categorySlug, q } = await searchParams;
   const payload = await getPayload({ config });
   const user = await getAuthenticatedUser();
+  const { locale } = await params;
 
   let products: Product[] = [];
 
@@ -46,6 +48,7 @@ export default async function ProductPage({
           id: { in: productIds },
           _status: { equals: 'published' },
         },
+        locale,
         depth: 2,
       });
       products = result.docs;
@@ -68,6 +71,7 @@ export default async function ProductPage({
         sort: '-price',
         ...(user ? {} : { limit: 2 }),
         depth: 2,
+        locale,
       });
       products = result.docs;
     }
@@ -80,6 +84,7 @@ export default async function ProductPage({
       sort: '-price',
       ...(user ? {} : { limit: 2 }),
       depth: 2,
+      locale,
     });
     products = result.docs;
   }

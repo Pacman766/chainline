@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Урок 9 — i18n: два механизма локализации (next-intl + Payload)</title>
+<style>
+  :root{--bg:#0f1115;--card:#171a21;--ink:#e7e9ee;--muted:#9aa3b2;--accent:#7aa2ff;--green:#6ee7a8;--amber:#ffd27a;--red:#ff8b8b;--line:#272c36;--code:#1d2230;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;padding:48px 20px}
+  .wrap{max-width:860px;margin:0 auto}
+  .eyebrow{color:var(--green);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px;margin:0}
+  h1{font-size:30px;line-height:1.2;margin:6px 0 10px}
+  .lede{color:var(--muted);font-size:18px;margin:0 0 28px}
+  h2{font-size:21px;margin:34px 0 12px;padding-top:10px;border-top:1px solid var(--line)}
+  h3{font-size:16px;margin:20px 0 6px;color:var(--amber)}
+  p{margin:12px 0}
+  code{background:var(--code);padding:1px 6px;border-radius:5px;font:13.5px/1.5 ui-monospace,Menlo,Consolas,monospace;color:#cbd5ff}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;color:#d6deff}
+  .c{color:#6b7689}.k{color:#ff9ecb}.s{color:#a6e3a1}.f{color:#9bd0ff}.u{color:#ffd27a}
+  .n{color:#ff8b8b;font-weight:700}
+  ul,ol{margin:8px 0;padding-left:22px} li{margin:6px 0}
+  .goal{background:#16221c;border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:14px 16px;margin:18px 0}
+  .goal b{color:var(--green)}
+  .warn{background:#241c16;border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:12px 16px;margin:18px 0;color:#efe0c4}
+  .bridge{background:#1a1622;border-left:3px solid #c08bff;border-radius:0 8px 8px 0;padding:12px 16px;margin:18px 0;color:#e3d5f5;font-size:14.5px}
+  .bridge b{color:#c8a6ff}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+  th{background:#1b2030;color:var(--amber);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  td code{font-size:12.5px}
+  .notes{counter-reset:fn;list-style:none;padding-left:0}
+  .notes li{position:relative;padding:8px 0 8px 38px;border-bottom:1px solid var(--line)}
+  .notes li::before{content:"["counter(fn)"]";counter-increment:fn;position:absolute;left:0;top:8px;color:var(--green);font:700 13px ui-monospace,monospace}
+  details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 16px;margin:12px 0}
+  summary{cursor:pointer;font-weight:600;padding:8px 0;color:var(--amber)}
+  .nav{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);display:flex;gap:16px;flex-wrap:wrap;font-size:14px}
+  a{color:var(--accent)}
+  .ask{margin-top:26px;background:#161b29;border:1px dashed var(--accent);border-radius:10px;padding:14px 16px;color:#cdd6f5;font-size:14.5px}
+  .quiz{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:18px 0}
+  .quiz .q{font-weight:600;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;background:#1b2030;border:1px solid var(--line);color:var(--ink);padding:11px 14px;border-radius:8px;margin:8px 0;cursor:pointer;font:14px/1.4 inherit;transition:border-color .15s,background .15s}
+  .opt:hover:not(:disabled){border-color:var(--accent)}
+  .opt:disabled{cursor:default;opacity:.92}
+  .opt.correct{border-color:var(--green);background:#16291f}
+  .opt.wrong{border-color:var(--red);background:#2a1a1a}
+  .fb{display:none;margin-top:10px;font-size:14px;padding:10px 12px;border-radius:8px}
+  .fb.show{display:block}
+  .fb.ok{background:#16291f;color:var(--green)}
+  .fb.no{background:#2a1a1a;color:var(--red)}
+  .fnref{color:var(--green);font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Урок 9 · Next.js + Payload — i18n · обзор → разбор → практика</p>
+  <h1>Локализация: два разных механизма под одной кнопкой</h1>
+  <p class="lede">«Сменить язык» звучит как одна задача, а на деле это <b>две</b> независимые проблемы с разными инструментами. Самая частая ошибка — пытаться решить их одним. Этот урок ставит ментальную модель, а потом разбирает целевую настройку на твоём проекте: <code>next-intl</code> для интерфейса + встроенная локализация Payload для контента.</p>
+
+  <div class="goal">
+    <b>Цель.</b> Понять три вещи: (1) <b>UI-обвязка ≠ контент</b> — почему это разные механизмы и где живёт каждая строка; (2) как локаль попадает в <b>URL-префикс</b> <code>/ru</code> <code>/en</code> и почему из-за этого весь <code>(frontend)</code> переезжает под сегмент <code>[locale]</code>; (3) почему <b>локаль из URL — единственный источник правды</b>, который обязан управлять и интерфейсом, и параметром <code>locale</code> в запросах к Payload.
+  </div>
+
+  <h2>1. Обзор: две поверхности, два инструмента</h2>
+  <div class="bridge"><b>Мост от ExtJS.</b> В ExtJS были <code>locale</code>-паки (<code>ext-lang-ru.js</code>) — они переводили <b>служебные строки фреймворка</b> (кнопки грида, «Loading…»). Но данные в сторе ты переводил сам, на бэке. Та же граница и здесь: <b>next-intl</b> = locale-пак для твоего UI, <b>Payload localization</b> = перевод данных. Никто из них не делает работу другого.</div>
+
+  <p>У любой строки на странице есть владелец. Спроси: «эту фразу пишет разработчик в коде или контент-менеджер в админке?» — ответ выбирает механизм.</p>
+  <table>
+    <tr><th>Аспект</th><th>UI-обвязка</th><th>Контент</th></tr>
+    <tr><td>Примеры</td><td>«Смотреть каталог», «Корзина», «В обработке», лейблы, ошибки форм</td><td><code>Products.name</code>, <code>description</code>, <code>Categories.name</code>, <code>SiteSettings.bannerText</code></td></tr>
+    <tr><td>Где живёт строка</td><td>файлы-словари <code>messages/ru.json</code>, <code>messages/en.json</code></td><td>в БД (Postgres), отдельное значение на каждую локаль</td></tr>
+    <tr><td>Кто меняет</td><td>разработчик (коммит)</td><td>контент-менеджер (админка Payload)</td></tr>
+    <tr><td>Инструмент</td><td><b>next-intl</b></td><td><b>Payload <code>localization</code></b></td></tr>
+    <tr><td>Как переключается</td><td><code>useTranslations()</code> читает активную локаль</td><td><code>?locale=</code> в запросе к Local API</td></tr>
+  </table>
+  <div class="warn"><b>Ключевой вывод урока.</b> Эти два механизма соединяет <b>одна</b> переменная — текущая локаль. В нашем дизайне её источник — <b>префикс URL</b>. Если UI показывает <code>/en</code>, а к Payload ты случайно сходил без <code>locale:'en'</code> — получишь английскую обвязку с русскими названиями товаров. Рассинхрон локали — главный баг этой фичи.</div>
+
+  <h2>2. Разбор целевой настройки со сносками</h2>
+  <p>Кода ещё нет — строим его в этой фиче (#18). Ниже целевые файлы с построчными сносками, привязанные к <b>твоей</b> структуре (<code>src/app/(frontend)</code>, parallel route <code>products/@sidebar</code>, <code>payload.config.ts</code>).</p>
+
+  <h3>2a. Контент: локализация в Payload</h3>
+  <pre><span class="c">// src/payload.config.ts — добавляем блок localization</span>
+<span class="k">export default</span> buildConfig({
+  <span class="c">// ...</span>
+  localization: {                       <span class="fnref">[1]</span>
+    locales: [<span class="s">'ru'</span>, <span class="s">'en'</span>],          <span class="fnref">[2]</span>
+    defaultLocale: <span class="s">'ru'</span>,             <span class="fnref">[3]</span>
+    fallback: <span class="k">true</span>,                  <span class="fnref">[4]</span>
+  },
+})</pre>
+  <pre><span class="c">// src/collections/Products.ts — помечаем поля</span>
+fields: [
+  { name: <span class="s">'name'</span>, type: <span class="s">'text'</span>, <span class="u">localized</span>: <span class="k">true</span> },        <span class="fnref">[5]</span>
+  { name: <span class="s">'description'</span>, type: <span class="s">'richText'</span>, <span class="u">localized</span>: <span class="k">true</span> },
+  { name: <span class="s">'price'</span>, type: <span class="s">'number'</span> },                       <span class="fnref">[6]</span>
+  { name: <span class="s">'sku'</span>, type: <span class="s">'text'</span> },
+]</pre>
+  <ol class="notes">
+    <li>Один блок в конфиге включает мультиязычность для всего проекта. До него поля одноязычные.</li>
+    <li>Список локалей. Порядок не важен; важно, что это <b>контентные</b> локали Payload — отдельные от локалей next-intl (их надо держать одинаковыми, см. <span class="fnref">[12]</span>).</li>
+    <li><code>defaultLocale: 'ru'</code> — то, к чему ведёт fallback. Это закреплено в <code>ADR 0002</code> и <code>CONTEXT.md</code>: русский — базовый.</li>
+    <li><code>fallback: true</code> — если у поля нет значения на запрошенной локали, отдаётся значение <code>defaultLocale</code>. Так англоязычный покупатель не увидит пустое описание (наш ответ на грилле).</li>
+    <li><code>localized: true</code> — теперь Payload хранит <b>отдельное значение на каждую локаль</b> и в админке рисует вкладки RU/EN над полем. В БД это одна колонка JSON по локалям (деталь хранения, тебе её знать не обязательно).</li>
+    <li>Цена и <code>sku</code> <b>не</b> локализуются — число одно на все языки. Локализуй только то, что реально различается по языку. Это сознательный выбор, а не «на всякий случай».</li>
+    <li><b>Миграция:</b> существующие одноязычные строки Payload при включении <code>localization</code> присвоит <code>defaultLocale</code> (RU). Сид дальше должен заполнять обе локали.</li>
+  </ol>
+
+  <details><summary>Как теперь выглядит запрос к контенту</summary>
+  <pre><span class="k">const</span> payload = <span class="k">await</span> getPayload({ config })
+<span class="k">const</span> { docs } = <span class="k">await</span> payload.find({
+  collection: <span class="s">'products'</span>,
+  locale: <span class="u">locale</span>,            <span class="c">// 'ru' | 'en' — берётся из URL, см. [12]</span>
+  fallbackLocale: <span class="s">'ru'</span>,      <span class="c">// подстраховка к config.fallback</span>
+})</pre>
+  </details>
+
+  <h3>2b. UI: next-intl и префиксный роутинг</h3>
+  <div class="warn">❗ DISCLAIMER: <code>next-intl</code> активно развивается (актуальная major-линия ~v4). Перед установкой сверимся с доками через Context7 — API <code>defineRouting</code>/<code>createNavigation</code> ниже стабилен в v3.22+/v4, но версии проверим на старте практики.</div>
+  <pre><span class="c">// src/i18n/routing.ts</span>
+<span class="k">import</span> { defineRouting } <span class="k">from</span> <span class="s">'next-intl/routing'</span>
+<span class="k">export const</span> routing = defineRouting({       <span class="fnref">[8]</span>
+  locales: [<span class="s">'ru'</span>, <span class="s">'en'</span>],
+  defaultLocale: <span class="s">'ru'</span>,
+})</pre>
+  <pre><span class="c">// middleware.ts (корень)</span>
+<span class="k">import</span> createMiddleware <span class="k">from</span> <span class="s">'next-intl/middleware'</span>
+<span class="k">import</span> { routing } <span class="k">from</span> <span class="s">'@/i18n/routing'</span>
+<span class="k">export default</span> createMiddleware(routing)        <span class="fnref">[9]</span>
+<span class="k">export const</span> config = { matcher: [<span class="s">'/((?!api|admin|_next|.*\\..*).*)'</span>] }  <span class="fnref">[10]</span></pre>
+  <pre><span class="c">// src/app/[locale]/(frontend)/layout.tsx — упрощённо</span>
+<span class="k">import</span> { NextIntlClientProvider } <span class="k">from</span> <span class="s">'next-intl'</span>
+<span class="k">import</span> { setRequestLocale, getMessages } <span class="k">from</span> <span class="s">'next-intl/server'</span>
+
+<span class="k">export default async function</span> <span class="f">LocaleLayout</span>({ children, params }) {
+  <span class="k">const</span> { locale } = <span class="k">await</span> params           <span class="fnref">[11]</span>
+  setRequestLocale(locale)                    <span class="fnref">[11]</span>
+  <span class="k">const</span> messages = <span class="k">await</span> getMessages()
+  <span class="k">return</span> (
+    &lt;<span class="f">NextIntlClientProvider</span> messages={messages}&gt;
+      {children}
+    &lt;/<span class="f">NextIntlClientProvider</span>&gt;
+  )
+}</pre>
+  <pre><span class="c">// messages/ru.json            // messages/en.json</span>
+{ <span class="s">"hero"</span>: {                     { <span class="s">"hero"</span>: {
+  <span class="s">"cta"</span>: <span class="s">"Смотреть каталог"</span>        <span class="s">"cta"</span>: <span class="s">"Browse catalog"</span>
+} }                            } }</pre>
+  <pre><span class="c">// в компоненте</span>
+<span class="k">import</span> { useTranslations } <span class="k">from</span> <span class="s">'next-intl'</span>
+<span class="k">const</span> t = useTranslations(<span class="s">'hero'</span>)
+&lt;<span class="f">Link</span> href=<span class="s">"/products"</span>&gt;{t(<span class="s">'cta'</span>)}&lt;/<span class="f">Link</span>&gt;     <span class="fnref">[13]</span></pre>
+  <ol class="notes" start="8" style="counter-reset:fn 7">
+    <li><code>routing.ts</code> — единое описание локалей для UI. Держи список <b>идентичным</b> локалям Payload из <span class="fnref">[2]</span>, иначе URL <code>/en</code> будет, а контент на <code>en</code> — нет.</li>
+    <li>Middleware определяет локаль из URL (или редиректит <code>/products</code> → <code>/ru/products</code>) и проставляет её в запрос. Это «вход» всей i18n-цепочки.</li>
+    <li><b>Главная ловушка для нашего проекта:</b> matcher <b>исключает</b> <code>api</code> и <code>admin</code>. Иначе middleware начнёт префиксовать админку Payload и REST-роуты — всё сломается. Запомни этот negative-lookahead.</li>
+    <li>В Next 15 <code>params</code> — это Promise (мы это уже видели в <code>/orders/[id]</code>). <code>setRequestLocale</code> нужен, чтобы серверные компоненты ниже могли рендериться статически и знали локаль.</li>
+    <li><b>Сцепка двух механизмов.</b> Та же <code>locale</code> из <code>params</code>, что кормит next-intl, обязана уехать в <code>payload.find({ locale })</code> (см. 2a). Это и есть «единый источник правды» из цели урока.</li>
+    <li><code>useTranslations</code> читает активную локаль из провайдера — в самом компоненте никаких <code>if (locale === 'ru')</code>. Ключи (<code>hero.cta</code>), а не строки, — переключение языка не трогает JSX.</li>
+  </ol>
+
+  <h3>2c. Что переезжает физически</h3>
+  <p>Префиксный роутинг означает реструктуризацию дерева. Было → станет:</p>
+  <pre>src/app/(frontend)/page.tsx        →  src/app/[locale]/(frontend)/page.tsx
+src/app/(frontend)/products/...    →  src/app/[locale]/(frontend)/products/...
+src/app/(frontend)/products/@sidebar  →  ...едет вместе, parallel route сохраняется</pre>
+  <div class="warn"><b>Аккуратно с <code>(payload)</code> и <code>api</code>.</b> Под <code>[locale]</code> едет <b>только</b> сторфронт <code>(frontend)</code>. Группа админки <code>(payload)</code> и <code>app/api</code> остаются на месте — их и исключает matcher <span class="fnref">[10]</span>.</div>
+
+  <h2>3. Квиз</h2>
+  <div class="quiz">
+    <p class="q">1. На странице фраза «Войдите для поиска» (лейбл инпута) и название товара «Pinarello Dogma F». Чем переводится каждая?</p>
+    <button class="opt" data-ok="0">Обе — через next-intl</button>
+    <button class="opt" data-ok="0">Обе — через Payload localization</button>
+    <button class="opt" data-ok="1">Лейбл — next-intl (UI), название — Payload localization (контент)</button>
+    <div class="fb"></div>
+  </div>
+  <div class="quiz">
+    <p class="q">2. У товара заполнено только русское описание, EN пустое. Покупатель открыл <code>/en/products/5</code>. Что увидит в описании?</p>
+    <button class="opt" data-ok="1">Русское описание — сработал <code>fallback: true</code> на defaultLocale</button>
+    <button class="opt" data-ok="0">Пустоту — EN-значения нет</button>
+    <button class="opt" data-ok="0">Ошибку 404</button>
+    <div class="fb"></div>
+  </div>
+  <div class="quiz">
+    <p class="q">3. Почему в matcher middleware стоит <code>(?!api|admin|...)</code>?</p>
+    <button class="opt" data-ok="0">Для скорости — меньше путей обрабатывается</button>
+    <button class="opt" data-ok="1">Чтобы не префиксовать локалью админку Payload и REST/Local API — иначе <code>/admin</code> превратится в <code>/ru/admin</code> и сломается</button>
+    <button class="opt" data-ok="0">Это требование Postgres</button>
+    <div class="fb"></div>
+  </div>
+  <div class="quiz">
+    <p class="q">4. UI показывает английский, но названия товаров пришли русскими. Где баг?</p>
+    <button class="opt" data-ok="1">Локаль из URL не передали в <code>payload.find({ locale })</code> — рассинхрон UI и контента</button>
+    <button class="opt" data-ok="0">Не хватает локали в <code>messages/en.json</code></button>
+    <button class="opt" data-ok="0">Сломан <code>fallback</code></button>
+    <div class="fb"></div>
+  </div>
+
+  <h2>4. Практика 7 (первый срез — пишешь сам)</h2>
+  <p>Не строим всё сразу. Первый вертикальный срез — <b>только контентный механизм</b>, чтобы увидеть его в админке без возни с роутингом:</p>
+  <ol>
+    <li>В <code>src/payload.config.ts</code> добавь блок <code>localization</code> (locales <code>['ru','en']</code>, default <code>'ru'</code>, <code>fallback: true</code>).</li>
+    <li>Пометь <code>localized: true</code> на <code>Products.name</code> и <code>Products.description</code>. <b>Не</b> трогай <code>price</code>/<code>sku</code> — подумай почему (сноска <span class="fnref">[6]</span>).</li>
+    <li><code>npm run generate:types</code> → загляни в <code>payload-types.ts</code>: как изменился тип <code>name</code>? (подсказка: посмотри, появилась ли разница для локализованных полей).</li>
+    <li>Запусти <code>npm run dev</code>, открой товар в <code>/admin</code> — над <code>name</code>/<code>description</code> должны появиться вкладки локалей. Заполни EN-название одного товара.</li>
+    <li><b>На подумать (ответишь словами):</b> существующие 6 товаров были одноязычными. В какую локаль Payload положил их старые названия при включении <code>localization</code> и почему именно туда? (сноска <span class="fnref">[7]</span>)</li>
+  </ol>
+  <p>UI-механизм (next-intl, роутинг, свитчер) — следующий срез, после того как увидишь контентную локализацию живьём. Так фича #18 разбивается на понятные шаги, а не на один большой коммит.</p>
+
+  <div class="ask">Споткнёшься или будет неочевидно (особенно п.3 — тип локализованного поля, и п.5) — спрашивай. После практики дам UI-срез: <code>routing.ts</code> + middleware + перенос под <code>[locale]</code> + свитчер языка.</div>
+
+  <div class="nav">
+    <a href="0008-react-usereducer-cart.html">← Урок 8: useReducer</a>
+    <span style="color:var(--muted)">Урок 9: i18n (next-intl + Payload)</span>
+  </div>
+</div>
+<script>
+  document.querySelectorAll('.quiz').forEach(q=>{
+    const fb=q.querySelector('.fb');
+    q.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>{
+      const ok=b.dataset.ok==='1';
+      q.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.ok==='1')x.classList.add('correct');});
+      if(!ok)b.classList.add('wrong');
+      fb.classList.add('show',ok?'ok':'no');
+      fb.textContent=ok?'Верно.':'Не то — правильный вариант подсвечен зелёным.';
+    }));
+  });
+</script>
+</body>
+</html>

@@ -74,7 +74,31 @@
   `initialized` против затирания localStorage на первом рендере). Мост от ExtJS Store. Практика 6:
   INCREMENT/DECREMENT экшены + exhaustiveness-guard (`const _exhaustive: never = action`),
   перевести +/- кнопки корзины на намерение вместо вычисленного quantity. Статус: ЖДУ → ревью.
-- СЛЕДУЮЩЕЕ (после Практики 6) → parallel route `@sidebar` (тизер из Урока 3).
+- [DONE] Практика 6 (`INCREMENT`/`DECREMENT`): учащийся сделал в 3 захода (полезно). (1) сначала
+  добавил оба типа в union + страж `never`, но забыл `case`-ы → exhaustiveness-guard поймал ровно
+  это (закрепили: добавил вариант в discriminated union → компилятор требует case). (2) `DECREMENT`
+  с перевёрнутым guard `p.quantity <= 0` (мёртвая ветка, минус не работал) → разобрали «tsc зелёный
+  ≠ логика верна». (3) поправил на Вариант 2 (на quantity 1 → `filter`, согласовано с UPDATE_QUANTITY).
+  Контекст: action creators + тип + проводка `value` — без замечаний. Кнопки +/- переведены на намерение,
+  unused `updateQuantity` убран из деструктуризации. Коммит de7e9e6. ПОБОЧНО: локальный `npm run build`
+  падает на `STRIPE_SECRET_KEY is not set` (`lib/stripe.ts:3` throw на импорте, цепляется при
+  «Collecting page data» роута вебхука) — env-проблема, не регрессия; лечится ключом в `.env`.
+- [GRILL 18 июня 2026, skill grill-with-docs] Прогриллены 3 новые фичи → заведены в feature_list.json
+  (#18 i18n in_progress, #19 auth, #20 homepage not_started). Артефакты: CONTEXT.md (Customer/User,
+  Sign-in method, Content block, Hero, email-as-identity), docs/adr/0001 (Payload-native customer auth),
+  docs/adr/0002 (i18n prefix routing, RU default). Решения: auth — Customer-only, Payload-native,
+  email-as-key, +Yandex, пароль аддитивно; i18n — UI(next-intl)+контент(Payload), префикс /ru /en,
+  RU базовый, fallback→RU; homepage — гибрид (bespoke hero на `motion` + Payload Blocks), порядок
+  i18n→Auth→Homepage. Грилл поймал рассинхрон: «fallback на английский» vs RU-дефолт → выровняли на RU.
+- [ВЫДАН, жду учащегося] Урок 9 i18n (`lessons/0009-i18n-next-intl-payload.html`): ГЛАВНОЕ — два
+  механизма (next-intl=UI / Payload localization=контент), их сцепляет одна локаль из URL-префикса
+  (рассинхрон = главный баг). Разбор со сносками: payload.config localization + localized:true поля,
+  next-intl routing/middleware/[locale] layout/messages, matcher исключает api|admin, перенос
+  (frontend) под [locale] (@sidebar едет с ним). Практика 7 (первый срез): только контентная
+  локализация — localization-блок + localized на Products.name/description (не price/sku) →
+  generate:types → вкладки локалей в админке. UI-срез следующим. Статус: ЖДУ.
+- СЛЕДУЮЩЕЕ (после i18n) → Auth (#19), затем Homepage (#20). Backlog: parallel route `@sidebar`
+  (тизер из Урока 3), PPR+расцепление Header, `loading.tsx` для /products.
   Backlog: PPR+расцепление Header, `loading.tsx` для /products.
 - [ВВЕДЕНО РУКАМИ при сборке /contacts] Payload globals + field types `group` и `array`,
   `payload.findGlobal`/`updateGlobal`, `generate:types` после правки схемы, dev push схемы.
