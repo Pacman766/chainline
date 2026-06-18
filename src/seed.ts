@@ -63,22 +63,65 @@ async function seed() {
       imageIds.push(await createMedia(payload, url, alt));
     }
 
-    await payload.create({
+    // Match by price (non-localized, unique per product) so reseeding still
+    // finds existing rows after localized name/description move to *_locales.
+    const { docs: existing } = await payload.find({
       collection: 'products',
+      where: { price: { equals: product.price } },
+      limit: 1,
+      overrideAccess: true,
+    });
+
+    let productId: number;
+    if (existing[0]) {
+      productId = existing[0].id;
+    } else {
+      const created = await payload.create({
+        collection: 'products',
+        data: {
+          name: product.name,
+          price: product.price,
+          inStock: product.inStock,
+          category: categoryMap[product.category],
+          description: buildDescription(product.description),
+          images: imageIds,
+          _status: 'published',
+        },
+        draft: false,
+        overrideAccess: true,
+        context: { isSeeding: true },
+      });
+      productId = created.id;
+    }
+
+    // Always (re)write the default RU locale so existing rows hold correct Russian.
+    await payload.update({
+      collection: 'products',
+      id: productId,
+      locale: 'ru',
       data: {
         name: product.name,
-        price: product.price,
-        inStock: product.inStock,
-        category: categoryMap[product.category],
         description: buildDescription(product.description),
-        images: imageIds,
-        _status: 'published',
       },
-      draft: false,
       overrideAccess: true,
       context: { isSeeding: true },
     });
-    console.log(`Created: ${product.name}`);
+
+    if (product.en) {
+      await payload.update({
+        collection: 'products',
+        id: productId,
+        locale: 'en',
+        data: {
+          name: product.name,
+          description: buildDescription(product.en.description),
+        },
+        overrideAccess: true,
+        context: { isSeeding: true },
+      });
+    }
+
+    console.log(`Seeded (ru+en): ${product.name}`);
   }
 
   const current = await payload.findGlobal({ slug: 'site-settings', overrideAccess: true });
