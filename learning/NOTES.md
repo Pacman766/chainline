@@ -60,8 +60,22 @@
   цикл (context-флаг, связь с isSeeding) и латентность. Практика 5: серверный пересчёт
   `Orders.total` из items в `orders/beforeChange` (закрыть дыру «клиент подделал total»).
   Статус: ЖДУ реализацию → ревью.
-- СЛЕДУЮЩЕЕ (после Практики 5) → parallel route `@sidebar` (тизер из Урока 3) ИЛИ хуки React
-  глубже (useReducer на CartContext). Backlog: PPR+расцепление Header, `loading.tsx` для /products.
+- [DONE] Практика 5 (`orders/beforeChange`): учащийся реализовал. Хук пересчитывает total из
+  items (Σ price×quantity), `data` не `doc`, тип элемента выведен через
+  `NonNullable<Order['items']>[number]`. EVIDENCE: создал заказ с фейковым total 9999 (хардкод
+  в `lib/orders.ts:73`) → в БД лёг пересчитанный 449700 (3×149900) даже в dev. Откат хардкода
+  сделан. Ревью-замечания (убрать мёртвую проверку customer, `?? 0` на price/quantity) выданы.
+  Коммит 8f73ea0 `feat(orders): recompute order total server-side in beforeChange hook`.
+- [ВЫДАН, жду учащегося] Урок 8 React useReducer (`lessons/0008-react-usereducer-cart.html`):
+  reducer = чистая ф-я `(state,action)=>newState`, иммутабельность (map/filter/спред, не
+  splice/push), action как discriminated union → исчерпывающий switch + TS-сужение по `type`.
+  Разбор `cartReducer.ts` построчно + подключение в `CartContext.tsx` (action creators прячут
+  dispatch, totalItems/totalPrice выводятся через useMemo — не хранятся, два useEffect + флаг
+  `initialized` против затирания localStorage на первом рендере). Мост от ExtJS Store. Практика 6:
+  INCREMENT/DECREMENT экшены + exhaustiveness-guard (`const _exhaustive: never = action`),
+  перевести +/- кнопки корзины на намерение вместо вычисленного quantity. Статус: ЖДУ → ревью.
+- СЛЕДУЮЩЕЕ (после Практики 6) → parallel route `@sidebar` (тизер из Урока 3).
+  Backlog: PPR+расцепление Header, `loading.tsx` для /products.
 - [ВВЕДЕНО РУКАМИ при сборке /contacts] Payload globals + field types `group` и `array`,
   `payload.findGlobal`/`updateGlobal`, `generate:types` после правки схемы, dev push схемы.
   → При уроке по модели данных Payload опереться на `SiteSettings.ts` как на готовый пример,

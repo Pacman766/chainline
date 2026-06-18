@@ -10,4 +10,6 @@ export type CartAction =
   | { type: 'REMOVE'; productId: string }
   | { type: 'CLEAR' }
   | { type: 'INIT'; items: CartItem[] }
-  | { type: 'UPDATE_QUANTITY'; productId: string; quantity: number };
+  | { type: 'UPDATE_QUANTITY'; productId: string; quantity: number }
+  | { type: 'INCREMENT'; productId: string }
+  | { type: 'DECREMENT'; productId: string };

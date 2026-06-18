@@ -29,5 +29,9 @@ export function cartReducer(state: CartItem[], action: CartAction): CartItem[] {
         p.productId === action.productId ? { ...p, quantity: action.quantity } : p,
       );
     }
+    default: {
+      const _exhaustive: never = action;   // TS-ошибка, если забыл case
+      return state;
+    }
   }
 }

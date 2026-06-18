@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Урок 8 — useReducer: состояние как машина переходов (CartContext)</title>
+<style>
+  :root{--bg:#0f1115;--card:#171a21;--ink:#e7e9ee;--muted:#9aa3b2;--accent:#7aa2ff;--green:#6ee7a8;--amber:#ffd27a;--red:#ff8b8b;--line:#272c36;--code:#1d2230;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;padding:48px 20px}
+  .wrap{max-width:860px;margin:0 auto}
+  .eyebrow{color:var(--green);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px;margin:0}
+  h1{font-size:30px;line-height:1.2;margin:6px 0 10px}
+  .lede{color:var(--muted);font-size:18px;margin:0 0 28px}
+  h2{font-size:21px;margin:34px 0 12px;padding-top:10px;border-top:1px solid var(--line)}
+  h3{font-size:16px;margin:20px 0 6px;color:var(--amber)}
+  p{margin:12px 0}
+  code{background:var(--code);padding:1px 6px;border-radius:5px;font:13.5px/1.5 ui-monospace,Menlo,Consolas,monospace;color:#cbd5ff}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;color:#d6deff}
+  .c{color:#6b7689}.k{color:#ff9ecb}.s{color:#a6e3a1}.f{color:#9bd0ff}.u{color:#ffd27a}
+  .n{color:#ff8b8b;font-weight:700}
+  ul,ol{margin:8px 0;padding-left:22px} li{margin:6px 0}
+  .goal{background:#16221c;border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:14px 16px;margin:18px 0}
+  .goal b{color:var(--green)}
+  .warn{background:#241c16;border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:12px 16px;margin:18px 0;color:#efe0c4}
+  .bridge{background:#1a1622;border-left:3px solid #c08bff;border-radius:0 8px 8px 0;padding:12px 16px;margin:18px 0;color:#e3d5f5;font-size:14.5px}
+  .bridge b{color:#c8a6ff}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+  th{background:#1b2030;color:var(--amber);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  td code{font-size:12.5px}
+  .notes{counter-reset:fn;list-style:none;padding-left:0}
+  .notes li{position:relative;padding:8px 0 8px 38px;border-bottom:1px solid var(--line)}
+  .notes li::before{content:"["counter(fn)"]";counter-increment:fn;position:absolute;left:0;top:8px;color:var(--green);font:700 13px ui-monospace,monospace}
+  details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 16px;margin:12px 0}
+  summary{cursor:pointer;font-weight:600;padding:8px 0;color:var(--amber)}
+  .nav{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);display:flex;gap:16px;flex-wrap:wrap;font-size:14px}
+  a{color:var(--accent)}
+  .ask{margin-top:26px;background:#161b29;border:1px dashed var(--accent);border-radius:10px;padding:14px 16px;color:#cdd6f5;font-size:14.5px}
+  .quiz{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:18px 0}
+  .quiz .q{font-weight:600;margin:0 0 12px}
+  .opt{display:block;width:100%;text-align:left;background:#1b2030;border:1px solid var(--line);color:var(--ink);padding:11px 14px;border-radius:8px;margin:8px 0;cursor:pointer;font:14px/1.4 inherit;transition:border-color .15s,background .15s}
+  .opt:hover:not(:disabled){border-color:var(--accent)}
+  .opt:disabled{cursor:default;opacity:.92}
+  .opt.correct{border-color:var(--green);background:#16291f}
+  .opt.wrong{border-color:var(--red);background:#2a1a1a}
+  .fb{display:none;margin-top:10px;font-size:14px;padding:10px 12px;border-radius:8px}
+  .fb.show{display:block}
+  .fb.ok{background:#16291f;color:var(--green)}
+  .fb.no{background:#2a1a1a;color:var(--red)}
+  .fnref{color:var(--green);font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Урок 8 · React — useReducer · формат: обзор → разбор → практика</p>
+  <h1>useReducer: состояние как машина переходов</h1>
+  <p class="lede">Корзина — это не одно значение, а <b>набор переходов</b>: добавить, убрать, сменить количество, очистить, восстановить из storage. Когда переходов много и они затрагивают один и тот же массив — <code>useState</code> расползается по компоненту. <code>useReducer</code> собирает всю логику изменения в одну чистую функцию. У тебя в проекте это уже сделано — <code>cartReducer.ts</code> + <code>CartContext.tsx</code>. Разбираем построчно.</p>
+
+  <div class="goal">
+    <b>Цель.</b> Понять три вещи: (1) <b>reducer = чистая функция</b> <code>(state, action) =&gt; newState</code> — почему чистая и почему иммутабельная; (2) <b>action как discriminated union</b> — как один тип события даёт TS-исчерпывающий <code>switch</code> без ошибок; (3) как <code>dispatch</code> заворачивается в <b>action creators</b> и раздаётся через Context, и почему <code>totalPrice</code> не лежит в state, а <b>выводится</b>.
+  </div>
+
+  <h2>1. Обзор: useState vs useReducer</h2>
+  <div class="bridge"><b>Мост от ExtJS.</b> В ExtJS <code>Ext.data.Store</code> — это состояние + методы-переходы: <code>store.add()</code>, <code>store.remove()</code>, <code>store.removeAll()</code>, и события <code>datachanged</code>. <code>useReducer</code> — тот же паттерн, разнятый на части: <b>state</b> (массив items), <b>action</b> (описание «что произошло» — как событие стора), <b>reducer</b> (как состояние отвечает на событие — как внутренняя логика <code>add/remove</code>). Разница: reducer — <b>чистый</b> (ничего не мутирует, не лезет в сеть), а возвращает <b>новый</b> массив. Стор ExtJS мутировал себя на месте; здесь — иммутабельность.</p></div>
+
+  <p>Когда что:</p>
+  <table>
+    <tr><th>Признак</th><th>useState</th><th>useReducer</th></tr>
+    <tr><td>Сколько переходов</td><td>1–2 простых</td><td><b>много</b> (add/remove/update/clear/init)</td></tr>
+    <tr><td>Зависят ли переходы от текущего state</td><td>редко</td><td><b>да</b> (add суммирует с тем, что уже в корзине)</td></tr>
+    <tr><td>Где живёт логика</td><td>размазана по хендлерам</td><td><b>в одном месте</b> — reducer</td></tr>
+    <tr><td>Тестируемость</td><td>нужен рендер</td><td>reducer — чистая функция, тест без React</td></tr>
+  </table>
+  <p>Правило: как только «обновление состояния» становится <b>логикой</b> (а не просто «положить значение») и переходов больше двух — это reducer. Корзина — хрестоматийный случай.</p>
+
+  <h2>2. Разбор reducer'а со сносками — <code>cartReducer.ts</code></h2>
+  <p>Сердце фичи. Цифры <span class="fnref">[n]</span> — сноски под кодом.</p>
+<pre><span class="k">import</span> { CartAction, CartItem } <span class="k">from</span> <span class="s">'@/types/cart'</span>;
+
+<span class="k">export function</span> <span class="f">cartReducer</span>(state: CartItem[], action: CartAction): CartItem[] {   <span class="c">// [1]</span>
+  <span class="k">switch</span> (action.type) {                                                      <span class="c">// [2]</span>
+    <span class="k">case</span> <span class="s">'ADD'</span>: {
+      <span class="k">const</span> exists = state.find((p) =&gt; p.productId === action.product.productId);  <span class="c">// [3]</span>
+      <span class="k">return</span> exists
+        ? state.map((p) =&gt;                                                    <span class="c">// [4]</span>
+            p.productId === action.product.productId
+              ? { ...p, quantity: p.quantity + action.product.quantity }
+              : p,
+          )
+        : [...state, action.product];                                        <span class="c">// [5]</span>
+    }
+    <span class="k">case</span> <span class="s">'REMOVE'</span>: {
+      <span class="k">return</span> state.filter((p) =&gt; p.productId !== action.productId);            <span class="c">// [6]</span>
+    }
+    <span class="k">case</span> <span class="s">'CLEAR'</span>: {
+      <span class="k">return</span> [];
+    }
+    <span class="k">case</span> <span class="s">'INIT'</span>: {
+      <span class="k">return</span> action.items;                                                   <span class="c">// [7]</span>
+    }
+    <span class="k">case</span> <span class="s">'UPDATE_QUANTITY'</span>: {
+      <span class="k">if</span> (action.quantity &lt;= <span class="u">0</span>) {                                          <span class="c">// [8]</span>
+        <span class="k">return</span> state.filter((p) =&gt; p.productId !== action.productId);
+      }
+      <span class="k">return</span> state.map((p) =&gt;
+        p.productId === action.productId ? { ...p, quantity: action.quantity } : p,
+      );
+    }
+  }                                                                          <span class="c">// [9] — нет default. почему ок?</span>
+}</pre>
+
+  <ol class="notes">
+    <li><b>Сигнатура reducer'а фиксирована React'ом:</b> <code>(state, action) =&gt; newState</code>. <code>state: CartItem[]</code> — текущая корзина, <code>action: CartAction</code> — описание события. Возвращаемый тип <b>тот же</b>, что у state (<code>CartItem[]</code>) — reducer всегда отдаёт состояние того же вида. Никаких аргументов «извне», никакого <code>await</code>, никакого <code>localStorage</code> внутри: <b>чистая функция</b>.</li>
+    <li><b><code>switch (action.type)</code> — это discriminated union в действии.</b> <code>CartAction</code> (в <code>types/cart.ts</code>) — это <code>|</code>-объединение, где общее поле <code>type</code> — дискриминант. Как только TS видит <code>case 'ADD'</code>, он <b>сужает</b> тип <code>action</code> до варианта с <code>product</code>; в <code>case 'REMOVE'</code> — до варианта с <code>productId</code>. Поэтому в ветке <code>REMOVE</code> нет <code>action.product</code> — TS бы не дал. Один тип события заменяет россыпь несвязанных аргументов.</li>
+    <li><b>Зависимость от текущего state.</b> Добавляя товар, мы сначала смотрим — он <b>уже</b> в корзине? Эту логику нельзя выразить через <code>useState(setItems(x))</code> чисто — нужен доступ к актуальному state. Reducer его получает первым аргументом всегда «свежим». (Это та же причина, по которой в <code>setState</code> с зависимостью от прошлого используют функцию-апдейтер.)</li>
+    <li><b>Иммутабельное обновление #1 — <code>map</code>.</b> Товар уже есть → возвращаем <b>новый</b> массив, где у совпавшего элемента <code>quantity</code> увеличен. <code>{ ...p, quantity: ... }</code> — новый объект, остальные <code>p</code> переиспользуются как есть. Мы НИКОГДА не пишем <code>p.quantity += ...</code> — мутация старого state сломает сравнение по ссылке, и React может не перерисовать (или перерисовать лишнее).</li>
+    <li><b>Иммутабельное обновление #2 — спред.</b> Товара нет → <code>[...state, action.product]</code>: новый массив = старые элементы + новый. Снова новая ссылка на массив — сигнал React'у «состояние изменилось».</li>
+    <li><b><code>filter</code> = удаление иммутабельно.</b> Не <code>splice</code> (мутирует), а <code>filter</code>, который возвращает новый массив без удалённого. Паттерн: любое изменение массива в reducer — через <code>map</code>/<code>filter</code>/спред, не через мутирующие методы.</li>
+    <li><b><code>INIT</code> — гидрация из localStorage.</b> Эта ветка просто <b>заменяет</b> весь state на пришедший массив. Кто и когда её шлёт — увидишь в провайдере (сноска про первый <code>useEffect</code>). Важно: reducer не знает про localStorage — он только принимает готовый массив. Грязь (парсинг, try/catch) — снаружи, в эффекте. Reducer чист.</li>
+    <li><b>Бизнес-правило внутри перехода.</b> «Снизил количество до 0 или меньше → это удаление». Логика живёт в reducer, а не в компоненте: любой, кто шлёт <code>UPDATE_QUANTITY</code> с <code>quantity:0</code>, получит удаление — единый источник правды. Компоненту не надо помнить про этот кейс.</li>
+    <li><b>Нет <code>default</code> — и это корректно <i>сейчас</i>.</b> Все 5 вариантов union'а разобраны, TS считает <code>switch</code> исчерпывающим. Но это <b>хрупко</b>: добавишь 6-й тип в <code>CartAction</code> и забудешь <code>case</code> — функция тихо вернёт <code>undefined</code> для него (тип результата станет <code>CartItem[] | undefined</code>). В практике добавим явную защиту-страж. Запомни запах: <i>switch по union без exhaustiveness-guard</i>.</li>
+  </ol>
+
+  <h3>Тип события — <code>types/cart.ts</code> (источник дискриминанта)</h3>
+<pre><span class="k">export type</span> CartAction =
+  | { type: <span class="s">'ADD'</span>; product: CartItem }
+  | { type: <span class="s">'REMOVE'</span>; productId: string }
+  | { type: <span class="s">'CLEAR'</span> }
+  | { type: <span class="s">'INIT'</span>; items: CartItem[] }
+  | { type: <span class="s">'UPDATE_QUANTITY'</span>; productId: string; quantity: number };</pre>
+  <p>Каждый вариант несёт <b>ровно те поля, что нужны переходу</b>: <code>ADD</code> — весь товар, <code>REMOVE</code> — только id, <code>CLEAR</code> — ничего. Это и есть «типизированное событие». Сравни с ExtJS, где <code>fireEvent('add', record)</code> — аргументы нетипизированы и проверяются только в рантайме.</p>
+
+  <h3>Как reducer подключён и обёрнут — <code>CartContext.tsx</code></h3>
+<pre><span class="k">const</span> [items, dispatch] = useReducer(cartReducer, []);                <span class="c">// [A] state + диспетчер, старт []</span>
+
+<span class="k">const</span> totalItems = useMemo(() =&gt; items.reduce((a,p)=&gt;a+p.quantity,0), [items]);   <span class="c">// [B] выводим, не храним</span>
+<span class="k">const</span> totalPrice = useMemo(() =&gt; items.reduce((a,p)=&gt;a+p.price*p.quantity,0), [items]);
+
+useEffect(() =&gt; {                                                      <span class="c">// [C] гидрация ОДИН раз</span>
+  <span class="k">try</span> {
+    <span class="k">const</span> cart = localStorage.getItem(<span class="s">'cart'</span>);
+    <span class="k">if</span> (cart) dispatch({ type: <span class="s">'INIT'</span>, items: JSON.parse(cart) });
+  } <span class="k">catch</span> { localStorage.removeItem(<span class="s">'cart'</span>); }
+  setInitialized(<span class="k">true</span>);
+}, []);
+
+useEffect(() =&gt; {                                                      <span class="c">// [D] персист при изменениях</span>
+  <span class="k">if</span> (initialized) localStorage.setItem(<span class="s">'cart'</span>, JSON.stringify(items));
+}, [items, initialized]);
+
+<span class="k">const</span> addItem = (product) =&gt; dispatch({ type: <span class="s">'ADD'</span>, product });    <span class="c">// [E] action creator</span></pre>
+  <ul class="notes">
+    <li><b>[A]</b> <code>useReducer(reducer, initialState)</code> возвращает <code>[state, dispatch]</code>. <code>dispatch(action)</code> — единственный способ изменить state: он зовёт <code>cartReducer(currentItems, action)</code> и кладёт результат как новый state. Никто не трогает <code>items</code> напрямую.</li>
+    <li><b>[B] Выводимое состояние не хранят.</b> <code>totalItems</code>/<code>totalPrice</code> — это <b>производные</b> от <code>items</code>. Класть их в reducer-state — значит держать два источника правды и ловить рассинхрон. Считаем на лету через <code>useMemo</code> (мемо — чтобы не пересчитывать на каждый рендер, только при смене <code>items</code>). Связь с Уроком 7: <code>totalPrice</code> здесь — для <b>отображения</b>; «настоящую» сумму заказа всё равно пересчитывает сервер (твой <code>orders/beforeChange</code>), клиенту не верим.</li>
+    <li><b>[C] и [D] — почему два эффекта и флаг <code>initialized</code>.</b> Эффект [C] поднимает корзину из <code>localStorage</code> один раз (пустой deps <code>[]</code>). Эффект [D] сохраняет корзину при каждом изменении <code>items</code>. Флаг <code>initialized</code> критичен: без него [D] выстрелит на <b>первом</b> рендере (когда state ещё <code>[]</code>, до гидрации) и <b>затрёт</b> сохранённую корзину пустотой. Порядок: смонтировались с <code>[]</code> → [C] прочитал storage → <code>INIT</code> → <code>initialized=true</code> → только теперь [D] начинает писать. Это типовая SSR/гидрация-ловушка: <code>localStorage</code> нельзя читать при рендере (на сервере его нет) — только в эффекте.</li>
+    <li><b>[E] Action creators прячут <code>dispatch</code>.</b> Наружу через Context уходят не «сырой» <code>dispatch</code>, а удобные <code>addItem/removeItem/...</code>. Компонент пишет <code>addItem(product)</code>, не зная формы экшена. Это инкапсуляция: форма action'а — деталь, её можно поменять, не трогая UI.</li>
+  </ul>
+
+  <div class="warn"><b>Три ловушки reducer'а:</b><br>
+  • <b>Мутация state.</b> <code>state.push(x); return state</code> — классика бага: ссылка та же, React может пропустить ререндер. Всегда новый объект/массив (<code>map/filter/спред</code>).<br>
+  • <b>Побочка в reducer.</b> <code>fetch</code>, <code>localStorage</code>, <code>Date.now()</code> внутри reducer'а — нельзя. Reducer обязан быть чистым и предсказуемым (React в Strict Mode зовёт его дважды — побочка задвоится). Грязь — в эффект или в action creator.<br>
+  • <b>Выводимое в state.</b> Не клади <code>totalPrice</code> в reducer-state. Если значение можно посчитать из другого — считай, не храни.</div>
+
+  <h2>3. Квиз</h2>
+  <div class="quiz">
+    <p class="q">1. Почему в ветке <code>REMOVE</code> используется <code>filter</code>, а не <code>state.splice(...)</code>?</p>
+    <button class="opt" data-ok="1"><code>splice</code> мутирует старый массив; reducer обязан вернуть НОВУЮ ссылку, иначе React может не перерисовать</button>
+    <button class="opt" data-ok="0"><code>splice</code> медленнее</button>
+    <button class="opt" data-ok="0">Разницы нет, дело вкуса</button>
+    <div class="fb"></div>
+  </div>
+  <div class="quiz">
+    <p class="q">2. Зачем флаг <code>initialized</code> между двумя <code>useEffect</code>?</p>
+    <button class="opt" data-ok="0">Чтобы корзина считалась быстрее</button>
+    <button class="opt" data-ok="1">Чтобы эффект-сохранение не затёр localStorage пустым массивом на первом рендере, до гидрации</button>
+    <button class="opt" data-ok="0">Это требование TypeScript</button>
+    <div class="fb"></div>
+  </div>
+  <div class="quiz">
+    <p class="q">3. Почему <code>totalPrice</code> не хранится в reducer-state, а считается через <code>useMemo</code>?</p>
+    <button class="opt" data-ok="1">Это производное от <code>items</code>; хранить — значит держать два источника правды и ловить рассинхрон</button>
+    <button class="opt" data-ok="0"><code>useReducer</code> не умеет хранить числа</button>
+    <button class="opt" data-ok="0">Так быстрее работает localStorage</button>
+    <div class="fb"></div>
+  </div>
+  <div class="quiz">
+    <p class="q">4. Ты добавил в <code>CartAction</code> новый вариант <code>{ type: 'INCREMENT'; productId: string }</code>, но забыл <code>case</code> в reducer. Что произойдёт?</p>
+    <button class="opt" data-ok="1">Для <code>INCREMENT</code> функция вернёт <code>undefined</code>; тип результата станет <code>CartItem[] | undefined</code> — TS подсветит проблему</button>
+    <button class="opt" data-ok="0">Рантайм-краш сразу при старте</button>
+    <button class="opt" data-ok="0">Ничего, React сам обработает</button>
+    <div class="fb"></div>
+  </div>
+
+  <h2>4. Практика 6 (пишешь сам)</h2>
+  <div class="card">
+    <p><b>Задача с реальным смыслом:</b> на странице корзины кнопки «+ / −» сейчас вынуждены сами считать <code>quantity ± 1</code> и звать <code>updateQuantity(id, q+1)</code> — то есть знать текущее количество. Перенесём логику шага в reducer: компонент будет слать <b>намерение</b> («увеличь на 1»), а не вычисленное значение. Плюс закроем хрупкость из сноски [9].</p>
+    <ol>
+      <li><b>Расширь тип.</b> В <code>types/cart.ts</code> добавь в <code>CartAction</code> два варианта: <code>{ type: 'INCREMENT'; productId: string }</code> и <code>{ type: 'DECREMENT'; productId: string }</code>.</li>
+      <li><b>Добавь exhaustiveness-guard.</b> В конец <code>switch</code> в <code>cartReducer.ts</code> добавь <code>default</code>, который заставит TS падать на необработанном варианте:
+        <pre><span class="k">default</span>: {
+  <span class="k">const</span> _exhaustive: <span class="k">never</span> = action;   <span class="c">// TS-ошибка, если забыл case</span>
+  <span class="k">return</span> state;
+}</pre>
+        Сохрани файл с ещё НЕ написанными <code>case</code>'ами для INCREMENT/DECREMENT — <b>посмотри на ошибку TS</b> в <code>_exhaustive</code> (это и есть страж в действии). Объясни словами, почему тип <code>never</code> ловит пропущенный case.</li>
+      <li><b>Реализуй переходы.</b> <code>INCREMENT</code>: <code>quantity + 1</code> у совпавшего товара (иммутабельно, через <code>map</code>). <code>DECREMENT</code>: <code>quantity − 1</code>, но если стало <code>&lt;= 0</code> — удали товар (переиспользуй правило из <code>UPDATE_QUANTITY</code>, не дублируй мысль бездумно — подумай, можно ли свести). После этого ошибка в <code>_exhaustive</code> должна исчезнуть.</li>
+      <li><b>Прокинь action creators.</b> В <code>CartContext.tsx</code> добавь <code>increment(productId)</code> / <code>decrement(productId)</code> рядом с остальными, добавь их в тип <code>CartContextType</code> и в <code>value</code> провайдера.</li>
+      <li><b>Используй в UI.</b> На странице корзины кнопки «+/−» переведи на <code>increment(id)</code> / <code>decrement(id)</code>. Проверь: «−» на товаре с количеством 1 убирает его из корзины; перезагрузка страницы сохраняет состояние (персист работает).</li>
+      <li><b>На подумать (без кода):</b> почему правильно, что «дошёл до 0 → удалить» живёт в reducer, а не в обработчике клика кнопки? Свяжи с идеей «единый источник правды для перехода».</li>
+    </ol>
+    <p>Не уверен в шаге — спроси до того, как писать. Жду реализацию → ревью.</p>
+  </div>
+
+  <div class="ask">
+    💬 Затык? Пиши в чате: «покажи, как TS сужает <code>action</code> по <code>type</code> в нашем <code>cartReducer</code>» или «разбери, почему <code>useMemo</code> на <code>totalPrice</code> не лишний».
+  </div>
+
+  <div class="nav">
+    <a href="0007-payload-hooks.html">← Урок 7 (Payload hooks)</a>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.quiz').forEach((quiz) => {
+    const opts = quiz.querySelectorAll('.opt');
+    const fb = quiz.querySelector('.fb');
+    opts.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const ok = btn.dataset.ok === '1';
+        opts.forEach((b) => { b.disabled = true; if (b.dataset.ok === '1') b.classList.add('correct'); });
+        if (!ok) btn.classList.add('wrong');
+        fb.classList.add('show', ok ? 'ok' : 'no');
+        fb.textContent = ok ? 'Верно.' : 'Не то — правильный вариант подсвечен зелёным.';
+      });
+    });
+  });
+</script>
+</body>
+</html>
