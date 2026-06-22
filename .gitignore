@@ -54,3 +54,4 @@ database.db
 *.stackdump
 *.local.json
 /scripts
+.env*

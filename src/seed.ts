@@ -5,6 +5,13 @@ import { getPayload, Payload } from 'payload';
 import config from '../src/payload.config';
 import { categories, products, buildDescription } from './seed-data';
 
+// Seeds write DATA only — never mutate schema. Force-disable Payload's dev
+// schema push so running this against ANY database (including prod) can't
+// trigger drizzle's interactive schema sync. Schema is owned by migrations.
+// This runs before getPayload()/connect, which is where the flag is read.
+// (db-postgres connect.js skips pushDevSchema when PAYLOAD_MIGRATING === 'true'.)
+process.env.PAYLOAD_MIGRATING = 'true';
+
 const MIME: Record<string, string> = {
   '.webp': 'image/webp',
   '.png': 'image/png',
