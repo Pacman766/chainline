@@ -1,5 +1,6 @@
 import { getPayload } from 'payload';
 import config from '@payload-config';
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { draftMode } from 'next/headers';
@@ -12,24 +13,26 @@ import { PreviewBanner } from '@/components/PreviewBanner';
 // Cached fetch of the PUBLISHED product. Keyed by id and tagged so that
 // `revalidateTag('product-<id>')` / `revalidateTag('products')` (fired from the
 // Payload afterChange/delete hooks via /api/revalidate) purge it on edit.
-const getPublishedProduct = (id: string) =>
+const getPublishedProduct = (id: string, locale: 'ru' | 'en') =>
   unstable_cache(
     async () => {
       const payload = await getPayload({ config });
       return payload.findByID({
         collection: 'products',
         id,
+        locale,
         depth: 1,
         draft: false,
         overrideAccess: false,
       });
     },
-    ['product', id],
+    ['product', id, locale],
     { tags: [`product-${id}`, 'products'] },
   )();
 
-export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function ProductPage({ params }: { params: Promise<{ id: string; locale: 'ru' | 'en' }> }) {
+  const { id, locale } = await params;
+  const t = await getTranslations('pdp');
 
   // Tradeoff note: calling draftMode() opts the route into dynamic rendering.
   // We only read it for the preview branch; non-preview visitors still benefit
@@ -44,12 +47,13 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     product = await payload.findByID({
       collection: 'products',
       id,
+      locale,
       depth: 1,
       draft: true,
       overrideAccess: true,
     });
   } else {
-    product = await getPublishedProduct(id);
+    product = await getPublishedProduct(id, locale);
   }
 
   const category = typeof product.category === 'object' && product.category !== null
@@ -81,14 +85,14 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       <div className="pdp-info">
         <Link href="/products" className="pdp-back">
           <ArrowLeft size={14} />
-          Каталог
+          {t('backToCatalog')}
         </Link>
 
         {category && <p className="pdp-category">{category.name}</p>}
         <h1 className="pdp-title">{product.name}</h1>
 
         <span className={`pdp-stock ${product.inStock ? 'pdp-stock--in' : 'pdp-stock--out'}`}>
-          {product.inStock ? 'В наличии' : 'Нет в наличии'}
+          {product.inStock ? t('inStock') : t('outOfStock')}
         </span>
 
         <div className="pdp-price-row">
@@ -106,7 +110,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         {product.description && (
           <>
             <div className="pdp-divider" />
-            <p className="pdp-section-label">Описание</p>
+            <p className="pdp-section-label">{t('description')}</p>
             <div className="pdp-description">
               <ProductDescription data={product.description} />
             </div>
@@ -116,27 +120,27 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         {hasSpecs && (
           <>
             <div className="pdp-divider" />
-            <p className="pdp-section-label">Характеристики</p>
+            <p className="pdp-section-label">{t('specs')}</p>
             <div className="pdp-specs">
               {dims.weight && (
                 <div className="pdp-spec-card">
-                  <span className="pdp-spec-card__label">Вес</span>
+                  <span className="pdp-spec-card__label">{t('weight')}</span>
                   <span className="pdp-spec-card__val">{dims.weight}</span>
-                  <span className="pdp-spec-card__unit">г</span>
+                  <span className="pdp-spec-card__unit">{t('unitG')}</span>
                 </div>
               )}
               {dims.width && (
                 <div className="pdp-spec-card">
-                  <span className="pdp-spec-card__label">Ширина</span>
+                  <span className="pdp-spec-card__label">{t('width')}</span>
                   <span className="pdp-spec-card__val">{dims.width}</span>
-                  <span className="pdp-spec-card__unit">см</span>
+                  <span className="pdp-spec-card__unit">{t('unitCm')}</span>
                 </div>
               )}
               {dims.height && (
                 <div className="pdp-spec-card">
-                  <span className="pdp-spec-card__label">Высота</span>
+                  <span className="pdp-spec-card__label">{t('height')}</span>
                   <span className="pdp-spec-card__val">{dims.height}</span>
-                  <span className="pdp-spec-card__unit">см</span>
+                  <span className="pdp-spec-card__unit">{t('unitCm')}</span>
                 </div>
               )}
             </div>

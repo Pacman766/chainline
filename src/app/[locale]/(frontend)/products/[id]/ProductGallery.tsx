@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { shimmerDataURL } from '@/lib/shimmer';
 
 type GalleryImage = {
@@ -18,12 +19,13 @@ export function ProductGallery({
   productName: string;
 }) {
   const [active, setActive] = useState(0);
+  const t = useTranslations('pdp');
 
   if (images.length === 0) {
     return (
       <div className="pdp-gallery">
         <div className="pdp-gallery__main">
-          <span className="pdp-gallery__no-img">Нет фото</span>
+          <span className="pdp-gallery__no-img">{t('noImage')}</span>
         </div>
       </div>
     );
@@ -53,11 +55,11 @@ export function ProductGallery({
               key={i}
               className={`pdp-thumb${i === active ? ' pdp-thumb--active' : ''}`}
               onClick={() => setActive(i)}
-              aria-label={`Фото ${i + 1}`}
+              aria-label={t('photoAlt', { index: i + 1 })}
             >
               <Image
                 src={img.thumbUrl}
-                alt={img.alt || `Фото ${i + 1}`}
+                alt={img.alt || t('photoAlt', { index: i + 1 })}
                 fill
                 className="object-contain"
                 sizes="68px"

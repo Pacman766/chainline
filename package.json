@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
+    "check:i18n": "node src/scripts/check-i18n-keys.mjs",
     "ci": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" payload migrate -- --force-accept-warning && next build",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
     "devsafe": "npx rimraf .next && cross-env NODE_OPTIONS=--no-deprecation next dev",

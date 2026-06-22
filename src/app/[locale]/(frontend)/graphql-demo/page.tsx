@@ -1,7 +1,9 @@
 import { getPayload } from 'payload';
 import config from '@payload-config';
+import { getTranslations } from 'next-intl/server';
 
 export default async function graphqlDemoPage() {
+  const t = await getTranslations('graphqlDemo');
   let products: { id: string | number; name: string; price: number; inStock: boolean; category?: { name?: string } | null }[] = [];
   let totalDocs = 0;
 
@@ -18,7 +20,7 @@ export default async function graphqlDemoPage() {
     console.error(error);
   }
 
-  if (!products.length) return <div>Ошибка загрузки</div>;
+  if (!products.length) return <div>{t('loadError')}</div>;
 
   return (
     <div>
@@ -30,7 +32,7 @@ export default async function graphqlDemoPage() {
             {product?.category?.name}
           </li>
         ))}
-        {'Всего документов:'} {totalDocs}
+        {t('totalDocs')} {totalDocs}
       </ul>
     </div>
   );

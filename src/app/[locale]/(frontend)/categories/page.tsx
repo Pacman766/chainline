@@ -1,22 +1,21 @@
 import config from '@payload-config';
 import Link from 'next/link';
 import { getPayload } from 'payload';
+import { getTranslations } from 'next-intl/server';
 
 export const revalidate = 0;
 
-// Русская плюрализация: 1 товар, 2 товара, 5 товаров
-function pluralProducts(n: number): string {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return 'товар';
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'товара';
-  return 'товаров';
-}
-
-export default async function CategoriesPage() {
+export default async function CategoriesPage({
+  params,
+}: {
+  params: Promise<{ locale: 'ru' | 'en' }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations('categoriesPage');
   const payload = await getPayload({ config });
   const { docs: categories } = await payload.find({
     collection: 'categories',
+    locale,
     limit: 100,
   });
 
@@ -38,13 +37,10 @@ export default async function CategoriesPage() {
     <div className="cat-page">
       <div className="catalog-header">
         <div>
-          <p className="catalog-eyebrow">Каталог</p>
-          <h1 className="catalog-title">Категории</h1>
+          <p className="catalog-eyebrow">{t('eyebrow')}</p>
+          <h1 className="catalog-title">{t('title')}</h1>
         </div>
-        <p className="catalog-gate">
-          {withCounts.length}{' '}
-          {withCounts.length === 1 ? 'раздел' : 'разделов'}
-        </p>
+        <p className="catalog-gate">{t('sections', { count: withCounts.length })}</p>
       </div>
 
       <div className="cat-grid">
@@ -58,7 +54,7 @@ export default async function CategoriesPage() {
                 className={`cat-card__count${cat.productCount === 0 ? ' cat-card__count--empty' : ''}`}
               >
                 <span className="cat-card__count-num">{cat.productCount}</span>
-                <span className="cat-card__count-lbl">{pluralProducts(cat.productCount)}</span>
+                <span className="cat-card__count-lbl">{t('products', { count: cat.productCount })}</span>
               </span>
               <svg
                 className="cat-card__arrow"

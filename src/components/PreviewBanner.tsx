@@ -1,11 +1,13 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 
-export function PreviewBanner({ productId }: { productId: string }) {
+export async function PreviewBanner({ productId }: { productId: string }) {
+  const t = await getTranslations('preview');
   return (
     <div className="preview-banner">
-      <span>Режим предпросмотра — черновик</span>
+      <span>{t('label')}</span>
       <Link href={`/api/preview/exit?redirect=/products/${productId}`}>
-        Выйти
+        {t('exit')}
       </Link>
     </div>
   );

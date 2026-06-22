@@ -1,6 +1,7 @@
 import config from '@payload-config';
 import Link from 'next/link';
 import { getPayload } from 'payload';
+import { getTranslations } from 'next-intl/server';
 
 export const revalidate = 0;
 
@@ -15,6 +16,7 @@ const SOCIAL_LABELS: Record<string, string> = {
 
 export default async function ContactsPage() {
   const payload = await getPayload({ config });
+  const t = await getTranslations('contacts');
   const settings = await payload.findGlobal({ slug: 'site-settings' });
 
   const { email, phone, address, workingHours } = settings.contact ?? {};
@@ -28,22 +30,22 @@ export default async function ContactsPage() {
       mono: false,
     },
     phone && {
-      label: 'Телефон',
+      label: t('phone'),
       value: phone,
       href: `tel:${phone.replace(/[^+\d]/g, '')}`,
       mono: true,
     },
     workingHours && {
-      label: 'Часы работы',
+      label: t('workingHours'),
       value: workingHours,
       href: null,
       mono: false,
     },
     address && {
-      label: 'Адрес',
+      label: t('address'),
       value: address,
       href: `https://maps.google.com/?q=${encodeURIComponent(address)}`,
-      hrefLabel: 'Построить маршрут',
+      hrefLabel: t('route'),
       mono: false,
     },
   ].filter(Boolean) as {
@@ -58,15 +60,15 @@ export default async function ContactsPage() {
     <div className="cat-page">
       <div className="catalog-header">
         <div>
-          <p className="catalog-eyebrow">Свяжитесь с нами</p>
-          <h1 className="catalog-title">Контакты</h1>
+          <p className="catalog-eyebrow">{t('eyebrow')}</p>
+          <h1 className="catalog-title">{t('title')}</h1>
         </div>
       </div>
 
       {channels.length === 0 && socials.length === 0 ? (
         <p className="contacts-empty">
-          Контактные данные пока не заполнены. Добавьте их в админке:{' '}
-          <Link href="/admin/globals/site-settings">Site Settings → Контакты</Link>.
+          {t('empty')}{' '}
+          <Link href="/admin/globals/site-settings">{t('settingsLink')}</Link>.
         </p>
       ) : (
         <div className="contacts-body">
@@ -97,7 +99,7 @@ export default async function ContactsPage() {
 
           {socials.length > 0 && (
             <div className="contacts-socials">
-              <p className="contacts-socials__label">Мы в сетях</p>
+              <p className="contacts-socials__label">{t('socials')}</p>
               <div className="contacts-socials__row">
                 {socials.map((s) => (
                   <a

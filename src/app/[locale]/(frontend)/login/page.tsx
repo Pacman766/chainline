@@ -6,9 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = useTranslations('auth');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -31,10 +33,10 @@ export default function LoginPage() {
         router.push('/products');
         router.refresh();
       } else {
-        setError('Неверный email или пароль');
+        setError(t('invalidCredentials'));
       }
     } catch {
-      setError('Ошибка соединения');
+      setError(t('connectionError'));
     } finally {
       setLoading(false);
     }
@@ -44,12 +46,12 @@ export default function LoginPage() {
     <div className="min-h-[calc(100vh-3.5rem)] flex items-center justify-center px-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Вход</CardTitle>
+          <CardTitle>{t('signInTitle')}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -60,7 +62,7 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Пароль</Label>
+              <Label htmlFor="password">{t('password')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -72,12 +74,12 @@ export default function LoginPage() {
             </div>
             {error && <p className="text-destructive text-sm">{error}</p>}
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Вход...' : 'Войти'}
+              {loading ? t('signInLoading') : t('signIn')}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
-              Нет аккаунта?{' '}
+              {t('noAccount')}{' '}
               <Link href="/register" className="underline underline-offset-4">
-                Зарегистрироваться
+                {t('signUp')}
               </Link>
             </p>
           </form>

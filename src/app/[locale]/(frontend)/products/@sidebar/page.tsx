@@ -1,19 +1,22 @@
 import config from '@payload-config';
 import { getPayload } from 'payload';
+import { getTranslations } from 'next-intl/server';
 import type { Category } from '@/payload-types';
 import Link from 'next/link';
 
-export default async function Sidebar() {
+export default async function Sidebar({ params }: { params: Promise<{ locale: 'ru' | 'en' }> }) {
+  const { locale } = await params;
+  const t = await getTranslations('sidebar');
   const payload = await getPayload({ config });
-  const { docs: categories } = await payload.find({ collection: 'categories' });
+  const { docs: categories } = await payload.find({ collection: 'categories', locale });
 
   return (
     <nav className="sidebar-inner">
-      <p className="sidebar-label">Категории</p>
+      <p className="sidebar-label">{t('label')}</p>
       <ul className="sidebar-nav">
         <li>
           <Link href="/products" className="sidebar-link">
-            Все товары
+            {t('all')}
           </Link>
         </li>
         {categories.map((category: Category) => (

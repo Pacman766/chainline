@@ -6,10 +6,12 @@ import { Trash2, ShoppingCart, Minus, Plus, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 export default function CartPage() {
   const { totalPrice, items, removeItem, clearCart, increment, decrement } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const t = useTranslations('cart');
 
   async function submitOrder(items: CartItem[]) {
     setIsCheckingOut(true);
@@ -20,24 +22,24 @@ export default function CartPage() {
         body: JSON.stringify({ items }),
       });
       if (res.status === 401) {
-        toast.error('Необходимо войти в аккаунт');
+        toast.error(t('errorLoginRequired'));
         setIsCheckingOut(false);
         return;
       }
       if (!res.ok) {
-        toast.error('Ошибка при оформлении заказа.');
+        toast.error(t('errorCheckout'));
         setIsCheckingOut(false);
         return;
       }
       const data = (await res.json()) as { checkoutUrl?: string; orderId?: number };
       if (!data.checkoutUrl) {
-        toast.error('Не удалось получить ссылку на оплату');
+        toast.error(t('errorNoCheckoutUrl'));
         setIsCheckingOut(false);
         return;
       }
       window.location.href = data.checkoutUrl;
     } catch {
-      toast.error('Ошибка сети');
+      toast.error(t('errorNetwork'));
       setIsCheckingOut(false);
     }
   }
@@ -46,10 +48,10 @@ export default function CartPage() {
     return (
       <div className="cart-empty">
         <ShoppingCart className="cart-empty__icon" size={72} strokeWidth={1} />
-        <h1 className="cart-empty__title">Корзина пуста</h1>
-        <p className="cart-empty__sub">Добавьте товары из каталога</p>
+        <h1 className="cart-empty__title">{t('emptyTitle')}</h1>
+        <p className="cart-empty__sub">{t('emptySub')}</p>
         <Link href="/products" className="cta-primary" style={{ marginTop: 8 }}>
-          В каталог <ArrowRight size={16} />
+          {t('toCatalog')} <ArrowRight size={16} />
         </Link>
       </div>
     );
@@ -62,8 +64,8 @@ export default function CartPage() {
       <div className="cart-items-col">
         <div className="cart-page-header">
           <div>
-            <p className="catalog-eyebrow">Покупки</p>
-            <h1 className="catalog-title">Корзина</h1>
+            <p className="catalog-eyebrow">{t('eyebrow')}</p>
+            <h1 className="catalog-title">{t('title')}</h1>
           </div>
         </div>
 
@@ -73,13 +75,13 @@ export default function CartPage() {
               <div className="cart-item__info">
                 <p className="cart-item__name">{item.name}</p>
                 <p className="cart-item__unit-price">
-                  {Intl.NumberFormat('ru-RU').format(item.price)} ₽ / шт.
+                  {Intl.NumberFormat('ru-RU').format(item.price)} ₽ {t('perUnit')}
                 </p>
                 <div className="cart-item__qty">
                   <button
                     className="qty-btn"
                     onClick={() => decrement(item.productId)}
-                    aria-label="Уменьшить количество"
+                    aria-label={t('decrease')}
                   >
                     <Minus size={12} />
                   </button>
@@ -87,7 +89,7 @@ export default function CartPage() {
                   <button
                     className="qty-btn"
                     onClick={() => increment(item.productId)}
-                    aria-label="Увеличить количество"
+                    aria-label={t('increase')}
                   >
                     <Plus size={12} />
                   </button>
@@ -99,7 +101,7 @@ export default function CartPage() {
               <button
                 className="cart-item__remove"
                 onClick={() => removeItem(item.productId)}
-                aria-label="Удалить товар"
+                aria-label={t('remove')}
               >
                 <Trash2 size={16} />
               </button>
@@ -109,29 +111,29 @@ export default function CartPage() {
       </div>
 
       <div className="cart-summary-col">
-        <p className="summary-label">Итого</p>
+        <p className="summary-label">{t('summaryLabel')}</p>
         <div className="summary-lines">
           <div className="summary-line">
-            <span className="summary-line__label">Позиций</span>
+            <span className="summary-line__label">{t('positions')}</span>
             <span className="summary-line__val">{items.length}</span>
           </div>
           <div className="summary-line">
-            <span className="summary-line__label">Товаров</span>
-            <span className="summary-line__val">{itemCount} шт.</span>
+            <span className="summary-line__label">{t('products')}</span>
+            <span className="summary-line__val">{t('pcs', { count: itemCount })}</span>
           </div>
         </div>
         <div className="summary-divider" />
-        <p className="summary-total-label">Сумма заказа</p>
+        <p className="summary-total-label">{t('orderTotal')}</p>
         <p className="summary-total-val">{Intl.NumberFormat('ru-RU').format(totalPrice)} ₽</p>
         <button
           className="summary-checkout"
           onClick={() => submitOrder(items)}
           disabled={isCheckingOut}
         >
-          {isCheckingOut ? 'Перенаправляем…' : 'Оформить заказ'}
+          {isCheckingOut ? t('redirecting') : t('checkout')}
         </button>
         <button className="summary-clear" onClick={() => clearCart()} disabled={isCheckingOut}>
-          Очистить корзину
+          {t('clear')}
         </button>
       </div>
     </div>

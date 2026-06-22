@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Input } from '@/components/ui/input'
 
 type Props = {
@@ -12,6 +13,7 @@ type Props = {
 export function SearchInput({ isAuthenticated, defaultValue }: Props) {
   const [value, setValue] = useState(defaultValue ?? '')
   const router = useRouter()
+  const t = useTranslations('search')
 
   const showClear = isAuthenticated && value.trim().length > 0
 
@@ -23,7 +25,7 @@ export function SearchInput({ isAuthenticated, defaultValue }: Props) {
         disabled={!isAuthenticated}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder={isAuthenticated ? 'Поиск по названию...' : 'Войдите для поиска'}
+        placeholder={isAuthenticated ? t('placeholder') : t('placeholderLocked')}
         autoComplete="off"
         className="search-form__input"
       />
@@ -31,7 +33,7 @@ export function SearchInput({ isAuthenticated, defaultValue }: Props) {
         <button
           type="button"
           className="search-form__clear"
-          aria-label="Сбросить поиск"
+          aria-label={t('clear')}
           onClick={() => {
             setValue('')
             router.push('/products')
@@ -58,7 +60,7 @@ export function SearchInput({ isAuthenticated, defaultValue }: Props) {
         type="submit"
         disabled={!isAuthenticated}
         className="search-form__btn"
-        aria-label="Найти"
+        aria-label={t('submit')}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

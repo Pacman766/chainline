@@ -1,8 +1,10 @@
 import { cookies } from 'next/headers';
+import { getTranslations } from 'next-intl/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import Link from 'next/link';
 import LogoutButton from '@/components/LogoutButton';
 import { NavLinks } from '@/components/NavLinks';
+import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { CartLink } from './CartLink';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -61,6 +63,7 @@ export async function Header() {
   const customerToken = cookieStore.get('customer-token')?.value;
   const logoutUrl = customerToken ? '/api/auth/customer-logout' : '/api/users/logout';
   const user = await getAuthenticatedUser();
+  const t = await getTranslations('header');
 
   return (
     <header className="site-header">
@@ -76,6 +79,7 @@ export async function Header() {
         </nav>
 
         <div className="header-actions">
+          <LocaleSwitcher />
           <ThemeToggle />
           <CartLink />
           {user ? (
@@ -85,7 +89,7 @@ export async function Header() {
             </>
           ) : (
             <Link href="/login" className="header-login">
-              Войти
+              {t('login')}
             </Link>
           )}
         </div>

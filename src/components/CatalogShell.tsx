@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 export function CatalogShell({
   sidebar,
@@ -10,6 +11,7 @@ export function CatalogShell({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(true);
+  const t = useTranslations('common');
 
   return (
     <div className={`catalog-shell${open ? '' : ' catalog-shell--collapsed'}`}>
@@ -17,7 +19,7 @@ export function CatalogShell({
         <button
           className="sidebar-toggle"
           onClick={() => setOpen((v) => !v)}
-          aria-label={open ? 'Скрыть сайдбар' : 'Показать сайдбар'}
+          aria-label={open ? t('hideSidebar') : t('showSidebar')}
         >
           <svg
             width="14"

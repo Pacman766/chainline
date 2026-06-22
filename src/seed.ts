@@ -52,9 +52,12 @@ async function seed() {
   }
 
   const categoryMap: Record<string, number> = {};
-  for (const { slug, name } of categories) {
+  for (const { slug, name, en } of categories) {
     const cat = await findOrCreateCategory(slug, name);
     categoryMap[slug] = cat.id;
+    // Always (re)write both locales so localized category names hold correct values.
+    await payload.update({ collection: 'categories', id: cat.id, locale: 'ru', data: { name }, overrideAccess: true });
+    await payload.update({ collection: 'categories', id: cat.id, locale: 'en', data: { name: en }, overrideAccess: true });
   }
 
   for (const product of products) {

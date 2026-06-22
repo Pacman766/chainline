@@ -1,5 +1,6 @@
 import config from '@payload-config';
 import { getPayload } from 'payload';
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import Image from 'next/image';
 import { AddToCartButton } from './AddToCartButton';
@@ -20,6 +21,7 @@ export default async function ProductPage({
   const payload = await getPayload({ config });
   const user = await getAuthenticatedUser();
   const { locale } = await params;
+  const t = await getTranslations('catalog');
 
   let products: Product[] = [];
 
@@ -93,12 +95,14 @@ export default async function ProductPage({
     <>
       <div className="catalog-header">
         <div>
-          <p className="catalog-eyebrow">Каталог</p>
-          <h1 className="catalog-title">Товары</h1>
+          <p className="catalog-eyebrow">{t('eyebrow')}</p>
+          <h1 className="catalog-title">{t('title')}</h1>
         </div>
         {!user && (
           <p className="catalog-gate">
-            <Link href="/login">Войдите</Link>, чтобы увидеть все товары
+            {t.rich('gate', {
+              login: (chunks) => <Link href="/login">{chunks}</Link>,
+            })}
           </p>
         )}
       </div>
@@ -107,7 +111,10 @@ export default async function ProductPage({
 
       {q && products.length === 0 && (
         <p className="search-empty">
-          По запросу <strong>«{q}»</strong> ничего не найдено
+          {t.rich('searchEmpty', {
+            query: q,
+            strong: (chunks) => <strong>{chunks}</strong>,
+          })}
         </p>
       )}
 
@@ -134,12 +141,12 @@ export default async function ProductPage({
                     blurDataURL={shimmerDataURL}
                   />
                 ) : (
-                  <span className="product-card__no-img">Нет фото</span>
+                  <span className="product-card__no-img">{t('noImage')}</span>
                 )}
                 <span
                   className={`product-card__stock${product.inStock ? '' : ' product-card__stock--out'}`}
                 >
-                  {product.inStock ? 'В наличии' : 'Нет'}
+                  {product.inStock ? t('inStock') : t('outOfStockShort')}
                 </span>
               </div>
 

@@ -16,10 +16,10 @@ export type SeedProduct = {
   images: { url: string; alt: string }[];
 };
 
-export const categories: { slug: CategorySlug; name: string }[] = [
-  { slug: 'road', name: 'Шоссейные' },
-  { slug: 'gravel', name: 'Гравел' },
-  { slug: 'touring', name: 'Туринг' },
+export const categories: { slug: CategorySlug; name: string; en: string }[] = [
+  { slug: 'road', name: 'Шоссейные', en: 'Road' },
+  { slug: 'gravel', name: 'Гравел', en: 'Gravel' },
+  { slug: 'touring', name: 'Туринг', en: 'Touring' },
 ];
 
 export const products: SeedProduct[] = [

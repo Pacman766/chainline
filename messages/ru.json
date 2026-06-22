@@ -1,1 +1,157 @@
-{ "hero": { "cta": "Смотреть каталог" } }
+{
+  "hero": { "cta": "Смотреть каталог" },
+  "nav": {
+    "home": "Главная",
+    "products": "Товары",
+    "categories": "Категории",
+    "orders": "Мои заказы",
+    "contacts": "Контакты"
+  },
+  "header": {
+    "login": "Войти"
+  },
+  "pdp": {
+    "backToCatalog": "Каталог",
+    "inStock": "В наличии",
+    "outOfStock": "Нет в наличии",
+    "description": "Описание",
+    "specs": "Характеристики",
+    "weight": "Вес",
+    "width": "Ширина",
+    "height": "Высота",
+    "noImage": "Нет фото",
+    "photoAlt": "Фото {index}",
+    "unitG": "г",
+    "unitCm": "см"
+  },
+  "catalog": {
+    "eyebrow": "Каталог",
+    "title": "Товары",
+    "gate": "<login>Войдите</login>, чтобы увидеть все товары",
+    "searchEmpty": "По запросу <strong>«{query}»</strong> ничего не найдено",
+    "noImage": "Нет фото",
+    "inStock": "В наличии",
+    "outOfStockShort": "Нет"
+  },
+  "categoriesPage": {
+    "eyebrow": "Каталог",
+    "title": "Категории",
+    "singleEyebrow": "Категория",
+    "sections": "{count, plural, one {# раздел} few {# раздела} many {# разделов} other {# разделов}}",
+    "products": "{count, plural, one {товар} few {товара} many {товаров} other {товаров}}"
+  },
+  "sidebar": {
+    "label": "Категории",
+    "all": "Все товары"
+  },
+  "search": {
+    "placeholder": "Поиск по названию...",
+    "placeholderLocked": "Войдите для поиска",
+    "clear": "Сбросить поиск",
+    "submit": "Найти"
+  },
+  "actions": {
+    "addToCart": "В корзину",
+    "logout": "Выйти"
+  },
+  "home": {
+    "eyebrow": "Premium Cycling Equipment",
+    "subLine1": "Велосипеды и комплектующие",
+    "subLine2": "для тех, кто едет быстрее.",
+    "ctaCatalog": "Смотреть каталог",
+    "ctaAdmin": "Админ панель",
+    "statProducts": "Товаров в каталоге",
+    "statClients": "Довольных клиентов",
+    "statRating": "Средний рейтинг",
+    "feat1Title": "Быстрая доставка",
+    "feat1Desc": "Отправляем заказы в течение 24 часов. Доставка по всей России за 2–5 дней.",
+    "feat2Title": "Гарантия качества",
+    "feat2Desc": "Только оригинальные комплектующие от ведущих мировых производителей.",
+    "feat3Title": "Поддержка экспертов",
+    "feat3Desc": "Консультации от профессиональных гонщиков и механиков 7 дней в неделю."
+  },
+  "cart": {
+    "errorLoginRequired": "Необходимо войти в аккаунт",
+    "errorCheckout": "Ошибка при оформлении заказа.",
+    "errorNoCheckoutUrl": "Не удалось получить ссылку на оплату",
+    "errorNetwork": "Ошибка сети",
+    "emptyTitle": "Корзина пуста",
+    "emptySub": "Добавьте товары из каталога",
+    "toCatalog": "В каталог",
+    "eyebrow": "Покупки",
+    "title": "Корзина",
+    "perUnit": "/ шт.",
+    "decrease": "Уменьшить количество",
+    "increase": "Увеличить количество",
+    "remove": "Удалить товар",
+    "summaryLabel": "Итого",
+    "positions": "Позиций",
+    "products": "Товаров",
+    "pcs": "{count} шт.",
+    "orderTotal": "Сумма заказа",
+    "redirecting": "Перенаправляем…",
+    "checkout": "Оформить заказ",
+    "clear": "Очистить корзину"
+  },
+  "auth": {
+    "invalidCredentials": "Неверный email или пароль",
+    "connectionError": "Ошибка соединения",
+    "serverError": "Ошибка сервера",
+    "email": "Email",
+    "password": "Пароль",
+    "firstName": "Имя",
+    "lastName": "Фамилия",
+    "signInTitle": "Вход",
+    "signInLoading": "Вход...",
+    "signIn": "Войти",
+    "noAccount": "Нет аккаунта?",
+    "signUp": "Зарегистрироваться",
+    "signUpTitle": "Регистрация",
+    "signUpLoading": "Регистрация...",
+    "haveAccount": "Уже есть аккаунт?"
+  },
+  "orders": {
+    "status": {
+      "pending": "В обработке",
+      "paid": "Оплачен",
+      "shipped": "В пути",
+      "cancelled": "Отменён"
+    },
+    "emptyTitle": "Заказов пока нет",
+    "emptySub": "Оформите первый заказ в каталоге",
+    "toCatalog": "В каталог",
+    "backToCatalog": "Назад к каталогу",
+    "eyebrow": "История",
+    "title": "Мои заказы",
+    "total": "Итого",
+    "backToOrders": "Назад к заказам",
+    "detailEyebrow": "Заказ",
+    "paidBanner": "Оплата прошла успешно",
+    "pendingBanner": "Платёж обрабатывается… Если статус не обновится в течение минуты — обновите страницу."
+  },
+  "contacts": {
+    "eyebrow": "Свяжитесь с нами",
+    "title": "Контакты",
+    "phone": "Телефон",
+    "workingHours": "Часы работы",
+    "address": "Адрес",
+    "route": "Построить маршрут",
+    "empty": "Контактные данные пока не заполнены. Добавьте их в админке:",
+    "settingsLink": "Site Settings → Контакты",
+    "socials": "Мы в сетях"
+  },
+  "graphqlDemo": {
+    "loadError": "Ошибка загрузки",
+    "totalDocs": "Всего документов:"
+  },
+  "preview": {
+    "label": "Режим предпросмотра — черновик",
+    "exit": "Выйти"
+  },
+  "common": {
+    "toggleTheme": "Переключить тему",
+    "hideSidebar": "Скрыть сайдбар",
+    "showSidebar": "Показать сайдбар",
+    "cartAria": "Корзина, {count, plural, one {# товар} few {# товара} many {# товаров} other {# товаров}}"
+  }
+}
