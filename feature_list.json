@@ -1,6 +1,6 @@
 {
   "projectName": "Payload Start",
-  "lastUpdated": "2026-06-18",
+  "lastUpdated": "2026-06-22",
   "rules": {
     "singleActiveFeature": "Only one feature can be 'in_progress' at a time",
     "evidenceRequired": "Must have verification evidence before marking 'pass'",
@@ -376,7 +376,7 @@
       "area": "i18n",
       "title": "Internationalization — next-intl + Payload localization (RU/EN)",
       "description": "Multilingual storefront across UI chrome (next-intl message catalogs) and content (Payload localization on Products.name/description, Categories.name, SiteSettings). Locale-prefixed routing /ru /en — app/(frontend) moves under app/[locale]/, middleware added, products/@sidebar parallel route carried along. RU is the default locale; EN is a translation; missing content falls back to RU (fallback: true). URL locale is the single source of truth and drives the locale param passed to Payload Local API queries. See docs/adr/0002.",
-      "status": "in_progress",
+      "status": "pass",
       "verification": [
         "npm run lint exits 0",
         "npm run build exits 0",
@@ -386,8 +386,18 @@
         "Payload admin shows per-locale field tabs for localized fields",
         "products/@sidebar still renders under the [locale] segment"
       ],
-      "evidence": [],
-      "notes": "First feature in the grilled batch; foundation for #19 and #20. Default locale RU. CONTEXT.md term: base locale RU, EN translation."
+      "evidence": [
+        "npm run build: PASS (exit 0, 13/13 static pages; only pre-existing no-unused-vars warnings in generated migration files)",
+        "npx tsc --noEmit: clean",
+        "node src/scripts/check-i18n-keys.mjs: ru/en key sets identical (no drift)",
+        "Locale switcher (src/components/LocaleSwitcher.tsx) toggles /ru<->/en via router.replace(pathname,{locale}), preserving path+query; locale read from URL segment",
+        "UI strings localized via next-intl across header, nav, search, cart, auth, orders, contacts, home, PDP, catalog, sidebar, gallery, add-to-cart (messages/ru.json + en.json)",
+        "Localized Payload fields: Products.description, Categories.name (localized:true); locale passed into payload.find/findByID on PDP, catalog, categories, categories/[slug], @sidebar",
+        "Content verified per-locale on dev + prod: products_locales ru=6/en=6, categories_locales ru=3/en=3; category names Шоссейные/Гравел/Туринг <-> Road/Gravel/Touring",
+        "Payload admin shows per-locale tabs for localized fields (confirmed visually)",
+        "products/@sidebar renders under [locale] segment with localized category names"
+      ],
+      "notes": "First feature in the grilled batch; foundation for #19 and #20. Default locale RU, EN translation, fallback:true. Prod deploy gotcha: localized-field schema was added via dev push, so prod (migrate-based) lacked *_locales tables; Vercel `payload migrate` silently skipped because a batch:-1 dev-push marker triggered an interactive data-loss prompt that CI can't answer. Fixed with `payload migrate:create localization` (committed migration) + one-time `payload migrate:fresh` on prod + reseed. Hardened seed.ts to force PAYLOAD_MIGRATING=true (seeds never push schema). Lesson: don't mix dev push with prod migrations."
     },
     {
       "id": "19",

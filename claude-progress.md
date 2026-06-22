@@ -513,3 +513,34 @@
 
 **Не забыть:** UI-срез next-intl (useTranslations/getTranslations на Header/hero + свитчер языка) ещё не начат. Открытый вопрос ученику: matcher middleware `(?!api|admin|...)` — почему оба.
 
+
+---
+
+### Session: 2026-06-22 — #18 Internationalization → PASS
+
+**Объектив:** Завершить и закрыть фичу #18 (next-intl + Payload localization, RU/EN).
+
+**Сделано:**
+- **Локализация полей Payload:** `Products.description` и `Categories.name` → `localized:true`; сид пишет ru+en для товаров (матч по `price`) и категорий (матч по `slug`).
+- **UI-локализация:** `LocaleSwitcher` (сохраняет path+query), `i18n/navigation.ts` (createNavigation), все строки витрины/компонентов на next-intl, `messages/ru.json` + `en.json`. Скрипт `src/scripts/check-i18n-keys.mjs` (`npm run check:i18n`) — паритет ключей ru/en.
+- **locale прокинут** в payload-запросы на PDP, каталоге, категориях, categories/[slug], @sidebar.
+
+**Прод-инцидент (важно):**
+- После деплоя прод падал: `relation "products_locales"/"categories_locales" does not exist`.
+- Причина: схему локализации накатывали dev-**push**, а прод на **миграциях**. Файла миграции не было → сгенерировали `20260622_092935_localization` (+ catch-up по дрейфу: socials, contact-поля, _products_v snapshot/published_locale, search_locales).
+- Vercel `payload migrate` всё равно молча пропускал миграцию: в `payload_migrations` прода висел маркер `batch:-1` (от dev-push) → команда `migrate` показывает prompt «data loss, proceed?» → CI без TTY → exit без накатки. Команда `migrate` (в отличие от `migrate:fresh`) флага `--force-accept-warning` не имеет.
+- **Фикс:** `payload migrate:fresh --force-accept-warning` против прод-ветки Neon (`ep-weathered-mouse`) → чистая схема + история (обе миграции batch 1, `batch:-1` исчез); затем `npx tsx src/seed.ts` → данные ru+en.
+- **Харденинг:** `seed.ts` форсит `PAYLOAD_MIGRATING=true` — сид больше никогда не пушит схему. `.gitignore` += `.env*`.
+
+**Evidence:**
+- `npm run build`: PASS (exit 0, 13/13 static pages; warnings только pre-existing в migration-файлах).
+- `tsc --noEmit`: чисто. `check:i18n`: ключи ru/en идентичны.
+- Прод БД: `products_locales` ru=6/en=6, `categories_locales` ru=3/en=3; категории Шоссейные/Гравел/Туринг ↔ Road/Gravel/Touring.
+- Админка: вкладки локалей у localized-полей — ок (визуально).
+- dev и прод: `/ru` и `/en` дают разный контент, fallback на RU работает.
+
+**Окружения Neon:** dev = `ep-dark-silence`, prod = `ep-weathered-mouse`. Прод за Vercel Deployment Protection (401 для анонимов). `.env` локально вернули на dev.
+
+**Урок:** не смешивать dev push и prod migrate. Меняешь схему → `payload migrate:create` → коммит → деплой накатывает. Push — только локальный dev; сид схему не трогает.
+
+**Дальше:** #19 (Customer social + magic-link auth) — high, not_started, зависел от #18 (теперь готов).
