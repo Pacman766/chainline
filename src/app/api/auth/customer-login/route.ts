@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayload } from 'payload';
 import config from '@payload-config';
+import { setCustomerCookie } from '@/lib/customer-auth';
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,11 +18,7 @@ export async function POST(req: NextRequest) {
     }
 
     const response = NextResponse.json({ user: result.user });
-    response.cookies.set('customer-token', result.token, {
-      httpOnly: true,
-      path: '/',
-      sameSite: 'lax',
-    });
+    setCustomerCookie(response, result.token);
     return response;
   } catch {
     return NextResponse.json({ error: 'Неверный email или пароль' }, { status: 401 });

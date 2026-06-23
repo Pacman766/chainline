@@ -73,6 +73,7 @@ export interface Config {
     products: Product;
     categories: Category;
     customers: Customer;
+    'magic-tokens': MagicToken;
     orders: Order;
     search: Search;
     'payload-kv': PayloadKv;
@@ -87,6 +88,7 @@ export interface Config {
     products: ProductsSelect<false> | ProductsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     customers: CustomersSelect<false> | CustomersSelect<true>;
+    'magic-tokens': MagicTokensSelect<false> | MagicTokensSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
     search: SearchSelect<false> | SearchSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -292,15 +294,21 @@ export interface Customer {
   hash?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
   password?: string | null;
   collection: 'customers';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "magic-tokens".
+ */
+export interface MagicToken {
+  id: number;
+  email: string;
+  tokenHash: string;
+  expiresAt: string;
+  usedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -403,6 +411,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'customers';
         value: number | Customer;
+      } | null)
+    | ({
+        relationTo: 'magic-tokens';
+        value: number | MagicToken;
       } | null)
     | ({
         relationTo: 'orders';
@@ -586,13 +598,18 @@ export interface CustomersSelect<T extends boolean = true> {
   hash?: T;
   loginAttempts?: T;
   lockUntil?: T;
-  sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "magic-tokens_select".
+ */
+export interface MagicTokensSelect<T extends boolean = true> {
+  email?: T;
+  tokenHash?: T;
+  expiresAt?: T;
+  usedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

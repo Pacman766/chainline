@@ -405,7 +405,7 @@
       "area": "auth",
       "title": "Customer social + magic-link auth (Payload-native)",
       "description": "Add sign-in methods for Customer: magic link (email), Google OAuth, Yandex ID OAuth. Payload-native: customers collection stays the single source of truth; OAuth/magic-link flows find-or-create a customer by verified email and issue the existing customer-token JWT. Email/password stays enabled (additive). getAuthenticatedUser and order access scoping unchanged. See docs/adr/0001.",
-      "status": "not_started",
+      "status": "in_progress",
       "verification": [
         "npm run lint exits 0",
         "npm run test:int exits 0",

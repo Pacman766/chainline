@@ -19,6 +19,7 @@ import { Media } from './collections/Media';
 import { Products } from './collections/Products';
 import { Categories } from './collections/Categories';
 import { Customers } from './collections/Customers';
+import { MagicTokens } from './collections/MagicTokens';
 import { Orders } from './collections/Orders';
 import { SiteSettings } from './globals/SiteSettings';
 
@@ -37,7 +38,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Products, Categories, Customers, Orders],
+  collections: [Users, Media, Products, Categories, Customers, MagicTokens, Orders],
   globals: [SiteSettings],
   editor: lexicalEditor({
     features: [BoldFeature(), ItalicFeature(), UnorderedListFeature(), OrderedListFeature()],
