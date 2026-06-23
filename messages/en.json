@@ -108,7 +108,13 @@
     "signUp": "Sign up",
     "signUpTitle": "Sign up",
     "signUpLoading": "Signing up...",
-    "haveAccount": "Already have an account?"
+    "haveAccount": "Already have an account?",
+    "or": "or",
+    "magicButton": "Email me a sign-in link",
+    "magicSending": "Sending…",
+    "magicSent": "If an account exists for {email}, we've sent it a sign-in link. Check your inbox.",
+    "magicNeedEmail": "Enter your email first",
+    "magicError": "The sign-in link is invalid or expired. Request a new one."
   },
   "orders": {
     "status": {
