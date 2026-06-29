@@ -50,15 +50,27 @@ export async function POST(req: NextRequest) {
     const baseUrl = getBaseUrl(req);
     const link = `${baseUrl}/api/auth/magic/verify?token=${rawToken}`;
 
-    await payload.sendEmail({
-      to: normalizedEmail,
-      subject: 'Ваша ссылка для входа',
-      html: `
-        <p>Нажмите на ссылку ниже, чтобы войти. Ссылка действительна 15 минут.</p>
-        <p><a href="${link}">Войти</a></p>
-        <p>Если вы не запрашивали вход, проигнорируйте это письмо.</p>
-      `,
-    });
+    // Dev affordance: print the link to the server log so the flow can be
+    // tested without a working email provider. NEVER logged in production.
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[magic/request] DEV sign-in link for ${normalizedEmail}:\n${link}`);
+    }
+
+    // An email-send failure must not lose the (already valid) token: log and
+    // continue so the dev link above still works.
+    try {
+      await payload.sendEmail({
+        to: normalizedEmail,
+        subject: 'Ваша ссылка для входа',
+        html: `
+          <p>Нажмите на ссылку ниже, чтобы войти. Ссылка действительна 15 минут.</p>
+          <p><a href="${link}">Войти</a></p>
+          <p>Если вы не запрашивали вход, проигнорируйте это письмо.</p>
+        `,
+      });
+    } catch (emailErr) {
+      console.error('[magic/request] email send failed (token still valid):', emailErr);
+    }
   } catch (err) {
     // Swallow into the generic 200 (no account enumeration) but log it.
     console.error('[magic/request] Error issuing magic link:', err);
