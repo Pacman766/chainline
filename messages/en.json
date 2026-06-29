@@ -114,7 +114,10 @@
     "magicSending": "Sending…",
     "magicSent": "If an account exists for {email}, we've sent it a sign-in link. Check your inbox.",
     "magicNeedEmail": "Enter your email first",
-    "magicError": "The sign-in link is invalid or expired. Request a new one."
+    "magicError": "The sign-in link is invalid or expired. Request a new one.",
+    "oauthGoogle": "Continue with Google",
+    "oauthYandex": "Continue with Yandex",
+    "oauthError": "Provider sign-in failed. Please try again."
   },
   "orders": {
     "status": {

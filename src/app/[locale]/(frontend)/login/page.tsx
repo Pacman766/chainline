@@ -18,10 +18,13 @@ export default function LoginPage() {
   const [magicLoading, setMagicLoading] = useState(false);
   const [magicSent, setMagicSent] = useState(false);
 
-  // Verify route redirects here with ?error=magic on an invalid/expired link.
+  // Verify / OAuth callback routes redirect here with ?error=... on failure.
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('error') === 'magic') {
+    const err = new URLSearchParams(window.location.search).get('error');
+    if (err === 'magic') {
       setError(t('magicError'));
+    } else if (err === 'oauth') {
+      setError(t('oauthError'));
     }
   }, [t]);
 
@@ -129,6 +132,29 @@ export default function LoginPage() {
                 onClick={handleMagicLink}
               >
                 {magicLoading ? t('magicSending') : t('magicButton')}
+              </Button>
+
+              {/* OAuth start routes are server redirects, so use a full-page
+                  navigation rather than the client router. */}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  window.location.href = '/api/auth/oauth/google/start';
+                }}
+              >
+                {t('oauthGoogle')}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  window.location.href = '/api/auth/oauth/yandex/start';
+                }}
+              >
+                {t('oauthYandex')}
               </Button>
 
               <p className="text-center text-sm text-muted-foreground">
