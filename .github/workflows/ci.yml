@@ -34,6 +34,9 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/payload_test
+      PAYLOAD_SECRET: ci-test-secret-minimum-32-chars-xx
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -41,7 +44,7 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
+      # The integration suite disables Payload dev-push (PAYLOAD_MIGRATING), so the
+      # fresh Postgres service starts empty — build the schema from migrations first.
+      - run: npm run payload migrate
       - run: npm run test:int
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/payload_test
-          PAYLOAD_SECRET: ci-test-secret-minimum-32-chars-xx
