@@ -544,3 +544,38 @@
 **Урок:** не смешивать dev push и prod migrate. Меняешь схему → `payload migrate:create` → коммит → деплой накатывает. Push — только локальный dev; сид схему не трогает.
 
 **Дальше:** #19 (Customer social + magic-link auth) — high, not_started, зависел от #18 (теперь готов).
+
+---
+
+### Session: 2026-06-29 — #19 Customer magic-link + Google/Yandex OAuth → PASS
+
+**Объектив:** Закрыть фичу #19 (Payload-native auth: magic-link + Google + Yandex OAuth, идентичность = verified email, ADR 0001).
+
+**Сделано:**
+- **Схема:** `Customers.auth.useSessions=false` (stateless JWT) → таблица `customers_sessions` стала лишней. Сгенерирована миграция `20260629_083137` (drop `customers_sessions` + create `magic_tokens`). На dev `magic_tokens` уже была от прежнего push — единственная дельта (drop sessions) применена через dev-push `y`; миграция-файл закоммичен для прода (CI `payload migrate --force-accept-warning`). Прод чисто накатит create+drop (migrate:fresh был до magic-link, поэтому magic_tokens там нет).
+- **Magic-link:** dev-фикс `magic/request` (печать sign-in ссылки в лог в non-prod + try/catch вокруг sendEmail, чтобы сбой почты не терял валидный токен). E2E подтверждён реальным письмом Resend (бесплатный ключ + `onboarding@resend.dev`).
+- **OAuth (arctic v3):** `src/lib/oauth.ts` (клиенты Google/Yandex, `linkVerifiedCustomer` — email_verified-гейт, CSRF/PKCE cookie-константы) + 4 роута `oauth/{google,yandex}/{start,callback}`. Google: PKCE + `email_verified===true`. Yandex: `login:email`+`login:info`, `default_email` = verified. Все ошибки → `/login?error=oauth`. Кнопки на `/login` + i18n ru/en + `.env.example`.
+- **Тесты:** `tests/int/magic-link.int.spec.ts` (10) + `tests/int/oauth.int.spec.ts` (5). Итого 38 int-тестов pass.
+
+**Test Results:**
+- npm run lint: PASS (только pre-existing req/payload warnings)
+- npm run test:int: PASS (5 файлов, 38 тестов)
+- check:i18n: PASS (ru/en паритет)
+- E2E: magic-link (реальное письмо), Google + Yandex (живой консент) — все ставят `customer-token`
+
+**Независимый судья:** `security-auditor` → **PASS** (нет Critical/High). Подтверждено: подпись/секрет JWT, CSRF-state+PKCE, email_verified-гейт (нет account takeover), one-time/expiry magic-токена, флаги cookie, нет open-redirect, IDOR/orders без регрессий.
+
+**Commits:** `a9bc361` (migration+dev-fix), `a5d2695` (magic tests), `bd5c479` (OAuth). Не запушены.
+
+**Security follow-ups (non-blocking tech-debt, отложены по решению пользователя):**
+1. 🟠 Medium — нет rate-limit на `POST /api/auth/magic/request` (email-bombing + рост таблицы). Сделать до реального трафика: per-email троттл (счётчик magic-tokens за 15 мин) ± per-IP.
+2. 🟢 Low — TOCTOU: гашение magic-токена не атомарно (`usedAt` check + update). Фикс: `update ... where { id, usedAt exists:false }`, ноль строк = уже использован.
+3. 🟢 Low — OAuth state/verifier cookies не чистятся на fail-пути callback. Фикс: чистить в `fail()`.
+4. 🟢 Low — `getBaseUrl` доверяет Host-заголовку для magic-link URL → link-poisoning без пиннинга Host. Фикс: в prod предпочитать `NEXT_PUBLIC_SERVER_URL`.
+
+**Prod deploy (осталось):**
+- Зарегистрировать `https://<домен>/api/auth/oauth/{google,yandex}/callback` в Google + Yandex консолях.
+- Vercel env: `GOOGLE_CLIENT_ID/SECRET`, `YANDEX_CLIENT_ID/SECRET` → Redeploy.
+- Помнить: Google consent в Testing пускает только Test users (для всех — Publish); Vercel Deployment Protection может 401-ить OAuth callback (снять на Production для публичного входа).
+
+**Дальше:** #20 (Homepage — Payload Blocks + animated hero) — medium, not_started. Либо разобрать security follow-up #1 (rate-limit) перед реальным трафиком.

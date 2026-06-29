@@ -405,7 +405,7 @@
       "area": "auth",
       "title": "Customer social + magic-link auth (Payload-native)",
       "description": "Add sign-in methods for Customer: magic link (email), Google OAuth, Yandex ID OAuth. Payload-native: customers collection stays the single source of truth; OAuth/magic-link flows find-or-create a customer by verified email and issue the existing customer-token JWT. Email/password stays enabled (additive). getAuthenticatedUser and order access scoping unchanged. See docs/adr/0001.",
-      "status": "in_progress",
+      "status": "pass",
       "verification": [
         "npm run lint exits 0",
         "npm run test:int exits 0",
@@ -416,8 +416,18 @@
         "Linking only occurs when provider asserts email_verified",
         "Existing email/password login still works"
       ],
-      "evidence": [],
-      "notes": "Depends on #18 (login pages live under [locale]). Identity = verified email. Open: magic-link token TTL + one-time use; provider button UI."
+      "evidence": [
+        "npm run lint: exit 0 (only pre-existing req/payload warnings in migration files)",
+        "npm run test:int: 5 files, 38 tests pass — incl. tests/int/magic-link.int.spec.ts (10) + tests/int/oauth.int.spec.ts (5)",
+        "Magic-link e2e: real Resend email received at 3334976@gmail.com, link signed in, customer-token set, email shown in header. Tested: hashed ~15min token, one-time-use, expiry, missing/unknown token, no account enumeration (always 200)",
+        "Google sign-in e2e: live consent -> callback find-or-creates customer by email_verified email -> customer-token set (verified locally)",
+        "Yandex sign-in e2e: live consent (login:email+login:info) -> callback uses default_email -> customer-token set (verified locally)",
+        "Same email -> same customer: unit-tested in oauth.int.spec.ts (linkVerifiedCustomer resolves existing customer, no duplicate) + magic-link.int.spec.ts",
+        "email_verified gate: linkVerifiedCustomer throws OAuthEmailNotVerifiedError when !emailVerified || !email; Google requires email_verified===true, Yandex requires default_email presence",
+        "Email/password login unchanged (additive); getAuthenticatedUser + orders scoping untouched",
+        "Independent security-auditor verdict: PASS (no Critical/High). Commits: a9bc361 (migration+dev-fix), a5d2695 (magic tests), bd5c479 (OAuth)"
+      ],
+      "notes": "Done. arctic v3 for OAuth handshake. Stateless customer JWT (useSessions:false) -> dropped customers_sessions, added magic_tokens (migration 20260629_083137). Security follow-ups (non-blocking, from audit): (1) Medium - add rate-limit to POST /api/auth/magic/request (email-bombing); (2) Low - atomic magic-token consumption (TOCTOU); (3) Low - clear oauth cookies on callback fail path; (4) Low - getBaseUrl trusts Host header for magic-link URL, prefer NEXT_PUBLIC_SERVER_URL in prod. Prod: register https redirect URIs in Google/Yandex consoles + set 4 env vars in Vercel + redeploy; mind Google consent Testing mode + Vercel Deployment Protection."
     },
     {
       "id": "20",
