@@ -22,6 +22,7 @@ import { Customers } from './collections/Customers';
 import { MagicTokens } from './collections/MagicTokens';
 import { Orders } from './collections/Orders';
 import { SiteSettings } from './globals/SiteSettings';
+import { Homepage } from './globals/Homepage';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -39,7 +40,7 @@ export default buildConfig({
     },
   },
   collections: [Users, Media, Products, Categories, Customers, MagicTokens, Orders],
-  globals: [SiteSettings],
+  globals: [SiteSettings, Homepage],
   editor: lexicalEditor({
     features: [BoldFeature(), ItalicFeature(), UnorderedListFeature(), OrderedListFeature()],
   }),
