@@ -1,12 +1,14 @@
-import { getPayload } from 'payload';
-import config from '@payload-config';
 import { getTranslations } from 'next-intl/server';
-import type { Homepage } from '@/payload-types';
+import type { Homepage, SiteSetting } from '@/payload-types';
 
 type ContactsBlockData = Extract<
   NonNullable<Homepage['blocks']>[number],
   { blockType: 'contacts' }
 >;
+
+/** Allow only safe URL schemes and root-relative paths. */
+const safeHref = (u?: string | null): string =>
+  u && /^(https?:|mailto:|tel:|\/)/i.test(u) ? u : '#';
 
 const SOCIAL_LABELS: Record<string, string> = {
   telegram: 'Telegram',
@@ -17,9 +19,13 @@ const SOCIAL_LABELS: Record<string, string> = {
   facebook: 'Facebook',
 };
 
-export async function ContactsBlock({ block }: { block: ContactsBlockData }) {
-  const payload = await getPayload({ config });
-  const settings = await payload.findGlobal({ slug: 'site-settings' });
+export async function ContactsBlock({
+  block,
+  settings,
+}: {
+  block: ContactsBlockData;
+  settings: SiteSetting;
+}) {
   const t = await getTranslations('contacts');
 
   const { email, phone, address, workingHours } = settings.contact ?? {};
@@ -109,7 +115,7 @@ export async function ContactsBlock({ block }: { block: ContactsBlockData }) {
                   <a
                     key={s.id ?? s.url}
                     className="social-pill"
-                    href={s.url}
+                    href={safeHref(s.url)}
                     target="_blank"
                     rel="noreferrer"
                   >

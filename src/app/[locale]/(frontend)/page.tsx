@@ -25,7 +25,7 @@ export default async function HomePage({
 
       <Hero />
 
-      <BlocksRenderer blocks={blocks} />
+      <BlocksRenderer blocks={blocks} settings={settings} />
     </>
   );
 }

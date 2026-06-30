@@ -1,11 +1,17 @@
-import type { Homepage } from '@/payload-types';
+import type { Homepage, SiteSetting } from '@/payload-types';
 import { FeatureGridBlock } from './FeatureGridBlock';
 import { CtaBlock } from './CtaBlock';
 import { ContactsBlock } from './ContactsBlock';
 
 type Block = NonNullable<Homepage['blocks']>[number];
 
-export function BlocksRenderer({ blocks }: { blocks: Block[] }) {
+export function BlocksRenderer({
+  blocks,
+  settings,
+}: {
+  blocks: Block[];
+  settings: SiteSetting;
+}) {
   if (blocks.length === 0) return null;
 
   return (
@@ -18,7 +24,7 @@ export function BlocksRenderer({ blocks }: { blocks: Block[] }) {
           case 'cta':
             return <CtaBlock key={key} block={block} />;
           case 'contacts':
-            return <ContactsBlock key={key} block={block} />;
+            return <ContactsBlock key={key} block={block} settings={settings} />;
           default:
             return null;
         }

@@ -185,13 +185,13 @@ async function seed() {
         {
           id: ruFeatBlock?.id,
           blockType: 'feature-grid',
-          items: (ruFeatBlock?.items ?? []).map((item: { id?: string | number }, idx: number) => {
+          items: (ruFeatBlock?.items ?? []).map((item: { id?: string | number; icon?: string | null }, idx: number) => {
             const enCopy = [
               { title: 'Professional Gear', desc: 'Curated bikes and components from the world\'s leading brands.' },
               { title: 'Expert Support', desc: 'Our specialists will help you find the perfect equipment for your riding style.' },
               { title: 'Fast Delivery', desc: 'Orders ship the same day. Delivery across Belarus.' },
             ][idx] ?? {};
-            return { id: item.id, ...enCopy };
+            return { id: item.id, icon: item.icon, ...enCopy };
           }),
         },
         {
