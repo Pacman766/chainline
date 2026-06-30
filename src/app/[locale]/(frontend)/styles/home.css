@@ -317,6 +317,64 @@
   color: var(--tx-secondary);
 }
 
+/* ─── CTA Block ──────────────────────────────────────────── */
+.home-cta-block {
+  background: var(--card-bg);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.home-cta-block__inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 72px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.home-cta-block__heading {
+  font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: var(--tx-primary);
+  line-height: 1.1;
+}
+
+.home-cta-block__sub {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--tx-secondary);
+  max-width: 560px;
+}
+
+/* ─── Contacts Block (homepage) ──────────────────────────── */
+.home-contacts-block {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.home-contacts-block__header {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 56px 48px 0;
+}
+
+.home-contacts-block__heading {
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: var(--tx-primary);
+  margin-bottom: 12px;
+}
+
+.home-contacts-block__intro {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--tx-secondary);
+  max-width: 560px;
+}
+
 /* ─── Responsive ─────────────────────────────────────────── */
 @media (max-width: 900px) {
   .hero-inner {

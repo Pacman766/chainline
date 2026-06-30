@@ -2,12 +2,23 @@ import Link from 'next/link';
 import { getPayload } from 'payload';
 import config from '@payload-config';
 import { getTranslations } from 'next-intl/server';
-import { ArrowRight, Zap, ShieldCheck, Headphones } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { BlocksRenderer } from '@/components/blocks/BlocksRenderer';
 
-export default async function HomePage() {
+export default async function HomePage({
+  params,
+}: {
+  params: Promise<{ locale: 'ru' | 'en' }>;
+}) {
+  const { locale } = await params;
   const payload = await getPayload({ config });
-  const settings = await payload.findGlobal({ slug: 'site-settings' });
+  const [settings, homepage] = await Promise.all([
+    payload.findGlobal({ slug: 'site-settings' }),
+    payload.findGlobal({ slug: 'homepage', locale }).catch(() => null),
+  ]);
   const t = await getTranslations('home');
+
+  const blocks = homepage?.blocks ?? [];
 
   return (
     <>
@@ -74,26 +85,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="home-features">
-        <div className="feat-card">
-          <span className="feat-num">01</span>
-          <Zap size={26} className="feat-icon" />
-          <h3>{t('feat1Title')}</h3>
-          <p>{t('feat1Desc')}</p>
-        </div>
-        <div className="feat-card">
-          <span className="feat-num">02</span>
-          <ShieldCheck size={26} className="feat-icon" />
-          <h3>{t('feat2Title')}</h3>
-          <p>{t('feat2Desc')}</p>
-        </div>
-        <div className="feat-card">
-          <span className="feat-num">03</span>
-          <Headphones size={26} className="feat-icon" />
-          <h3>{t('feat3Title')}</h3>
-          <p>{t('feat3Desc')}</p>
-        </div>
-      </section>
+      <BlocksRenderer blocks={blocks} />
     </>
   );
 }
