@@ -134,6 +134,86 @@ async function seed() {
     console.log(`Seeded (ru+en): ${product.name}`);
   }
 
+  // Seed homepage global — RU locale first, then EN.
+  // updateGlobal is naturally idempotent: re-running overwrites with the same data.
+  //
+  // IMPORTANT: Payload blocks have per-row IDs. Writing two separate locale passes
+  // with bare blocks (no id) would create fresh rows on the second pass, orphaning
+  // the first locale's data. The fix: write RU → read back IDs → pass IDs in EN
+  // write so Payload updates the SAME rows in the EN locale store.
+  await payload.updateGlobal({
+    slug: 'homepage',
+    locale: 'ru',
+    data: {
+      blocks: [
+        {
+          blockType: 'feature-grid',
+          items: [
+            { icon: 'star', title: 'Профессиональное снаряжение', desc: 'Отборные велосипеды и комплектующие от ведущих мировых брендов.' },
+            { icon: 'shield', title: 'Экспертная поддержка', desc: 'Наши специалисты помогут подобрать идеальное оборудование для вашего стиля езды.' },
+            { icon: 'bolt', title: 'Быстрая доставка', desc: 'Отправляем заказы в день оформления. Доставка по всей Беларуси.' },
+          ],
+        },
+        {
+          blockType: 'cta',
+          heading: 'Готовы ехать быстрее?',
+          sub: 'Откройте каталог и найдите снаряжение мечты.',
+          buttonLabel: 'Смотреть каталог',
+          buttonHref: '/products',
+        },
+        {
+          blockType: 'contacts',
+          heading: 'Свяжитесь с нами',
+          intro: 'Мы всегда рады помочь с выбором. Приходите в шоурум или пишите нам.',
+        },
+      ],
+    },
+    overrideAccess: true,
+  });
+
+  // Read back to obtain the block IDs Payload assigned above.
+  const homepageRu = await payload.findGlobal({ slug: 'homepage', locale: 'ru', overrideAccess: true } as Parameters<typeof payload.findGlobal>[0]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ruBlocks: any[] = (homepageRu as any).blocks ?? [];
+  const [ruFeatBlock, ruCtaBlock, ruContactsBlock] = ruBlocks;
+
+  await payload.updateGlobal({
+    slug: 'homepage',
+    locale: 'en',
+    data: {
+      blocks: [
+        {
+          id: ruFeatBlock?.id,
+          blockType: 'feature-grid',
+          items: (ruFeatBlock?.items ?? []).map((item: { id?: string | number; icon?: string | null }, idx: number) => {
+            const enCopy = [
+              { title: 'Professional Gear', desc: 'Curated bikes and components from the world\'s leading brands.' },
+              { title: 'Expert Support', desc: 'Our specialists will help you find the perfect equipment for your riding style.' },
+              { title: 'Fast Delivery', desc: 'Orders ship the same day. Delivery across Belarus.' },
+            ][idx] ?? {};
+            return { id: item.id, icon: item.icon, ...enCopy };
+          }),
+        },
+        {
+          id: ruCtaBlock?.id,
+          blockType: 'cta',
+          heading: 'Ready to ride faster?',
+          sub: 'Browse the catalog and find your dream gear.',
+          buttonLabel: 'Browse catalog',
+          buttonHref: '/products',
+        },
+        {
+          id: ruContactsBlock?.id,
+          blockType: 'contacts',
+          heading: 'Get in touch',
+          intro: 'We\'re always happy to help you choose. Visit our showroom or reach out to us.',
+        },
+      ],
+    },
+    overrideAccess: true,
+  });
+  console.log('Seeded (ru+en): homepage global');
+
   const current = await payload.findGlobal({ slug: 'site-settings', overrideAccess: true });
   await payload.updateGlobal({
     slug: 'site-settings',

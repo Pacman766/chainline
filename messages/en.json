@@ -62,13 +62,7 @@
     "ctaAdmin": "Admin panel",
     "statProducts": "Products in catalog",
     "statClients": "Happy customers",
-    "statRating": "Average rating",
-    "feat1Title": "Fast delivery",
-    "feat1Desc": "We ship orders within 24 hours. Delivery across Russia in 2–5 days.",
-    "feat2Title": "Quality guarantee",
-    "feat2Desc": "Only genuine components from the world's leading manufacturers.",
-    "feat3Title": "Expert support",
-    "feat3Desc": "Advice from professional racers and mechanics 7 days a week."
+    "statRating": "Average rating"
   },
   "cart": {
     "errorLoginRequired": "You need to sign in",
