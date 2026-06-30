@@ -579,3 +579,33 @@
 - Помнить: Google consent в Testing пускает только Test users (для всех — Publish); Vercel Deployment Protection может 401-ить OAuth callback (снять на Production для публичного входа).
 
 **Дальше:** #20 (Homepage — Payload Blocks + animated hero) — medium, not_started. Либо разобрать security follow-up #1 (rate-limit) перед реальным трафиком.
+
+---
+
+### Session: 2026-06-30 — #20 Homepage Blocks + animated hero → PASS (via /ship)
+
+**Объектив:** Закрыть фичу #20 через workflow `/ship` (grill → пофазная реализация с verify → review-панель → fix → PR).
+
+**Ветка:** `feat/homepage-blocks-animated-hero` (off main), 6 коммитов.
+
+**Грил-решения:** hero остаётся code-owned анимированным island; в блоки уезжают ТОЛЬКО секции ниже hero. Набор блоков — **feature-grid + CTA + contacts** (НЕ featured-products/categories: пользователь отверг товары на главной — каталог остаётся отдельной страницей). Контакты single-source из `SiteSettings`. Локализация — field-level `localized:true` внутри блоков (#18). Анимация — `motion/react` entrance stagger + тонкий ambient, `prefers-reduced-motion` гасит всё.
+
+**Фазы (все verifier-green):**
+- Phase 1 (00ca7bd): global `homepage` + 3 типа блоков, motion@12.42, types regenerated.
+- Phase 2 (bd71a39): committed migration `20260630_061057_homepage_blocks`. Dev-история реконсилена (удалён `batch:-1`, 3 прежних миграции помечены applied) — БЕЗ migrate:fresh, БЕЗ dev-push на прод. `payload migrate` накатил только новую.
+- Phase 3 (417ced1): RSC-рендереры блоков + page.tsx (остался RSC) fetch по локали; contacts из site-settings; удалены хардкод-карточки + `home.feat*` ключи.
+- Phase 4 (c107d74): Hero → `'use client'` island, motion + useReducedMotion; page.tsx без top-level 'use client'.
+- Phase 5 (0a15759): seed RU+EN homepage-глобала (read-back block-ID паттерн — 3 блока, IDs совпадают между локалями).
+
+**Review-панель:** code-review minor, performance green, security minor, design — без diff-критов (единственный mobile-overflow от пред-существующего header-nav). Один консолидированный fix-коммит **be92d8b**: (1) reduced-motion теперь гейтится и на CSS-слое (`@media prefers-reduced-motion` гасит `dot-pulse`/`fade-in`; убран дубль CSS `reveal-up` с motion-элементов); (2) EN-seed сохраняет нелокализованный `icon`; (3) scheme-allowlist guard на `buttonHref` + social url (анти `javascript:` stored-XSS); (4) `site-settings` фетчится один раз (проброшен page.tsx→BlocksRenderer→ContactsBlock).
+
+**Test Results:**
+- npm run build: PASS (exit 0)
+- npm run check:i18n: PASS (ru/en паритет)
+- Runtime: свежий dev (localhost:3001) /ru, /en → 200 (500 на :3000 был от устаревшего сервера прежней ветки).
+
+**Урок (в память):** Payload localized `blocks` — голый per-locale `updateGlobal` создаёт новые block-rows и осиротит первую локаль; нужно читать block-ID после RU-записи и переиспользовать в EN-записи (+ переносить нелокализованные поля типа `icon`). Файл: `payload-localized-blocks-orphan.md`.
+
+**Прод (осталось, ручное после мёрджа):** деплой → CI `payload migrate` накатит `homepage_blocks` на чистой прод-истории → reseed homepage-глобала.
+
+**Дальше:** все 20 фич в `pass`. Опционально — security follow-up #19 (rate-limit на magic/request) перед реальным трафиком; или бандл-оптимизация motion (LazyMotion) если понадобится.

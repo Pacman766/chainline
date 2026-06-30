@@ -1,6 +1,6 @@
 {
   "projectName": "Payload Start",
-  "lastUpdated": "2026-06-22",
+  "lastUpdated": "2026-06-30",
   "rules": {
     "singleActiveFeature": "Only one feature can be 'in_progress' at a time",
     "evidenceRequired": "Must have verification evidence before marking 'pass'",
@@ -435,7 +435,7 @@
       "area": "frontend",
       "title": "Homepage — Payload Blocks + animated hero (motion)",
       "description": "Expand homepage. Hero stays a bespoke client-component island with interactive animation via `motion` (formerly framer-motion); page.tsx remains a server component (RSC fetches blocks/settings). New sections below become a small Payload Blocks builder (2-3 block types, e.g. feature-grid / CTA / featured-products) on a Homepage global, localized via #18. CONTEXT.md: Hero is NOT a Content block.",
-      "status": "not_started",
+      "status": "pass",
       "verification": [
         "npm run lint exits 0",
         "npm run build exits 0",
@@ -444,8 +444,18 @@
         "Block content renders localized per current locale with RU fallback",
         "Hero respects prefers-reduced-motion"
       ],
-      "evidence": [],
-      "notes": "Last in the batch; depends on #18 (block localization) and benefits from final [locale] structure. Reference: focusreactive.com. Library is `motion`, not deprecated `framer-motion`."
+      "evidence": [
+        "npm run build: PASS (exit 0, static+dynamic routes, only pre-existing migration-file warnings); npm run check:i18n: ru/en parity (no key drift)",
+        "Phase 1 (00ca7bd): new global `homepage` (src/globals/Homepage.ts) with 3 block types feature-grid/cta/contacts, field-level localized:true on text fields (#18 pattern); registered in payload.config.ts; motion@12.42 installed; payload-types regenerated with Homepage type",
+        "Phase 2 (bd71a39): committed migration 20260630_061057_homepage_blocks (creates homepage + homepage_locales); dev migration history reconciled (batch:-1 marker removed, 3 prior migrations marked applied) per memory — NO migrate:fresh, NO dev-push to prod; `npx payload migrate` applied only the new migration",
+        "Phase 3 (417ced1): RSC renderers src/components/blocks/{FeatureGridBlock,CtaBlock,ContactsBlock,BlocksRenderer}; page.tsx stays RSC, fetches homepage global by locale (RU fallback); ContactsBlock single-sources contact data from site-settings; removed hardcoded feature cards + home.feat* i18n keys",
+        "Phase 4 (c107d74): Hero extracted to 'use client' src/components/Hero.tsx, motion/react entrance stagger + ambient, useReducedMotion gate; page.tsx confirmed no top-level 'use client'",
+        "Phase 5 (0a15759): seed.ts populates homepage global RU+EN (read-back block-ID pattern keeps both locales' blocks in sync — 3 blocks each, IDs match across locales); verified via findGlobal ru/en",
+        "Runtime: fresh dev server (localhost:3001) serves /ru and /en → 200 (the 500 on :3000 was a stale pre-branch server)",
+        "Panel review: code-review minor, performance green, security minor, design no diff-attributable critical (only pre-existing header-nav mobile overflow)",
+        "Panel fix (be92d8b): reduced-motion now gated at CSS layer too (@media prefers-reduced-motion disables dot-pulse/fade-in; duplicate CSS reveal-up removed from motion-controlled hero elements); EN seed preserves non-localized icon; javascript:/scheme-allowlist guard on CtaBlock buttonHref + ContactsBlock social urls; site-settings fetched once (threaded page.tsx→BlocksRenderer→ContactsBlock)"
+      ],
+      "notes": "Done via /ship (6 commits on feat/homepage-blocks-animated-hero). Grilled scope: hero stays code-owned island; blocks = feature-grid + CTA + contacts (NO featured-products/categories — user rejected products-on-homepage). Lesson: Payload localized `blocks` — a bare second-locale updateGlobal creates NEW block rows and orphans the first locale; must read back block IDs after the RU write and pass them into the EN write. Prod deploy remains a manual post-merge step (CI `payload migrate` applies homepage_blocks on clean prod history; then reseed)."
     }
   ]
 }
