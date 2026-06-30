@@ -1,9 +1,7 @@
-import Link from 'next/link';
 import { getPayload } from 'payload';
 import config from '@payload-config';
-import { getTranslations } from 'next-intl/server';
-import { ArrowRight } from 'lucide-react';
 import { BlocksRenderer } from '@/components/blocks/BlocksRenderer';
+import { Hero } from '@/components/Hero';
 
 export default async function HomePage({
   params,
@@ -16,7 +14,6 @@ export default async function HomePage({
     payload.findGlobal({ slug: 'site-settings' }),
     payload.findGlobal({ slug: 'homepage', locale }).catch(() => null),
   ]);
-  const t = await getTranslations('home');
 
   const blocks = homepage?.blocks ?? [];
 
@@ -26,64 +23,7 @@ export default async function HomePage({
         <div className="home-banner">{settings.bannerText}</div>
       )}
 
-      <section className="home-hero">
-        <div className="hero-grid-bg" aria-hidden="true" />
-
-        <div className="hero-inner">
-          <div className="hero-left">
-            <div className="hero-eyebrow">
-              <span className="hero-dot" />
-              <span>{t('eyebrow')}</span>
-              <span className="hero-est">Est. 2020</span>
-            </div>
-
-            <h1 className="hero-heading">
-              <span>GEAR</span>
-              <span className="h-accent">UP.</span>
-              <span>RIDE</span>
-              <span className="h-outline">ON.</span>
-            </h1>
-
-            <p className="hero-sub">
-              {t('subLine1')}
-              <br />
-              {t('subLine2')}
-            </p>
-
-            <div className="hero-cta">
-              <Link href="/products" className="cta-primary">
-                {t('ctaCatalog')}
-                <ArrowRight size={18} />
-              </Link>
-              <Link href="/admin" className="cta-ghost" target="_blank">
-                {t('ctaAdmin')}
-              </Link>
-            </div>
-          </div>
-
-          <div className="hero-deco" aria-hidden="true">
-            <span className="deco-word">CHAINLINE</span>
-            <span className="deco-ring" />
-          </div>
-        </div>
-
-        <div className="hero-stats">
-          <div className="hero-stat">
-            <span className="stat-val">500<em>+</em></span>
-            <span className="stat-lbl">{t('statProducts')}</span>
-          </div>
-          <div className="stat-sep" />
-          <div className="hero-stat">
-            <span className="stat-val">10K<em>+</em></span>
-            <span className="stat-lbl">{t('statClients')}</span>
-          </div>
-          <div className="stat-sep" />
-          <div className="hero-stat">
-            <span className="stat-val">5<em>★</em></span>
-            <span className="stat-lbl">{t('statRating')}</span>
-          </div>
-        </div>
-      </section>
+      <Hero />
 
       <BlocksRenderer blocks={blocks} />
     </>
