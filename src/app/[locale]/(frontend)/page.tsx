@@ -2,6 +2,7 @@ import { getPayload } from 'payload';
 import config from '@payload-config';
 import { BlocksRenderer } from '@/components/blocks/BlocksRenderer';
 import { Hero } from '@/components/Hero';
+import { RideMeter } from '@/components/motion/RideMeter';
 
 export default async function HomePage({
   params,
@@ -19,6 +20,9 @@ export default async function HomePage({
 
   return (
     <>
+      {/* RideMeter is a client component; page.tsx remains an RSC */}
+      <RideMeter />
+
       {settings.showBanner && settings.bannerText && (
         <div className="home-banner">{settings.bannerText}</div>
       )}

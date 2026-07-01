@@ -7,11 +7,13 @@ import {
   animate,
   motion,
   useInView,
+  useMotionValue,
   useReducedMotion,
   useScroll,
   useTransform,
 } from 'motion/react';
 import type { MotionValue, Transition } from 'motion/react';
+import { Magnetic } from '@/components/motion/Magnetic';
 import { useTranslations } from 'next-intl';
 
 const entranceVariants = {
@@ -38,19 +40,26 @@ const HEADING_WORDS: { text: string; cls?: string; accent?: boolean }[] = [
 function RideWheel({
   rotate,
   reduced,
+  onClick,
 }: {
   rotate: MotionValue<number>;
   reduced: boolean;
+  onClick?: () => void;
 }) {
   const spokes = Array.from({ length: 12 }, (_, i) => (i * 360) / 12);
 
   return (
     <motion.div
       className="hero-wheel"
-      style={reduced ? undefined : { rotate }}
+      style={reduced ? { cursor: 'pointer' } : { rotate, cursor: 'pointer' }}
       initial={reduced ? false : { opacity: 0, scale: 0.9 }}
       animate={reduced ? undefined : { opacity: 1, scale: 1 }}
       transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 } as Transition}
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      aria-label="Spin the wheel for a perk"
+      onKeyDown={(e) => e.key === 'Enter' && onClick?.()}
     >
       <svg viewBox="0 0 200 200" fill="none" role="presentation">
         {/* faint trail / outer halo */}
@@ -133,8 +142,36 @@ export function Hero() {
 
   const sectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll();
-  // Scroll drives the wheel's rotation across the page.
+  // Scroll drives the wheel's base rotation across the page.
   const wheelRotate = useTransform(scrollYProgress, [0, 1], [0, 540]);
+  // Bonus rotation added on each click (spin-to-reveal).
+  const spinBonus = useMotionValue(0);
+  // Combined = scroll rotation + click spin bonus.
+  const totalRotate = useTransform(
+    [wheelRotate, spinBonus] as MotionValue<number>[],
+    (values: number[]) => values[0] + values[1],
+  );
+
+  const [perkVisible, setPerkVisible] = useState(false);
+  const spinning = useRef(false);
+
+  const handleWheelSpin = () => {
+    // Under reduced motion: just toggle the perk chip, no spin.
+    if (reduced) {
+      setPerkVisible(true);
+      return;
+    }
+    if (spinning.current) return;
+    spinning.current = true;
+    setPerkVisible(true);
+    animate(spinBonus, spinBonus.get() + 360, {
+      duration: 0.9,
+      ease: [0.22, 1, 0.36, 1],
+      onComplete: () => {
+        spinning.current = false;
+      },
+    });
+  };
 
   const makeEntrance = (delay: number) =>
     reduced
@@ -185,18 +222,32 @@ export function Hero() {
           </motion.p>
 
           <motion.div className="hero-cta" {...makeEntrance(0.65)}>
-            <Link href="/products" className="cta-primary">
-              {t('ctaCatalog')}
-              <ArrowRight size={18} />
-            </Link>
-            <Link href="/admin" className="cta-ghost" target="_blank">
-              {t('ctaAdmin')}
-            </Link>
+            <Magnetic>
+              <Link href="/products" className="cta-primary">
+                {t('ctaCatalog')}
+                <ArrowRight size={18} />
+              </Link>
+            </Magnetic>
+            <Magnetic>
+              <Link href="/admin" className="cta-ghost" target="_blank">
+                {t('ctaAdmin')}
+              </Link>
+            </Magnetic>
           </motion.div>
         </div>
 
         <div className="hero-deco" aria-hidden="true">
-          <RideWheel rotate={wheelRotate} reduced={reduced} />
+          <RideWheel rotate={totalRotate} reduced={reduced} onClick={handleWheelSpin} />
+          {perkVisible && (
+            <motion.div
+              className="perk-chip"
+              initial={reduced ? false : { opacity: 0, y: 8, scale: 0.92 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.28, ease: 'easeOut' } as Transition}
+            >
+              FREE SHIPPING · Бесплатная доставка
+            </motion.div>
+          )}
         </div>
       </div>
 

@@ -1,3 +1,41 @@
+/* ─── Ride Meter (scroll progress bar) ───────────────────── */
+.ride-meter-track {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 9999;
+  background: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.ride-meter-bar {
+  height: 100%;
+  background: #e85d04;
+  transform-origin: 0% 50%;
+  will-change: transform;
+}
+
+/* ─── Perk chip (spin-to-reveal) ─────────────────────────── */
+.perk-chip {
+  position: absolute;
+  bottom: -14px;
+  left: 50%;
+  translate: -50% 0;
+  background: #e85d04;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 20px;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(232, 93, 4, 0.35);
+  pointer-events: none;
+}
+
 /* ─── Homepage Banner ────────────────────────────────────── */
 .home-banner {
   background: #e85d04;
