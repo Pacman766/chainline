@@ -8,7 +8,9 @@
     "contacts": "Контакты"
   },
   "header": {
-    "login": "Войти"
+    "login": "Войти",
+    "openMenu": "Открыть меню",
+    "closeMenu": "Закрыть меню"
   },
   "pdp": {
     "backToCatalog": "Каталог",

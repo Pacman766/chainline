@@ -8,7 +8,9 @@
     "contacts": "Contacts"
   },
   "header": {
-    "login": "Sign in"
+    "login": "Sign in",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "pdp": {
     "backToCatalog": "Catalog",
