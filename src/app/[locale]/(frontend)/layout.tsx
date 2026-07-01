@@ -1,6 +1,7 @@
 import React from 'react';
 import './styles.css';
 import { Header } from '@/components/Header';
+import { SmoothScroll } from '@/components/SmoothScroll';
 import { CartProvider } from '@/contexts/CartContext';
 import { Toaster } from 'sonner';
 import { NextIntlClientProvider } from 'next-intl';
@@ -33,6 +34,7 @@ export default async function RootLayout({
       </head>
       <body>
         <NextIntlClientProvider messages={messages}>
+          <SmoothScroll />
           <CartProvider>
             <Header />
             <main>{children}</main>

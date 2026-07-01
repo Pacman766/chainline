@@ -57,6 +57,9 @@ body {
   --hero-cta-ghost: rgba(0, 0, 0, 0.40);
   --hero-cta-ghost-border: rgba(0, 0, 0, 0.15);
   --hero-deco-stroke: rgba(0, 0, 0, 0.05);
+  /* chain-silver neutral — visible on light hero bg */
+  --hero-wheel: rgba(0, 0, 0, 0.30);
+  --hero-wheel-faint: rgba(0, 0, 0, 0.10);
 
   /* Content-area palette — header/sidebar stay dark regardless of theme */
   --page-bg: #f7f5f2;
@@ -178,6 +181,9 @@ body {
   --hero-cta-ghost: rgba(255, 255, 255, 0.32);
   --hero-cta-ghost-border: rgba(255, 255, 255, 0.12);
   --hero-deco-stroke: rgba(255, 255, 255, 0.06);
+  /* chain-silver neutral — spokes/rim over the dark hero bg */
+  --hero-wheel: rgba(220, 225, 230, 0.62);
+  --hero-wheel-faint: rgba(220, 225, 230, 0.16);
 
   /* Content-area dark overrides */
   --page-bg: #111111;

@@ -1,3 +1,43 @@
+/* ─── Ride Meter (scroll progress bar) ───────────────────── */
+.ride-meter-track {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 9999;
+  background: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.ride-meter-bar {
+  width: 100%;
+  height: 100%;
+  background: #e85d04;
+  transform-origin: left center;
+  will-change: transform;
+}
+
+/* ─── Perk chip (spin-to-reveal) ─────────────────────────── */
+.perk-chip {
+  position: absolute;
+  bottom: -14px;
+  left: 50%;
+  translate: -50% 0;
+  background: #e85d04;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 20px;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(232, 93, 4, 0.35);
+  pointer-events: none;
+}
+
 /* ─── Homepage Banner ────────────────────────────────────── */
 .home-banner {
   background: #e85d04;
@@ -100,8 +140,16 @@
   margin-bottom: 32px;
 }
 
-.hero-heading > span {
+/* split-text masks — each line clips its word for the chain-pull reveal */
+.hero-heading > .hero-line {
   display: block;
+  overflow: hidden;
+  padding-bottom: 0.06em;
+}
+
+.hero-heading .hero-word {
+  display: inline-block;
+  will-change: transform;
 }
 
 .hero-heading .h-accent {
@@ -171,41 +219,25 @@
   border-color: var(--hero-eyebrow);
 }
 
-/* Right deco */
+/* Right deco — scroll-driven ride wheel */
 .hero-deco {
   position: relative;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fade-in 1.4s ease 0.4s both;
 }
 
-.deco-word {
-  font-size: clamp(56px, 8vw, 112px);
-  font-weight: 900;
-  letter-spacing: -0.04em;
-  text-transform: uppercase;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  color: transparent;
-  -webkit-text-stroke: 1px var(--hero-deco-stroke);
-  user-select: none;
-  line-height: 1;
+.hero-wheel {
+  width: clamp(260px, 32vw, 460px);
+  height: clamp(260px, 32vw, 460px);
+  transform-origin: center;
 }
 
-.deco-ring {
-  position: absolute;
-  inset: -24px;
-  border-radius: 50%;
-  border: 1px solid rgba(232,93,4,0.12);
-}
-.deco-ring::after {
-  content: '';
-  position: absolute;
-  inset: 24px;
-  border-radius: 50%;
-  border: 1px solid rgba(232,93,4,0.06);
+.hero-wheel svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /* Stats bar */
@@ -237,9 +269,13 @@
 }
 
 .stat-val {
+  display: inline-flex;
+  align-items: baseline;
   font-size: 2.4rem;
   font-weight: 900;
   font-family: ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
   letter-spacing: -0.03em;
   line-height: 1;
   color: var(--hero-text);

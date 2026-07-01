@@ -1,5 +1,6 @@
 import { Star, Check, Zap, Heart, ShieldCheck, Globe } from 'lucide-react';
 import type { Homepage } from '@/payload-types';
+import { Magnetic } from '@/components/motion/Magnetic';
 
 type FeatureGridBlockData = Extract<
   NonNullable<Homepage['blocks']>[number],
@@ -27,12 +28,15 @@ export function FeatureGridBlock({ block }: { block: FeatureGridBlockData }) {
         const IconComp = item.icon ? (ICON_MAP[item.icon as IconKey] ?? null) : null;
         const num = String(idx + 1).padStart(2, '0');
         return (
-          <div className="feat-card" key={item.id ?? idx}>
+          // Magnetic is a client wrapper; card content (children) stays server-rendered.
+          // className="feat-card" on Magnetic so the grid cell IS the styled card element
+          // (preserves :last-child border rule and grid layout).
+          <Magnetic className="feat-card" key={item.id ?? idx}>
             <span className="feat-num">{num}</span>
             {IconComp && <IconComp size={26} className="feat-icon" />}
             {item.title && <h3>{item.title}</h3>}
             {item.desc && <p>{item.desc}</p>}
-          </div>
+          </Magnetic>
         );
       })}
     </section>
