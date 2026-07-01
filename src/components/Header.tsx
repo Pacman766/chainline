@@ -7,6 +7,7 @@ import { NavLinks } from '@/components/NavLinks';
 import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { CartLink } from './CartLink';
 import { ThemeToggle } from './ThemeToggle';
+import { MobileMenu } from './MobileMenu';
 
 // SVG chainring — 9 зубцов, как у передней звёздочки велосипеда
 // function ChainringLogo() {
@@ -92,6 +93,18 @@ export async function Header() {
               {t('login')}
             </Link>
           )}
+        </div>
+
+        {/* Mobile-only: cart stays visible in top bar, hamburger opens drawer */}
+        <div className="header-mobile-right">
+          <CartLink />
+          <MobileMenu
+            email={user?.email ?? null}
+            logoutUrl={logoutUrl}
+            loginLabel={t('login')}
+            openMenuLabel={t('openMenu')}
+            closeMenuLabel={t('closeMenu')}
+          />
         </div>
       </div>
     </header>
