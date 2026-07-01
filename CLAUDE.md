@@ -10,6 +10,12 @@ npm run devsafe             # Clean .next cache and start dev server
 npm run build               # Production build
 npm run lint                # ESLint
 
+# ⚠️ For a throwaway server to verify UI, prefer `npm run build && npx next start`.
+# `next dev` can enter a runaway Payload generate:types watcher loop (rewrites
+# payload-types.ts → Next rebuilds → regenerates → repeat), spawning dozens of
+# node processes. It also causes recurring spurious CRLF-only diffs on
+# src/payload-types.ts. Kill any stray dev server when done.
+
 npm run test:int            # Vitest integration tests (tests/int/**/*.int.spec.ts)
 npm run test:e2e            # Playwright E2E tests (tests/e2e/)
 npm test                    # Both test suites
