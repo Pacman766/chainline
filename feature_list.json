@@ -481,7 +481,7 @@
         "Panel fix (495b035): CRITICAL wheel hydration mismatch fixed (round Math.cos/sin spoke coords via toFixed(3) — verified SSR HTML emits 30.718 not 30.7179676…); RideMeter reduced-motion gate + 100vw overflow containment; Magnetic → useMotionValue+useSpring (no per-mousemove React render); removed dead sectionRef",
         "Runtime: dev server /ru /en → 200; hydration error gone (SSR coords rounded, client uses same helper)"
       ],
-      "notes": "Done via /ship (6 commits on feat/homepage-motion-redesign). Grilled: refs sofihealth.com + jitter.video; all 4 gamified mechanics placed in non-competing zones (spin-to-reveal consolidated into hero wheel). KNOWN ISSUE (out of scope, separate PR agreed): global site-header has no mobile hamburger → horizontal overflow (923px @375) + sub-44px tap targets — PRE-EXISTING, not from this diff. Lesson: [[ssr-svg-float-hydration]] — round SSR SVG cos/sin coords or React hydration-mismatches (runtime-only, build-green)."
+      "notes": "Done via /ship (6 commits on feat/homepage-motion-redesign). Grilled: refs sofihealth.com + jitter.video; all 4 gamified mechanics placed in non-competing zones (spin-to-reveal consolidated into hero wheel). Follow-up (RESOLVED in PR #4, merge 3bca141): global site-header mobile overflow (923px @375, no hamburger, sub-44px targets) — fixed via responsive MobileMenu (hamburger + body-portaled off-canvas drawer). Lesson: [[ssr-svg-float-hydration]] — round SSR SVG cos/sin coords or React hydration-mismatches (runtime-only, build-green)."
     }
   ]
 }

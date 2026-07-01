@@ -637,3 +637,26 @@
 **Урок (в память):** `ssr-svg-float-hydration.md` — округлять cos/sin-координаты в SSR-SVG, иначе hydration-mismatch (runtime-only, build-green не ловит).
 
 **Дальше:** отдельный PR на mobile-header (гамбургер + тап-таргеты). Опционально — реальные перки в spin-to-reveal, motion LazyMotion-оптимизация.
+
+---
+
+### Session: 2026-07-01 — Responsive mobile header (PR #4) → MERGED
+
+**Объектив:** Закрыть pre-existing known-issue из design-ревью #21 — глобальный header не адаптирован под мобилку (горизонтальный overflow 923px @375, нет гамбургера, тап-таргеты <44px).
+
+**Сделано:**
+- Новый клиентский остров `src/components/MobileMenu.tsx`: гамбургер + off-canvas slide-in drawer (≤820px). Топ-бар на мобиле = лого + корзина + гамбургер; nav/локаль/тема/логин — в drawer. Закрытие: ×, backdrop, Escape, клик по nav-ссылке; body-scroll-lock; focus-management; 44px таргеты; `prefers-reduced-motion`.
+- `Header.tsx` остаётся Server Component — server-данные (email/logoutUrl/label/aria) прокинуты пропсами; десктоп-разметка прячется CSS'ом ≤820px.
+- i18n `header.openMenu`/`header.closeMenu` (ru+en).
+
+**Два бага, пойманные браузерной проверкой (Playwright MCP, прод-сборка):**
+1. Off-canvas overflow: закрытый drawer (`fixed; translateX(100%)`) раздувал `document.scrollWidth` до 645px @360. Фикс — клип-слой `fixed; inset:0; overflow:hidden; pointer-events:none`.
+2. Клип, вложенный в sticky/transformed header, сайзился в 60px (drawer высотой с шапку). Фикс — **портал drawer'а в `document.body`** (`createPortal`, gated `mounted`) → клип берёт реальный вьюпорт. `scrollWidth` 645→345 @360, drawer открывается на всю высоту.
+
+**Test Results:** `npm run build` PASS; `check:i18n` паритет; браузер @360/open-drawer — ок; пользователь подтвердил; GH Actions зелёные.
+
+**OPERATIONAL LESSON (в память `no-next-dev-generate-types-loop.md`):** `next dev` на chainline входит в self-triggering loop `generate:types` (переписывает `payload-types.ts` → watcher → пересборка → generate:types → ...), плодит ~30 zombie node-процессов и вешает машину. Это же — источник вечных CRLF-«изменений» `payload-types.ts`. Для локальной проверки — только `next build && next start`, убивать после.
+
+**Commits:** `e43b5c3` (fix) → merge `3bca141` в main. PR #3 (motion) + #4 (header) оба в main.
+
+**Дальше:** оба фронт-PR смёрджены, main зелёный. Опционально — реальные перки в spin-to-reveal, motion LazyMotion.
