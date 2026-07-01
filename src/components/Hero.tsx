@@ -31,6 +31,9 @@ const HEADING_WORDS: { text: string; cls?: string; accent?: boolean }[] = [
   { text: 'ON.', cls: 'h-outline', accent: true },
 ];
 
+/** Round a float to 3 decimal places so SSR and client serialize identically. */
+const r = (n: number) => Number(n.toFixed(3));
+
 /**
  * RideWheel — inline SVG bike wheel (hub + spokes + rim) in chain-silver.
  * Rotation is driven by page scroll via the passed `rotate` MotionValue.
@@ -74,10 +77,10 @@ function RideWheel({
             return (
               <line
                 key={deg}
-                x1={100 + Math.cos(rad) * 16}
-                y1={100 + Math.sin(rad) * 16}
-                x2={100 + Math.cos(rad) * 80}
-                y2={100 + Math.sin(rad) * 80}
+                x1={r(100 + Math.cos(rad) * 16)}
+                y1={r(100 + Math.sin(rad) * 16)}
+                x2={r(100 + Math.cos(rad) * 80)}
+                y2={r(100 + Math.sin(rad) * 80)}
               />
             );
           })}
@@ -140,7 +143,6 @@ export function Hero() {
   const reducedMotion = useReducedMotion();
   const reduced = !!reducedMotion;
 
-  const sectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll();
   // Scroll drives the wheel's base rotation across the page.
   const wheelRotate = useTransform(scrollYProgress, [0, 1], [0, 540]);
@@ -189,7 +191,7 @@ export function Hero() {
       : { duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.25 + i * 0.09 };
 
   return (
-    <section className="home-hero" ref={sectionRef}>
+    <section className="home-hero">
       <div className="hero-grid-bg" aria-hidden="true" />
 
       <div className="hero-inner">
