@@ -1,4 +1,5 @@
 import type { Homepage, SiteSetting } from '@/payload-types';
+import { Reveal } from '@/components/motion/Reveal';
 import { FeatureGridBlock } from './FeatureGridBlock';
 import { CtaBlock } from './CtaBlock';
 import { ContactsBlock } from './ContactsBlock';
@@ -18,13 +19,26 @@ export function BlocksRenderer({
     <>
       {blocks.map((block, idx) => {
         const key = block.id ?? `${block.blockType}-${idx}`;
+        const delay = idx * 0.08;
         switch (block.blockType) {
           case 'feature-grid':
-            return <FeatureGridBlock key={key} block={block} />;
+            return (
+              <Reveal key={key} delay={delay}>
+                <FeatureGridBlock block={block} />
+              </Reveal>
+            );
           case 'cta':
-            return <CtaBlock key={key} block={block} />;
+            return (
+              <Reveal key={key} delay={delay}>
+                <CtaBlock block={block} />
+              </Reveal>
+            );
           case 'contacts':
-            return <ContactsBlock key={key} block={block} settings={settings} />;
+            return (
+              <Reveal key={key} delay={delay}>
+                <ContactsBlock block={block} settings={settings} />
+              </Reveal>
+            );
           default:
             return null;
         }
