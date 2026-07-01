@@ -1,6 +1,6 @@
 {
   "projectName": "Payload Start",
-  "lastUpdated": "2026-06-30",
+  "lastUpdated": "2026-07-01",
   "rules": {
     "singleActiveFeature": "Only one feature can be 'in_progress' at a time",
     "evidenceRequired": "Must have verification evidence before marking 'pass'",
@@ -456,6 +456,32 @@
         "Panel fix (be92d8b): reduced-motion now gated at CSS layer too (@media prefers-reduced-motion disables dot-pulse/fade-in; duplicate CSS reveal-up removed from motion-controlled hero elements); EN seed preserves non-localized icon; javascript:/scheme-allowlist guard on CtaBlock buttonHref + ContactsBlock social urls; site-settings fetched once (threaded page.tsx→BlocksRenderer→ContactsBlock)"
       ],
       "notes": "Done via /ship (6 commits on feat/homepage-blocks-animated-hero). Grilled scope: hero stays code-owned island; blocks = feature-grid + CTA + contacts (NO featured-products/categories — user rejected products-on-homepage). Lesson: Payload localized `blocks` — a bare second-locale updateGlobal creates NEW block rows and orphans the first locale; must read back block IDs after the RU write and pass them into the EN write. Prod deploy remains a manual post-merge step (CI `payload migrate` applies homepage_blocks on clean prod history; then reseed)."
+    },
+    {
+      "id": "21",
+      "priority": "medium",
+      "area": "frontend",
+      "title": "Homepage motion redesign — Lenis scroll + gamified hero (motion)",
+      "description": "Substantial hero + homepage motion redesign after user rejected the prior hero as visually too weak. Direction: motion-design + gamified (Figma 2026 trends 6+7), sofi-style smooth scroll (Lenis) + jitter kinetic accents, cycling theme. Signature = SVG bike-wheel that rotates on scroll (useScroll) and doubles as spin-to-reveal. Kinetic split-text heading, odometer count-up stats, ride-meter scroll-progress bar, magnetic hover on CTAs+cards, site-wide staggered scroll reveals. Pure animation layer — NO Payload schema change. prefers-reduced-motion disables all; Lenis off on mobile/touch.",
+      "status": "pass",
+      "verification": [
+        "npm run build exits 0",
+        "npm run check:i18n parity",
+        "page.tsx / layout / BlocksRenderer / FeatureGridBlock stay RSC (client boundary only at leaf motion components)",
+        "prefers-reduced-motion disables all motion (wheel static, text visible, stats final, no stuck opacity:0)",
+        "no React hydration mismatch on the hero wheel"
+      ],
+      "evidence": [
+        "npm run build: PASS (exit 0); check:i18n: ru/en parity",
+        "Phase 1 (bdfd77d): lenis SmoothScroll provider (gated prefers-reduced-motion + coarse-pointer/<1024px, RAF+destroy cleanup) + reusable <Reveal> (whileInView once, immediate on reduced-motion)",
+        "Phase 2 (677b847): Hero.tsx rewrite — scroll-driven inline-SVG ride-wheel (useScroll→useTransform rotate), masked kinetic split-text (springy accent overshoot), odometer count-up (useInView); all reduced-motion gated; page.tsx stays RSC",
+        "Phase 3 (e0c9a33): gamified — RideMeter (fixed scaleX scroll-progress), Magnetic wrapper on hero CTAs + feature cards (children pattern, cards stay RSC), spin-to-reveal on the wheel (click → static perk chip)",
+        "Phase 4 (348070a): BlocksRenderer wraps each block in <Reveal delay={idx*0.08}> for staggered scroll reveal",
+        "Panel: code-review green (3 minor), security green (lenis legit, no injection), performance minor (Magnetic useState), design SUBSTANTIAL verdict — confirmed premium redesign vs prior weak hero, reduced-motion PASS; 2 criticals raised",
+        "Panel fix (495b035): CRITICAL wheel hydration mismatch fixed (round Math.cos/sin spoke coords via toFixed(3) — verified SSR HTML emits 30.718 not 30.7179676…); RideMeter reduced-motion gate + 100vw overflow containment; Magnetic → useMotionValue+useSpring (no per-mousemove React render); removed dead sectionRef",
+        "Runtime: dev server /ru /en → 200; hydration error gone (SSR coords rounded, client uses same helper)"
+      ],
+      "notes": "Done via /ship (6 commits on feat/homepage-motion-redesign). Grilled: refs sofihealth.com + jitter.video; all 4 gamified mechanics placed in non-competing zones (spin-to-reveal consolidated into hero wheel). KNOWN ISSUE (out of scope, separate PR agreed): global site-header has no mobile hamburger → horizontal overflow (923px @375) + sub-44px tap targets — PRE-EXISTING, not from this diff. Lesson: [[ssr-svg-float-hydration]] — round SSR SVG cos/sin coords or React hydration-mismatches (runtime-only, build-green)."
     }
   ]
 }

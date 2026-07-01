@@ -609,3 +609,31 @@
 **Прод (осталось, ручное после мёрджа):** деплой → CI `payload migrate` накатит `homepage_blocks` на чистой прод-истории → reseed homepage-глобала.
 
 **Дальше:** все 20 фич в `pass`. Опционально — security follow-up #19 (rate-limit на magic/request) перед реальным трафиком; или бандл-оптимизация motion (LazyMotion) если понадобится.
+
+---
+
+### Session: 2026-07-01 — #21 Homepage motion redesign (Lenis + gamified hero) → PASS (via /ship)
+
+**Объектив:** После мёрджа #20 пользователь забраковал hero как визуально слабый («фактически не изменился, ожидал существенных изменений»). Полный motion-редизайн главной через `/ship`.
+
+**Грил (frontend-design + Figma-тренды):** направление — Motion (6) + Gamified (7); эталон плавности — sofihealth.com (Lenis + scroll-reveal), смелость — jitter.video; вело-тема. Signature = SVG-**колесо-одометр**, вращается по scroll (useScroll) и служит spin-to-reveal. 4 gamified-механики в непересекающихся зонах: ride-meter (фикс scroll-progress), count-up статы (одометр), magnetic/hover (CTA+карточки), spin-to-reveal (консолидирован в колесо). Reduced-motion → всё статично; mobile → Lenis off. Чистый animation-слой, БЕЗ изменения схемы.
+
+**Ветка:** `feat/homepage-motion-redesign` (off main), 6 коммитов.
+
+**Фазы (все verifier-green):**
+- Phase 1 (bdfd77d): `lenis` + SmoothScroll-провайдер (gated reduced-motion + coarse-pointer/<1024px, RAF+destroy) + `<Reveal>` (whileInView once, immediate on reduced).
+- Phase 2 (677b847, opus): Hero rewrite — scroll-driven inline-SVG колесо (useScroll→rotate), масковый kinetic split-text (springy accent), odometer count-up. page.tsx остался RSC.
+- Phase 3 (e0c9a33): gamified — RideMeter, Magnetic (children-паттерн, карточки RSC), spin-to-reveal на колесе.
+- Phase 4 (348070a): BlocksRenderer оборачивает блоки в `<Reveal delay={idx*0.08}>`.
+
+**Панель:** code-review green (3 minor), security green (lenis легитимен), performance minor (Magnetic useState), **design → SUBSTANTIAL** (подтвердил премиальный редизайн vs прежний слабый hero; reduced-motion PASS) + 2 критикала.
+
+**Panel fix (495b035):** (1) CRITICAL — React hydration mismatch на колесе: спицы считались как необрезанные float'ы (SSR `30.7179676…` ≠ client) → округлил через `toFixed(3)` (SSR-HTML теперь `30.718`, верифицировано); (2) RideMeter reduced-motion гейт + 100vw containment; (3) Magnetic → useMotionValue+useSpring (нет re-render на mousemove); (4) убран мёртвый sectionRef.
+
+**KNOWN ISSUE (вне scope, отдельным PR — согласовано):** глобальный site-header без mobile-гамбургера → горизонтальный overflow (923px @375) + тап-таргеты <44px. Пред-существующий, не из этого диффа (отмечался ещё на #20).
+
+**Test Results:** npm run build PASS; check:i18n паритет; dev /ru /en → 200; hydration-ошибка ушла.
+
+**Урок (в память):** `ssr-svg-float-hydration.md` — округлять cos/sin-координаты в SSR-SVG, иначе hydration-mismatch (runtime-only, build-green не ловит).
+
+**Дальше:** отдельный PR на mobile-header (гамбургер + тап-таргеты). Опционально — реальные перки в spin-to-reveal, motion LazyMotion-оптимизация.
